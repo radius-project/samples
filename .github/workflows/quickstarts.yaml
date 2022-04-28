@@ -49,7 +49,7 @@ jobs:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
-      - name: Login to az cli
+      - name: Login to az cli and ACR
         run: |
           az login --service-principal --username ${{ secrets.AZURE_SP_DOCKER_USERNAME }} --password ${{ secrets.AZURE_SP_DOCKER_PASSWORD }} --tenant ${{ secrets.AZURE_SP_DOCKER_TENANT }}
           az acr login --name ${{ env.DOCKER_REGISTRY }}
