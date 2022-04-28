@@ -37,5 +37,12 @@ jobs:
       - name: Build and push webapp images
         run: |
           docker build ./quickstarts/webapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
+      - name: Build and push Dapr images
+        run: |
+          docker build ./quickstarts/dapr/nodeapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
+          docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
       
     
