@@ -16,7 +16,7 @@ on:
       - '.github/workflows/quickstarts.yaml'
 
 env:
-  VERSION: '0.11'
+  VERSION: ${{ github.event.pull_request.number || '0.11' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
 
@@ -44,5 +44,20 @@ jobs:
           docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
-      
-    
+  cleanup:
+    name: Cleanup PR images
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to container registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY }}
+          username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
+          password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
+      - name: Build and push webapp images
+        run: |
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/webapp:${{ env.VERSION }}"
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}"
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}"
+
