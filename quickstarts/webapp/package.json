@@ -42,7 +42,7 @@
     "@azure/keyvault-secrets": "^4.1.0",
     "@types/uuid": "^8.3.0",
     "axios": "^0.21.2",
-    "ejs": "^3.1.6",
+    "ejs": "^3.1.7",
     "express": "^4.17.1",
     "install": "^0.13.0",
     "materialize-css": "^1.0.0",
