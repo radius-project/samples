@@ -15,16 +15,15 @@ on:
       - 'quickstarts/**'
       - '.github/workflows/quickstarts.yaml'
 
-env:
-  VERSION: '0.11'
-  # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
-  DOCKER_REGISTRY: 'radius.azurecr.io'
-
 jobs:
   build:
     name: Build and push quickstart container images
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+  env:
+    VERSION: '0.11'
+    # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+    DOCKER_REGISTRY: 'radius.azurecr.io'
   steps:
     - name: Checkout code
       uses: actions/checkout@v2
