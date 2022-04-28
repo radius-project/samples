@@ -6,7 +6,7 @@ on:
       - v0.11
     paths:
       - 'quickstarts/**'
-      - '.github/workflows/quickstarts.yaml'
+      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
