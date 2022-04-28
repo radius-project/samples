@@ -25,16 +25,16 @@ jobs:
     # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
     DOCKER_REGISTRY: 'radius.azurecr.io'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Login to container registry
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.DOCKER_REGISTRY }}
-        username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
-        password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-    - name: Build and push webapp images
-      run: |
-        docker build ./quickstarts/webapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
+  - name: Checkout code
+    uses: actions/checkout@v2
+  - name: Login to container registry
+    uses: azure/docker-login@v1
+    with:
+      login-server: ${{ env.DOCKER_REGISTRY }}
+      username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
+      password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
+  - name: Build and push webapp images
+    run: |
+      docker build ./quickstarts/webapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
       
     
