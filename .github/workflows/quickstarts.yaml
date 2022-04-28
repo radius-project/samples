@@ -52,6 +52,7 @@ jobs:
       - name: Login to az cli
         run: |
           az login --service-principal --username ${{ secrets.AZURE_SP_DOCKER_USERNAME }} --password ${{ secrets.AZURE_SP_DOCKER_PASSWORD }} --tenant ${{ secrets.AZURE_SP_DOCKER_TENANT }}
+          az acr login --name ${{ env.DOCKER_REGISTRY }}
       - name: Build and push webapp images
         run: |
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/webapp:${{ env.VERSION }}" --yes
