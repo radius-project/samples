@@ -1,0 +1,19 @@
+name: Test Quickstarts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Deploy quickstarts to local environment
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Download rad CLI
+        run: wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+      - name: Init local environment
+        run: rad env init dev
+      - name: Deploy webapp
+        run: rad deploy ./quickstarts/webapp/template.bicep
