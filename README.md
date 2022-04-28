@@ -1,4 +1,4 @@
-# Project Radius Saamples
+# Project Radius Samples
 
 This repository contains the source code for quickstarts, reference apps, and tutorials for Project Radius.
 
