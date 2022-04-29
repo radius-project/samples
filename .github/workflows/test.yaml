@@ -2,11 +2,6 @@ name: Test Quickstarts
 
 on:
   workflow_dispatch:
-    inputs:
-      initFlags:
-        description: 'Optional flags to specify when initializing the Radius dev environment'
-        required: false
-        default: ''
 
 jobs:
   build:
@@ -21,7 +16,7 @@ jobs:
       - name: Download rad
         run: wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
-        run: rad env init dev ${{ github.event.inputs.initFlags }}
+        run: rad env init dev
       - name: Deploy webapp
         run: |
           rad deploy ./quickstarts/webapp/template.bicep
