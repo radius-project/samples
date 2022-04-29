@@ -18,5 +18,10 @@ jobs:
       - name: Init local environment
         run: rad env init dev
       - name: Deploy webapp
-        run: rad deploy ./quickstarts/webapp/template.bicep
-        
+        run: |
+          rad deploy ./quickstarts/webapp/template.bicep
+          rad app delete webapp -y
+      - name: Deploy Dapr
+        run: |
+          rad deploy ./quickstarts/dapr/dapr.bicep
+          rad app delete dapr-tutorial -y
