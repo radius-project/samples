@@ -33,5 +33,5 @@ jobs:
       - name: Deploy Container Apps Store
         run: |
           cd ./reference-apps/container-app-store/
-          rad app deploy
+          rad app deploy --profile dev
           rad app delete store -y
