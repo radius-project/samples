@@ -2,6 +2,21 @@ name: Test Quickstarts
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - v0.11
+    paths:
+      - 'quickstarts/**'
+      - 'reference-apps/**'
+      - '.github/workflows/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - v0.11
+    paths:
+      - 'quickstarts/**'
+      - 'reference-apps/**'
+      - '.github/workflows/quickstarts.yaml'
 
 jobs:
   build:
