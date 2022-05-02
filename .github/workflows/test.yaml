@@ -25,3 +25,13 @@ jobs:
         run: |
           rad deploy ./quickstarts/dapr/dapr.bicep
           rad app delete dapr-tutorial -y
+      - name: Deploy eShop
+        run: |
+          cd ./reference-apps/eshop/
+          rad app deploy -p "CLUSTER_IP=0.0.0.0" -p "adminPassword=P@ssw0rd4@36"
+          rad app delete eshop -y
+      - name: Deploy Container Apps Store
+        run: |
+          cd ./reference-apps/container-app-store/
+          rad app deploy
+          rad app delete store -y
