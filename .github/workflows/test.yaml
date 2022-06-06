@@ -32,20 +32,20 @@ jobs:
         run: wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
         run: rad env init dev
-      - name: Deploy webapp
+      - name: Deploy webapp tutorial
         run: |
-          rad deploy ./quickstarts/webapp/template.bicep
+          rad deploy ./tutorial/template.bicep
           rad app delete webapp -y
-      - name: Deploy Dapr
+      - name: Deploy Dapr quickstart
         run: |
           rad deploy ./quickstarts/dapr/dapr.bicep
           rad app delete dapr-tutorial -y
-      - name: Deploy eShop
+      - name: Deploy eShop reference app
         run: |
           cd ./reference-apps/eshop/
           rad app deploy -p "CLUSTER_IP=0.0.0.0" -p "adminPassword=P@ssw0rd4@36"
           rad app delete eshop -y
-      - name: Deploy Container Apps Store
+      - name: Deploy Container Apps Store reference app
         run: |
           cd ./reference-apps/container-app-store/
           rad app deploy --profile dev
