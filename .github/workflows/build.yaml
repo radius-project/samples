@@ -1,4 +1,4 @@
-name: Quickstarts
+name: Build samples
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - v0.11
     paths:
       - 'quickstarts/**'
+      - 'tutorial/**'
       - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
@@ -13,6 +14,7 @@ on:
       - v0.11
     paths:
       - 'quickstarts/**'
+      - 'tutorial/**'
       - '.github/workflows/quickstarts.yaml'
 
 env:
@@ -34,11 +36,11 @@ jobs:
           login-server: ${{ env.DOCKER_REGISTRY }}
           username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
           password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-      - name: Build and push webapp images
+      - name: Build and push tutorial webapp images
         run: |
-          docker build ./quickstarts/webapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/webapp:${{ env.VERSION }}"
-      - name: Build and push Dapr images
+          docker build ./tutorial/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
+      - name: Build and push quickstart Dapr images
         run: |
           docker build ./quickstarts/dapr/nodeapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
           docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
@@ -55,7 +57,6 @@ jobs:
           az acr login --name ${{ env.DOCKER_REGISTRY }}
       - name: Delete PR images
         run: |
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/webapp:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/webapp:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
-
