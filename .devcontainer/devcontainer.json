@@ -31,10 +31,10 @@
 		}
 	},
 	
-	"postCreateCommand":["rad env init dev"],
-
 	"overrideCommand": false,
 	
+	"postStartCommand": "rad env init dev",
+
     // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "codespace"
 }
