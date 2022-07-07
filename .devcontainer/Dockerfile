@@ -32,4 +32,4 @@ RUN wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | 
 # Install Stern
 RUN go install github.com/stern/stern@latest
 
-USER codespaces
+USER codespace
