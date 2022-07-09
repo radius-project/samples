@@ -3,9 +3,7 @@
 {
 	"name": "Radius Sample Container",
     
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
+    "image": "radius.azurecr.io/devcontainer/samples:0.11",
 
     // Set *default* container specific settings.json values on container create.
     "settings": {
