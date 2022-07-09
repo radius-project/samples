@@ -28,6 +28,6 @@ RUN mv ./kubectl /usr/local/bin
 RUN wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
 # Setup Stern
-RUN go install github.com/stern/stern@latest
+RUN kubectl krew install stern
 
 USER codespace
