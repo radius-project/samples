@@ -1,0 +1,51 @@
+name: Build codespace image
+
+on:
+  push:
+    branches:
+      - v0.11
+    paths:
+      - '.devcontainer/**'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - v0.11
+    paths:
+      - '.devcontainer/**'
+
+env:
+  VERSION: ${{ github.event.pull_request.number || '0.11' }}
+  # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+  DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
+
+jobs:
+  build:
+    name: Build and push codespace image
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Login to container registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY }}
+          username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
+          password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
+      - name: Build and push codespace image
+        run: |
+          docker build ./.devcontainer/ -t "${{ env.DOCKER_REGISTRY }}/devcontainer/samples:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/devcontainer/samples:${{ env.VERSION }}"
+
+  cleanup:
+    name: Cleanup PR image
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to az cli and ACR
+        run: |
+          az login --service-principal --username ${{ secrets.AZURE_SP_DOCKER_USERNAME }} --password ${{ secrets.AZURE_SP_DOCKER_PASSWORD }} --tenant ${{ secrets.AZURE_SP_DOCKER_TENANT }}
+          az acr login --name ${{ env.DOCKER_REGISTRY }}
+      - name: Delete PR images
+        run: |
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "devcontainer/samples:${{ env.VERSION }}" --yes
