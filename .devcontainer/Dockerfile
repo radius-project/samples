@@ -28,6 +28,9 @@ RUN mv ./kubectl /usr/local/bin
 RUN wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
 # Setup Stern
-RUN kubectl krew install stern
+RUN wget -O  ./stern.tar.gz https://github.com/stern/stern/releases/download/v1.21.0/stern_1.21.0_linux_arm64.tar.gz
+RUN tar -xzf ./stern.tar.gz -C ./
+RUN chmod +x ./stern
+RUN mv ./stern /usr/local/bin
 
 USER codespace
