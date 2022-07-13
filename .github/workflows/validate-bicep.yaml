@@ -47,7 +47,11 @@ jobs:
       run: ./.github/scripts/validate-bicep-corerp.sh
 =======
     - name: Verify Bicep files
+<<<<<<< HEAD
       run: ./.github/scripts/validate-bicep.sh
 >>>>>>> cd8d005 (add corerp bicep validation)
+=======
+      run: ./.github/scripts/validate-bicep.ss
+>>>>>>> ff3a518 (wrong sh file)
       env: 
         BICEP_PATH: .
