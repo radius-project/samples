@@ -31,6 +31,6 @@ jobs:
         chmod +x rad-bicep-corerp
         ./rad-bicep-corerp --version
     - name: Verify Bicep files
-      run: ./.github/scripts/validate-bicep.sh
+      run: ./.github/scripts/validate-bicep.ss
       env: 
         BICEP_PATH: .
