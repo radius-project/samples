@@ -9,6 +9,7 @@ on:
     branches:
       - edge
       - v*
+
 jobs:
   build:
     name: Validate Bicep Code
@@ -16,17 +17,6 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
-<<<<<<< HEAD
-    - name: Parse release version and set environment variables
-      run: python ./.github/scripts/get_release_version.py
-    - name: Download rad-bicep
-      run: |
-        ./.github/scripts/curl-with-retries.sh https://radiuspublic.blob.core.windows.net/tools/bicep-extensibility/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
-        chmod +x rad-bicep
-        ./rad-bicep --version
-    - name: Verify Bicep files
-      run: ./.github/scripts/validate-bicep.sh
-=======
     - name: Download rad-bicep-customrp
       run: |
         ./.github/scripts/curl-with-retries.sh https://radiuspublic.blob.core.windows.net/tools/bicep/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep-customrp
@@ -37,21 +27,7 @@ jobs:
         ./.github/scripts/curl-with-retries.sh https://radiuspublic.blob.core.windows.net/tools/bicep-extensibility/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep-corerp
         chmod +x rad-bicep-corerp
         ./rad-bicep-corerp --version
-<<<<<<< HEAD
-    - name: Verify CustomRP bicep files
-      run: ./.github/scripts/validate-bicep-customrp.sh
->>>>>>> db9f637 (add bicep validation for corerp)
-      env: 
-        BICEP_PATH: .
-    - name: Verify CoreRP bicep files
-      run: ./.github/scripts/validate-bicep-corerp.sh
-=======
     - name: Verify Bicep files
-<<<<<<< HEAD
       run: ./.github/scripts/validate-bicep.sh
->>>>>>> cd8d005 (add corerp bicep validation)
-=======
-      run: ./.github/scripts/validate-bicep.ss
->>>>>>> ff3a518 (wrong sh file)
       env: 
         BICEP_PATH: .
