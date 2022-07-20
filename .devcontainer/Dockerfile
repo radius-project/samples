@@ -3,21 +3,12 @@ FROM mcr.microsoft.com/vscode/devcontainers/universal:linux
 
 USER root
 
-# If "context" is set to ".." in devcontainer.json, use .devcontainer/library-scripts/*.sh
-COPY library-scripts/*.sh /tmp/library-scripts/
-
-ENV DOCKER_BUILDKIT=1
-RUN apt-get update && /bin/bash /tmp/library-scripts/docker-in-docker-debian.sh
-ENTRYPOINT ["/usr/local/share/docker-init.sh"]
-VOLUME [ "/var/lib/docker" ]
-CMD ["sleep", "infinity"]
-
 # Install Radius CLI
-RUN wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+RUN wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s edge
 
 # Download Radius Bicep extension and Radius extension.
-RUN wget -O /home/rad-vscode-bicep.vsix https://get.radapp.dev/tools/vscode/stable/rad-vscode-bicep.vsix
-RUN wget -O /home/rad-vscode.vsix https://get.radapp.dev/tools/vscode/stable/rad-vscode.vsix
+RUN wget -O /home/rad-vscode-bicep.vsix https://radiuspublic.blob.core.windows.net/tools/vscode-extensibility/edge/rad-vscode-bicep.vsix
+RUN wget -O /home/rad-vscode.vsix https://radiuspublic.blob.core.windows.net/tools/vscode/edge/rad-vscode.vsix
 
 # Setup Kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
