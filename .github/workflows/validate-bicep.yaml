@@ -9,10 +9,6 @@ on:
     branches:
       - edge
       - v*
-
-env:
-  REL_CHANNEL: '0.11'
-
 jobs:
   build:
     name: Validate Bicep Code
@@ -20,12 +16,14 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
+    - name: Parse release version and set environment variables
+      run: python ./.github/scripts/get_release_version.py
     - name: Download rad-bicep
       run: |
-        curl https://radiuspublic.blob.core.windows.net/tools/bicep/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
+        ./.github/scripts/curl-with-retries.sh https://radiuspublic.blob.core.windows.net/tools/bicep-extensibility/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
         chmod +x rad-bicep
         ./rad-bicep --version
-    - name: Verify bicep files
-      run: bash ./.github/scripts/validate-bicep.sh
+    - name: Verify Bicep files
+      run: ./.github/scripts/validate-bicep.sh
       env: 
         BICEP_PATH: .
