@@ -3,7 +3,7 @@ name: Build samples
 on:
   push:
     branches:
-      - v0.11
+      - edge
     paths:
       - 'quickstarts/**'
       - 'tutorial/**'
@@ -11,14 +11,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
-      - v0.11
+      - edge
     paths:
       - 'quickstarts/**'
       - 'tutorial/**'
       - '.github/workflows/quickstarts.yaml'
 
 env:
-  VERSION: ${{ github.event.pull_request.number || '0.11' }}
+  VERSION: ${{ github.event.pull_request.number || 'edge' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
 
