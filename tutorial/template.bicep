@@ -58,12 +58,22 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 
 resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'db'
-  location: 'global' 
+  location: 'global'
+  dependsOn: [
+    mongo
+  ]
   properties: {
     environment: app.properties.environment
     application: app.id
     secrets: {
-      connectionString: '' // Put your connection string here!
+      connectionString: 'mongodb://db:27017/db?authSource=admin'
     }
+  }
+}
+
+module mongo 'mongo-container.bicep' = {
+  name: 'mongo-module'
+  params: {
+    name: 'db'
   }
 }
