@@ -112,7 +112,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
-        DPConnectionString: '${redisKeystore.properties.host}'
+        DPConnectionString: redisKeystore.properties.host
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
@@ -132,7 +132,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
+    
     connections: {
       redis: {
         kind: 'redislabs.com/Redis'
@@ -232,7 +232,6 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {
       sql: {
         kind: 'microsoft.com/SQL'
@@ -313,7 +312,6 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {
       redis: {
         kind: 'redislabs.com/Redis'
@@ -386,7 +384,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
+    
     connections: {
       sql: {
         kind: 'microsoft.com/SQL'
@@ -447,7 +445,6 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {
       rabbitmq: {
         kind: 'rabbitmq.com/MessageQueue'
@@ -495,7 +492,6 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         }
       }
     }
-    traits: []
     connections: {
       sql: {
         kind: 'microsoft.com/SQL'
@@ -555,7 +551,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         }
       }
     }
-    traits: []
     connections: {
       rabbitmq: {
         kind: 'rabbitmq.com/MessageQueue'
@@ -621,7 +616,6 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
         }
       }
     }
-    traits: []
     connections: {}
   }
 }
@@ -683,7 +677,6 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         }
       }
     }
-    traits: []
     connections: {
       redis: {
         kind: 'redislabs.com/Redis'
@@ -747,7 +740,6 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
         }
       }
     }
-    traits: []
     connections: {
       webhooks: {
         kind: 'Http'
@@ -824,7 +816,6 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {}
   }
 }
@@ -879,7 +870,6 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {
       redis: {
         kind: 'redislabs.com/Redis'
@@ -938,7 +928,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: '${redisKeystore.properties.host}'
+        DPConnectionString: redisKeystore.properties.host
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         OrchestratorType: OCHESTRATOR_TYPE
@@ -957,7 +947,6 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {
       redis: {
         kind: 'redislabs.com/Redis'
@@ -1022,7 +1011,6 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    traits: []
     connections: {}
   }
 }
