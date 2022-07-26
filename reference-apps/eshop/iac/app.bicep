@@ -69,11 +69,9 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       sql: {
-        kind: 'microsoft.com/SQL'
         source: sqlCatalogDb.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
     }
@@ -135,39 +133,30 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
     
     connections: {
       redis: {
-        kind: 'redislabs.com/Redis'
         source: redisKeystore.id
       }
       sql: {
-        kind: 'microsoft.com/SQL'
         source: sqlIdentityDb.id
       }
       webmvc: {
-        kind: 'Http'
         source: webmvcHttp.id
       }
       webspa: {
-        kind: 'Http'
         source: webspaHttp.id
       }
       basket: {
-        kind: 'Http'
         source: basketHttp.id
       }
       ordering: {
-        kind: 'Http'
         source: orderingHttp.id
       }
       webshoppingagg: {
-        kind: 'Http'
         source: webshoppingaggHttp.id
       }
       webhooks: {
-        kind: 'Http'
         source: webhooksHttp.id
       }
       webhoolsclient: {
-        kind: 'Http'
         source: webhooksclientHttp.id
       }
     }
@@ -234,15 +223,12 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       sql: {
-        kind: 'microsoft.com/SQL'
         source: sqlOrderingDb.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
     }
@@ -314,15 +300,12 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       redis: {
-        kind: 'redislabs.com/Redis'
         source: redisBasket.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
     }
@@ -387,15 +370,12 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
     
     connections: {
       sql: {
-        kind: 'microsoft.com/SQL'
         source: sqlWebhooksDb.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
     }
@@ -447,7 +427,6 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
     }
@@ -494,11 +473,9 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
     }
     connections: {
       sql: {
-        kind: 'microsoft.com/SQL'
         source: sqlOrderingDb.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
     }
@@ -553,23 +530,18 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
     }
     connections: {
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
       ordering: {
-        kind: 'Http'
         source: orderingHttp.id
       }
       catalog: {
-        kind: 'Http'
         source: catalogHttp.id
       }
       basket: {
-        kind: 'Http'
         source: basketHttp.id
       }
     }
@@ -679,27 +651,21 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
     }
     connections: {
       redis: {
-        kind: 'redislabs.com/Redis'
         source: redisKeystore.id
       }
       rabbitmq: {
-        kind: 'rabbitmq.com/MessageQueue'
         source: rabbitmq.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
       ordering: {
-        kind: 'Http'
         source: orderingHttp.id
       }
       catalog: {
-        kind: 'Http'
         source: catalogHttp.id
       }
       basket: {
-        kind: 'Http'
         source: basketHttp.id
       }
     }
@@ -742,11 +708,9 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
     }
     connections: {
       webhooks: {
-        kind: 'Http'
         source: webhooksHttp.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
     }
@@ -872,23 +836,18 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       redis: {
-        kind: 'redislabs.com/Redis'
         source: redisKeystore.id
       }
       webshoppingagg: {
-        kind: 'Http'
         source: webshoppingaggHttp.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
       webshoppingapigw: {
-        kind: 'Http'
         source: webshoppingapigwHttp.id
       }
       orderingsignalrhub: {
-        kind: 'Http'
         source: orderingsignalrhubHttp.id
       }
     }
@@ -949,23 +908,18 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       redis: {
-        kind: 'redislabs.com/Redis'
         source: redisKeystore.id
       }
       webshoppingagg: {
-        kind: 'Http'
         source: webshoppingaggHttp.id
       }
       identity: {
-        kind: 'Http'
         source: identityHttp.id
       }
       webshoppingapigw: {
-        kind: 'Http'
         source: webshoppingapigwHttp.id
       }
       orderingsignalrhub: {
-        kind: 'Http'
         source: orderingsignalrhubHttp.id
       }
     }
