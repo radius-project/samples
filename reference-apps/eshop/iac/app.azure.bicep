@@ -45,6 +45,60 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
     environment: environmentId
   }
 }
+
+resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+  name: 'gateway'
+  location: location
+  properties: {
+    application: eshop.id
+    hostname: {
+      fullyQualifiedHostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
+    }
+    routes: [
+      {
+        path: '/identity-api'
+        destination: identityHttp.id
+      }
+      {
+        path: '/ordering-api'
+        destination: orderingHttp.id
+      }
+      {
+        path: '/basket-api'
+        destination: basketHttp.id
+      }
+      {
+        path: '/webhooks-api'
+        destination: webhooksHttp.id
+      }
+      {
+        path: '/webshoppingagg'
+        destination: webshoppingaggHttp.id
+      }
+      {
+        path: '/webshoppingapigw'
+        destination: webshoppingapigwHttp.id
+      }
+      {
+        path: '/webhooks-web'
+        destination: webhooksclientHttp.id
+      }
+      {
+        path: '/webstatus'
+        destination: webstatusHttp.id
+      }
+      {
+        path: '/'
+        destination: webspaHttp.id
+      }
+      {
+        path: '/webmvc'
+        destination: webmvcHttp.id
+      }
+    ]
+  }
+}
+
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
 resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
@@ -127,13 +181,13 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
         ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
-        MvcClient: 'http://${CLUSTERDNS}${webmvcHttp.properties.gateway.rules.webmvc.path.value}'
+        MvcClient: 'http://${CLUSTERDNS}${webmvcHttp.properties.hostname}'
         SpaClient: CLUSTERDNS
-        BasketApiClient: 'http://${CLUSTERDNS}${basketHttp.properties.gateway.rules.basket.path.value}'
-        OrderingApiClient: 'http://${CLUSTERDNS}${orderingHttp.properties.gateway.rules.ordering.path.value}'
-        WebShoppingAggClient: 'http://${CLUSTERDNS}${webshoppingaggHttp.properties.gateway.rules.webshoppingagg.path.value}'
-        WebhooksApiClient: 'http://${CLUSTERDNS}${webhooksHttp.properties.gateway.rules.webhooks.path.value}'
-        WebhooksWebClient: 'http://${CLUSTERDNS}${webhooksclientHttp.properties.gateway.rules.webhooks.path.value}'
+        BasketApiClient: 'http://${CLUSTERDNS}${basketHttp.properties.hostname}'
+        OrderingApiClient: 'http://${CLUSTERDNS}${orderingHttp.properties.hostname}'
+        WebShoppingAggClient: 'http://${CLUSTERDNS}${webshoppingaggHttp.properties.hostname}'
+        WebhooksApiClient: 'http://${CLUSTERDNS}${webhooksHttp.properties.hostname}'
+        WebhooksWebClient: 'http://${CLUSTERDNS}${webhooksclientHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -180,17 +234,7 @@ resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     port: 5105
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        identity: {
-          path: {
-            value: '/identity-api'
-          }
-        }
-      }
-    }
+    hostname: '/identity-api'
   }
 }
 
@@ -220,7 +264,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -253,17 +297,7 @@ resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     port: 5102
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        ordering: {
-          path: {
-            value: '/ordering-api'
-          }
-        }
-      }
-    }
+    hostname: '/ordering-api'
   }
 }
 
@@ -283,34 +317,34 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-    image: 'radius.azurecr.io/eshop-basket:linux-latest'
-    env: {
-      disableDefaultEnvVars: 'True'
-      ASPNETCORE_ENVIRONMENT: 'Development'
-      ASPNETCORE_URLS: 'http://0.0.0.0:80'
-      ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-      UseLoadTest: 'False'
-      PATH_BASE: '/basket-api'
-      OrchestratorType: OCHESTRATOR_TYPE
-      PORT: '80'
-      GRPC_PORT: '81'
-      AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-      ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},ssl=True,abortConnect=False,sslprotocols=tls12'
-      EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
-      identityUrl: identityHttp.properties.url
-      IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
-    }
-    ports: {
-      http: {
-        containerPort: 80
-        provides: basketHttp.id
+      image: 'radius.azurecr.io/eshop-basket:linux-latest'
+      env: {
+        disableDefaultEnvVars: 'True'
+        ASPNETCORE_ENVIRONMENT: 'Development'
+        ASPNETCORE_URLS: 'http://0.0.0.0:80'
+        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
+        UseLoadTest: 'False'
+        PATH_BASE: '/basket-api'
+        OrchestratorType: OCHESTRATOR_TYPE
+        PORT: '80'
+        GRPC_PORT: '81'
+        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
+        ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},ssl=True,abortConnect=False,sslprotocols=tls12'
+        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        identityUrl: identityHttp.properties.url
+        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
-      grpc: {
-        containerPort: 81
-        provides: basketGrpc.id
+      ports: {
+        http: {
+          containerPort: 80
+          provides: basketHttp.id
+        }
+        grpc: {
+          containerPort: 81
+          provides: basketGrpc.id
+        }
       }
     }
-  }
     connections: {
       redis: {
         source: redisBasket.id
@@ -331,17 +365,7 @@ resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     port: 5103
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        basket: {
-          path: {
-            value: '/basket-api'
-          }
-        }
-      }
-    }
+    hostname: '/basket-api'
   }
 }
 
@@ -371,7 +395,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -400,17 +424,7 @@ resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     port: 5113
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webhooks: {
-          path: {
-            value: '/webhooks-api'
-          }
-        }
-      }
-    }
+    hostname: '/webhooks-api'
   }
 }
 
@@ -536,7 +550,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         BasketUrlHC: '${basketHttp.properties.url}/hc'
         PaymentUrlHC: '${paymentHttp.properties.url}/hc'
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -568,17 +582,7 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   properties: {
     application: eshop.id
     port: 5121
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webshoppingagg: {
-          path: {
-            value: '/webshoppingagg'
-          }
-        }
-      }
-    }
+    hostname: '/webshoppingagg'
   }
 }
 
@@ -614,17 +618,7 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
   properties: {
     application: eshop.id
     port: 5202
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webshoppingapigw: {
-          path: {
-            value: '/webshoppingapigw'
-          }
-        }
-      }
-    }
+    hostname: '/webshoppingapigw'
   }
 }
 
@@ -657,7 +651,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
         IdentityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -712,10 +706,10 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webhooks-web'
         Token: 'WebHooks-Demo-Web'
-        CallBackUrl: '${CLUSTERDNS}${webhooksclientHttp.properties.gateway.rules.webhooks.path.value}'
+        CallBackUrl: '${CLUSTERDNS}${webhooksclientHttp.properties.hostname}'
         SelfUrl: webhooksclientHttp.properties.url
         WebhooksUrl: webhooksHttp.properties.url
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -741,17 +735,7 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   properties: {
     application: eshop.id
     port: 5114
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webhooks: {
-          path: {
-            value: '/webhooks-web'
-          }
-        }
-      }
-    }
+    hostname: '/webhooks-web'
   }
 }
 
@@ -810,26 +794,16 @@ resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' 
   properties: {
     application: eshop.id
     port: 8107
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webstatus: {
-          path: {
-            value: '/webstatus'
-          }
-        }
-      }
-    }
+    hostname: '/webstatus'
   }
-} 
+}
 
-  // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
-  resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
-    name: 'web-spa'
-    location: location
-    properties: {
-      application: eshop.id
+// Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
+resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'web-spa'
+  location: location
+  properties: {
+    application: eshop.id
     container: {
       image: 'eshop/webspa:${TAG}'
       env: {
@@ -843,9 +817,9 @@ resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' 
         IsClusterEnv: 'True'
         CallBackUrl: '${CLUSTERDNS}/'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
-        PurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.gateway.rules.webshoppingapigw.path.value}'
+        PurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.hostname}'
         SignalrHubUrl: orderingsignalrhubHttp.properties.url
       }
       ports: {
@@ -881,17 +855,7 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     port: 5104
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webspa: {
-          path: {
-            value: '/'
-          }
-        }
-      }
-    }
+    hostname: '/'
   }
 }
 
@@ -914,11 +878,11 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        CallBackUrl: '${CLUSTERDNS}${webmvcHttp.properties.gateway.rules.webmvc.path.value}'
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.gateway.rules.identity.path.value}'
+        CallBackUrl: '${CLUSTERDNS}${webmvcHttp.properties.hostname}'
+        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: webshoppingapigwHttp.properties.url
-        ExternalPurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.gateway.rules.webshoppingapigw.path.value}'
+        ExternalPurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.hostname}'
         SignalrHubUrl: orderingsignalrhubHttp.properties.url
       }
       ports: {
@@ -954,17 +918,7 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     port: 5100
-    gateway: {
-      source: gateway.id
-      hostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-      rules: {
-        webmvc: {
-          path: {
-            value: '/webmvc'
-          }
-        }
-      }
-    }
+    hostname: '/webmvc'
   }
 }
 
@@ -1000,20 +954,6 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
     port: 5340
   }
 }
-
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
-    name: 'gateway'
-    location: location
-    properties: {
-      application: eshop.id
-      routes: [
-        http: {
-          protocol: 'HTTP'
-          port: 80
-        }
-      ]
-    }
-  }
 
 resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-identitydb'
