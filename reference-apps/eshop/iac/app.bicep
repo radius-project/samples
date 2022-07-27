@@ -43,6 +43,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/catalog.api:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -105,6 +106,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/identity.api:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -130,7 +132,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    
+
     connections: {
       redis: {
         source: redisKeystore.id
@@ -192,6 +194,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/ordering.api:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
@@ -273,6 +276,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/basket.api:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
@@ -350,6 +354,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webhooks.api:linux-dev'
       env: {
+        disableDefaultEnvVars: 'True'
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -367,7 +372,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    
+
     connections: {
       sql: {
         source: sqlWebhooksDb.id
@@ -411,6 +416,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/payment.api:linux-dev'
       env: {
+        disableDefaultEnvVars: 'True'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
@@ -451,6 +457,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
     container: {
       image: 'eshop/ordering.backgroundtasks:linux-dev'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
@@ -502,6 +509,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'eshop/webshoppingagg:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -576,7 +584,9 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
     application: eshop.id
     container: {
       image: 'radius.azurecr.io/eshop-envoy:0.1.3'
-      env: {}
+      env: {
+        disableDefaultEnvVars: 'True'
+      }
       ports: {
         http: {
           containerPort: 80
@@ -630,6 +640,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
     container: {
       image: 'eshop/ordering.signalrhub:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -690,6 +701,7 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'eshop/webhooks.client:linux-dev'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webhooks-web'
@@ -748,6 +760,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webstatus:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         HealthChecksUI__HealthChecks__0__Name: 'WebMVC HTTP Check'
@@ -813,6 +826,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webspa:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -883,6 +897,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webmvc:${TAG}'
       env: {
+        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
@@ -956,6 +971,7 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'datalust/seq:latest'
       env: {
+        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
       }
       ports: {
@@ -977,8 +993,6 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
     port: 5340
   }
 }
-
-// Gateway --------------------------------------------
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
@@ -1002,6 +1016,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
     container: {
       image: 'rabbitmq:3.9'
       env: {
+        disableDefaultEnvVars: 'True'
         //RABBITMQ_DEFAULT_USER: username
         //RABBITMQ_DEFAULT_PASS: password
       }
@@ -1045,6 +1060,7 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
+        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1087,6 +1103,7 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
+        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1129,6 +1146,7 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
+        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1171,6 +1189,7 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
+        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1212,6 +1231,9 @@ resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepr
     application: eshop.id
     container: {
       image: 'redis:6.2'
+      env: {
+        disableDefaultEnvVars: 'True'
+      }
       ports: {
         redis: {
           containerPort: 6379
@@ -1253,6 +1275,9 @@ resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-private
     application: eshop.id
     container: {
       image: 'redis:6.2'
+      env: {
+        disableDefaultEnvVars: 'True'
+      }
       ports: {
         redis: {
           containerPort: 6379
@@ -1294,6 +1319,7 @@ resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'mongo:4.2'
       env: {
+        disableDefaultEnvVars: 'True'
         MONGO_INITDB_ROOT_USERNAME: mongoUsername
         MONGO_INITDB_ROOT_PASSWORD: mongoPassword
       }
