@@ -1,47 +1,79 @@
-resource app 'radius.dev/Application@v1alpha3' = {
+import radius as radius
+
+param environment string
+
+resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'webapp'
-
-  resource todoapplication 'Container' = {
-    name: 'todoapp'
-    properties: {
-      container: {
-        image: 'radius.azurecr.io/webapptutorial-todoapp'
-        ports: {
-          web: {
-            containerPort: 3000
-            provides: httpRoute.id
-          }
-        }
-        env: {
-          DBCONNECTION: db.connectionString()
-        }
-      }
-      connections: {
-        todoitems: {
-          kind: 'mongo.com/MongoDB'
-          source: db.id
-        }
-      }
-    }
-    dependsOn: [
-      dbStarter
-    ]
+  location: 'global'
+  properties: {
+    environment: environment
   }
-
-  resource httpRoute 'HttpRoute' = {
-    name: 'http-route'
-  }
-
-  resource db 'mongo.com.MongoDatabase' existing = {
-    name: 'db'
-  }
-
 }
 
-module dbStarter 'br:radius.azurecr.io/starters/mongo:latest' = {
-  name: 'db-starter'
+resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'frontend'
+  location: 'global'
+  properties: {
+    application: app.id
+    container: {
+      image: 'radius.azurecr.io/webapptutorial-todoapp'
+      ports: {
+        web: {
+          containerPort: 3000
+          provides: frontendRoute.id
+        }
+      }
+      env: {
+        DBCONNECTION: db.connectionString()
+      }
+    }
+    connections: {
+      itemstore: {
+        source: db.id
+      }
+    }
+  }
+}
+
+resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
+  name: 'http-route'
+  location: 'global'
+  properties: {
+    application: app.id
+  }
+}
+
+resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+  name: 'public'
+  location: 'global'
+  properties: {
+    application: app.id
+    routes: [
+      {
+         destination: frontendRoute.id
+      }
+    ]
+  }
+}
+
+resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
+  name: 'db'
+  location: 'global'
+  dependsOn: [
+    mongo
+  ]
+  properties: {
+    environment: app.properties.environment
+    application: app.id
+    secrets: {
+      connectionString: 'mongodb://db:27017/db?authSource=admin'
+    }
+  }
+}
+
+module mongo 'mongo-container.bicep' = {
+  name: 'mongo-module'
   params: {
-    dbName: 'db'
-    radiusApplication: app 
+    name: 'db'
   }
 }

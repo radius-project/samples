@@ -3,7 +3,7 @@
 {
 	"name": "Radius Sample Container",
     
-    "image": "radius.azurecr.io/devcontainer/samples:0.11",
+    "image": "radius.azurecr.io/devcontainer/samples:0.12",
 
     // Set *default* container specific settings.json values on container create.
     "settings": {
@@ -31,8 +31,10 @@
 	
 	"overrideCommand": false,
 	
-	"postStartCommand": "rad env init dev",
-
+	"postCreateCommand": "k3d cluster delete && k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0' --volume '/etc/resolv.conf:/etc/resolv.conf@server:0' && rad env init kubernetes --public-endpoint-override 'http://localhost:8081'",
+	"forwardPorts": [
+		"8081:8081"
+	],
     // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "codespace"
 }
