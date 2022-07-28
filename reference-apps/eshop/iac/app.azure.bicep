@@ -1,16 +1,11 @@
 import radius as radius
 
 // Parameters --------------------------------------------
-param environmentId string
+param environment string
 
-param location string = resourceGroup().location
+param ucpLocation string = 'global'
+param azureLocation string = resourceGroup().location
 
-param mongoUsername string = 'admin'
-
-param mongoPassword string = newGuid()
-
-param ESHOP_EXTERNAL_DNS_NAME_OR_IP string = '*'
-param CLUSTER_IP string
 param OCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
@@ -18,42 +13,25 @@ param AZURESERVICEBUSENABLED string = 'True'
 param ENABLEDEVSPACES string = 'False'
 param TAG string = 'linux-dev'
 
-var CLUSTERDNS = 'http://${CLUSTER_IP}.nip.io'
-var PICBASEURL = '${CLUSTERDNS}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
+var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
 param adminLogin string = 'sqladmin'
 @secure()
-param adminPassword string
-
-resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' existing = {
-  name: 'eshop${uniqueString(resourceGroup().id)}'
-
-  resource topic 'topics' existing = {
-    name: 'eshop_event_bus'
-
-    resource rootRule 'authorizationRules' existing = {
-      name: 'Root'
-    }
-  }
-
-}
+param adminPassword string = newGuid()
 
 resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshop'
-  location: location
+  location: ucpLocation
   properties: {
-    environment: environmentId
+    environment: environment
   }
 }
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    hostname: {
-      fullyQualifiedHostname: ESHOP_EXTERNAL_DNS_NAME_OR_IP
-    }
     routes: [
       {
         path: '/identity-api'
@@ -102,13 +80,12 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
 resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/catalog.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -145,7 +122,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5101
@@ -154,7 +131,7 @@ resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-grpc'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 9101
@@ -164,13 +141,12 @@ resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/identity-api
 resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'identity-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/identity.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -181,13 +157,13 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
         ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
-        MvcClient: 'http://${CLUSTERDNS}${webmvcHttp.properties.hostname}'
-        SpaClient: CLUSTERDNS
-        BasketApiClient: 'http://${CLUSTERDNS}${basketHttp.properties.hostname}'
-        OrderingApiClient: 'http://${CLUSTERDNS}${orderingHttp.properties.hostname}'
-        WebShoppingAggClient: 'http://${CLUSTERDNS}${webshoppingaggHttp.properties.hostname}'
-        WebhooksApiClient: 'http://${CLUSTERDNS}${webhooksHttp.properties.hostname}'
-        WebhooksWebClient: 'http://${CLUSTERDNS}${webhooksclientHttp.properties.hostname}'
+        MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
+        SpaClient: gateway.properties.url
+        BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'
+        OrderingApiClient: '${gateway.properties.url}/${orderingHttp.properties.hostname}'
+        WebShoppingAggClient: '${gateway.properties.url}/${webshoppingaggHttp.properties.hostname}'
+        WebhooksApiClient: '${gateway.properties.url}/${webhooksHttp.properties.hostname}'
+        WebhooksWebClient: '${gateway.properties.url}/${webhooksclientHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -230,24 +206,22 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'identity-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5105
-    hostname: '/identity-api'
   }
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
 resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/ordering.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
@@ -264,7 +238,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -293,17 +267,16 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5102
-    hostname: '/ordering-api'
   }
 }
 
 resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-grpc'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 9102
@@ -313,13 +286,12 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/basket-api
 resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'basket-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'radius.azurecr.io/eshop-basket:linux-latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
@@ -332,7 +304,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},ssl=True,abortConnect=False,sslprotocols=tls12'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -361,17 +333,16 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5103
-    hostname: '/basket-api'
   }
 }
 
 resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-grpc'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 9103
@@ -381,13 +352,12 @@ resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
 resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webhooks.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: OCHESTRATOR_TYPE
@@ -395,7 +365,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -420,24 +390,22 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooks-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5113
-    hostname: '/webhooks-api'
   }
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/payment-api
 resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/payment.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
@@ -464,7 +432,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'payment-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5108
@@ -474,13 +442,12 @@ resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
 resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-backgroundtasks'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/ordering.backgroundtasks:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/ordering-backgroundtasks'
@@ -515,7 +482,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 
 resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderbgtasks-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5111
@@ -527,13 +494,12 @@ resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privateprevie
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingagg'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webshoppingagg:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -550,7 +516,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         BasketUrlHC: '${basketHttp.properties.url}/hc'
         PaymentUrlHC: '${paymentHttp.properties.url}/hc'
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -578,25 +544,22 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingagg-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5121
-    hostname: '/webshoppingagg'
   }
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
 resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'radius.azurecr.io/eshop-envoy:0.1.3'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
+      env: {}
       ports: {
         http: {
           containerPort: 80
@@ -614,17 +577,16 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
 
 resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5202
-    hostname: '/webshoppingapigw'
   }
 }
 
 resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http-2'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 15202
@@ -634,13 +596,12 @@ resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatep
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
 resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-signalrhub'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/ordering.signalrhub:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/ordering-signalrhub'
@@ -651,7 +612,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
         IdentityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -685,7 +646,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
 
 resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderingsignalrhub-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5112
@@ -695,21 +656,20 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
 resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-client'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webhooks.client:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webhooks-web'
         Token: 'WebHooks-Demo-Web'
-        CallBackUrl: '${CLUSTERDNS}${webhooksclientHttp.properties.hostname}'
+        CallBackUrl: '${gateway.properties.url}/${webhooksclientHttp.properties.hostname}'
         SelfUrl: webhooksclientHttp.properties.url
         WebhooksUrl: webhooksHttp.properties.url
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrl: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
         http: {
@@ -731,11 +691,10 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooksclient-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5114
-    hostname: '/webhooks-web'
   }
 }
 
@@ -744,13 +703,12 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webstatus
 resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webstatus'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webstatus:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webstatus'
@@ -790,24 +748,22 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webstatus-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 8107
-    hostname: '/webstatus'
   }
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
 resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'web-spa'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webspa:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -815,11 +771,11 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        CallBackUrl: '${CLUSTERDNS}/'
+        CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
-        PurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.hostname}'
+        PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
         SignalrHubUrl: orderingsignalrhubHttp.properties.url
       }
       ports: {
@@ -851,24 +807,22 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webspa-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5104
-    hostname: '/'
   }
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
 resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webmvc'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'eshop/webmvc:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
@@ -878,11 +832,11 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        CallBackUrl: '${CLUSTERDNS}${webmvcHttp.properties.hostname}'
-        IdentityUrl: '${CLUSTERDNS}${identityHttp.properties.hostname}'
+        ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
+        CallBackUrl: '${gateway.properties.url}/webmvc'
+        IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: webshoppingapigwHttp.properties.url
-        ExternalPurchaseUrl: '${CLUSTERDNS}${webshoppingapigwHttp.properties.hostname}'
         SignalrHubUrl: orderingsignalrhubHttp.properties.url
       }
       ports: {
@@ -914,11 +868,10 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webmvc-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5100
-    hostname: '/webmvc'
   }
 }
 
@@ -926,13 +879,12 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     container: {
       image: 'datalust/seq:latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
       }
       ports: {
@@ -948,313 +900,327 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-http'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
     port: 5340
   }
 }
 
-resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-identitydb'
-  location: location
+// Infrastructure --------------------------------------
+
+resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
+  name: 'eshopsb${uniqueString(resourceGroup().id)}'
+  location: azureLocation
+  sku: {
+    name: 'Standard'
+    tier: 'Standard'
+  }
+
+  resource topic 'topics' = {
+    name: 'eshop_event_bus'
+    properties: {
+      defaultMessageTimeToLive: 'P14D'
+      maxSizeInMegabytes: 1024
+      requiresDuplicateDetection: false
+      enableBatchedOperations: true
+      supportOrdering: false
+      enablePartitioning: true
+      enableExpress: false
+    }
+
+    resource rootRule 'authorizationRules' = {
+      name: 'Root'
+      properties: {
+        rights: [
+          'Manage'
+          'Send'
+          'Listen'
+        ]
+      }
+    }
+
+    resource basket 'subscriptions' = {
+      name: 'Basket'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource catalog 'subscriptions' = {
+      name: 'Catalog'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource ordering 'subscriptions' = {
+      name: 'Ordering'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource graceperiod 'subscriptions' = {
+      name: 'GracePeriod'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource payment 'subscriptions' = {
+      name: 'Payment'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource backgroundTasks 'subscriptions' = {
+      name: 'backgroundtasks'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource OrderingSignalrHub 'subscriptions' = {
+      name: 'Ordering.signalrhub'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+    resource webhooks 'subscriptions' = {
+      name: 'Webhooks'
+      properties: {
+        requiresSession: false
+        defaultMessageTimeToLive: 'P14D'
+        deadLetteringOnMessageExpiration: true
+        deadLetteringOnFilterEvaluationExceptions: true
+        maxDeliveryCount: 10
+        enableBatchedOperations: true
+      }
+    }
+
+  }
+
+}
+
+resource sql 'Microsoft.Sql/servers@2021-02-01-preview' = {
+  name: 'eshopsql${uniqueString(resourceGroup().id)}'
+  location: azureLocation
   properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        disableDefaultEnvVars: 'True'
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlIdentityRoute.id
-        }
-      }
+    administratorLogin: adminLogin
+    administratorLoginPassword: adminPassword
+  }
+
+  // Allow communication from all other Azure resources
+  resource allowAzureResources 'firewallRules' = {
+    name: 'allow-azure-resources'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '0.0.0.0'
+    }
+  }
+
+  resource identityDb 'databases' = {
+    name: 'IdentityDb'
+    location: azureLocation
+    sku: {
+      name: 'Standard'
+      tier: 'Standard'
+    }
+  }
+
+  resource catalogDb 'databases' = {
+    name: 'CatalogDb'
+    location: azureLocation
+    sku: {
+      name: 'Standard'
+      tier: 'Standard'
+    }
+  }
+
+  resource orderingDb 'databases' = {
+    name: 'OrderingDb'
+    location: azureLocation
+    sku: {
+      name: 'Standard'
+      tier: 'Standard'
+    }
+  }
+
+  resource webhooksDb 'databases' = {
+    name: 'WebhooksDb'
+    location: azureLocation
+    sku: {
+      name: 'Standard'
+      tier: 'Standard'
+    }
+  }
+
+}
+
+resource keystoreCache 'Microsoft.Cache/redis@2020-12-01' = {
+  name: 'eshopkeystore${uniqueString(resourceGroup().id)}'
+  location: azureLocation
+  properties: {
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    sku: {
+      family: 'C'
+      capacity: 1
+      name: 'Basic'
     }
   }
 }
 
-resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-identitydb'
-  location: location
+resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
+  name: 'eshopbasket${uniqueString(resourceGroup().id)}'
+  location: azureLocation
   properties: {
-    application: eshop.id
-    port: 1433
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    sku: {
+      family: 'C'
+      capacity: 1
+      name: 'Basic'
+    }
   }
 }
+
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
+  name: 'eshopcosmos${uniqueString(resourceGroup().id)}'
+  location: azureLocation
+  kind: 'MongoDB'
+  properties: {
+    databaseAccountOfferType: 'Standard'
+    consistencyPolicy: {
+      defaultConsistencyLevel: 'Session'
+    }
+    locations: [
+      {
+        locationName: azureLocation
+      }
+    ]
+  }
+
+  resource cosmosDb 'mongodbDatabases' = {
+    name: 'mongo'
+    properties: {
+      resource: {
+        id: 'mongo'
+      }
+      options: {
+        throughput: 400
+      }
+    }
+  }
+
+}
+
+// Connectors ----------------------------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    server: sqlIdentityRoute.properties.hostname
-    database: 'IdentityDb'
-  }
-}
-
-resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-catalogdb'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        disableDefaultEnvVars: 'True'
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlCatalogRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-catalogdb'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 1433
+    environment: environment
+    resource: sql::identityDb.id
   }
 }
 
 resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    server: sqlCatalogRoute.properties.hostname
-    database: 'CatalogDb'
-  }
-}
-
-resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-orderingdb'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        disableDefaultEnvVars: 'True'
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlOrderingRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-orderingdb'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 1433
+    environment: environment
+    resource: sql::catalogDb.id
   }
 }
 
 resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    server: sqlOrderingRoute.properties.hostname
-    database: 'OrderingDb'
-  }
-}
-
-resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-webhooksdb'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        disableDefaultEnvVars: 'True'
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlWebhooksRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-webhooksdb'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 1433
+    environment: environment
+    resource: sql::orderingDb.id
   }
 }
 
 resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    server: sqlWebhooksRoute.properties.hostname
-    database: 'WebhooksDb'
-  }
-}
-
-resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-basket-data'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisBasketRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-basket-data'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 6379
+    environment: environment
+    resource: sql::webhooksDb.id
   }
 }
 
 resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    host: redisBasketRoute.properties.hostname
-    port: redisBasketRoute.properties.port
-    secrets: {
-      connectionString: '${redisBasketRoute.properties.hostname}:${redisBasketRoute.properties.port},password=},ssl=True,abortConnect=False'
-      password: ''
-    }
-  }
-}
-
-resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-keystore-data'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisKeystoreRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-keystore-data'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 6379
+    environment: environment
+    resource: basketCache.id
   }
 }
 
 resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    host: redisKeystoreRoute.properties.hostname
-    port: redisKeystoreRoute.properties.port
-    secrets: {
-      connectionString: '${redisKeystoreRoute.properties.hostname}:${redisKeystoreRoute.properties.port},password=},ssl=True,abortConnect=False'
-      password: ''
-    }
-  }
-}
-resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'mongo-container'
-  location: location
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mongo:4.2'
-      env: {
-        disableDefaultEnvVars: 'True'
-        MONGO_INITDB_ROOT_USERNAME: mongoUsername
-        MONGO_INITDB_ROOT_PASSWORD: mongoPassword
-      }
-      ports: {
-        mongo: {
-          containerPort: 27017
-          provides: mongoRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource mongoRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'mongo-route'
-  location: location
-  properties: {
-    application: eshop.id
-    port: 27017
+    environment: environment
+    resource: keystoreCache.id
   }
 }
 
 resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'mongo'
-  location: location
+  location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environmentId
-    secrets: {
-      connectionString: 'mongodb://${mongoUsername}:${mongoPassword}@${mongoRoute.properties.hostname}:${mongoRoute.properties.port}'
-      username: mongoUsername
-      password: mongoPassword
-    }
+    environment: environment
+    resource: cosmosAccount::cosmosDb.id
   }
 }

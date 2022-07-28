@@ -87,7 +87,6 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/catalog.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -150,7 +149,6 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/identity.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -226,7 +224,6 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/ordering.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
@@ -297,7 +294,6 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/basket.api:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
@@ -364,7 +360,6 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webhooks.api:linux-dev'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -415,7 +410,6 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/payment.api:linux-dev'
       env: {
-        disableDefaultEnvVars: 'True'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
@@ -456,7 +450,6 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
     container: {
       image: 'eshop/ordering.backgroundtasks:linux-dev'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
@@ -508,7 +501,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'eshop/webshoppingagg:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -561,7 +553,6 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   properties: {
     application: eshop.id
     port: 5121
-    //hostname: '/webshoppingagg'
   }
 }
 
@@ -573,9 +564,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
     application: eshop.id
     container: {
       image: 'radius.azurecr.io/eshop-envoy:0.1.3'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
+      env: {}
       ports: {
         http: {
           containerPort: 80
@@ -597,7 +586,6 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
   properties: {
     application: eshop.id
     port: 5202
-    //hostname: '/webshoppingapigw'
   }
 }
 
@@ -619,7 +607,6 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
     container: {
       image: 'eshop/ordering.signalrhub:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -680,7 +667,6 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'eshop/webhooks.client:linux-dev'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webhooks-web'
@@ -729,7 +715,6 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webstatus:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         HealthChecksUI__HealthChecks__0__Name: 'WebMVC HTTP Check'
@@ -772,7 +757,6 @@ resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' 
   properties: {
     application: eshop.id
     port: 8107
-    //hostname: '/webstatus'
   }
 }
 
@@ -785,7 +769,6 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webspa:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -795,9 +778,9 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: redisKeystore.properties.host
-        IdentityUrl: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
-        PurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
+        PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
         SignalrHubUrl: orderingsignalrhubHttp.properties.url
       }
       ports: {
@@ -833,7 +816,6 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     port: 5104
-    //hostname: '/'
   }
 }
 
@@ -846,7 +828,6 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'eshop/webmvc:${TAG}'
       env: {
-        disableDefaultEnvVars: 'True'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
@@ -896,7 +877,6 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     port: 5100
-    //hostname: '/webmvc'
   }
 }
 
@@ -910,7 +890,6 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'datalust/seq:latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
       }
       ports: {
@@ -940,11 +919,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
     application: eshop.id
     container: {
       image: 'rabbitmq:3.9'
-      env: {
-        disableDefaultEnvVars: 'True'
-        //RABBITMQ_DEFAULT_USER: username
-        //RABBITMQ_DEFAULT_PASS: password
-      }
+      env: {}
       ports: {
         rabbitmq: {
           containerPort: 5672
@@ -985,7 +960,6 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1028,7 +1002,6 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1071,7 +1044,6 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1114,7 +1086,6 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
     container: {
       image: 'mcr.microsoft.com/mssql/server:2019-latest'
       env: {
-        disableDefaultEnvVars: 'True'
         ACCEPT_EULA: 'Y'
         MSSQL_PID: 'Developer'
         MSSQL_SA_PASSWORD: adminPassword
@@ -1156,9 +1127,7 @@ resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepr
     application: eshop.id
     container: {
       image: 'redis:6.2'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
+      env: {}
       ports: {
         redis: {
           containerPort: 6379
@@ -1200,9 +1169,7 @@ resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-private
     application: eshop.id
     container: {
       image: 'redis:6.2'
-      env: {
-        disableDefaultEnvVars: 'True'
-      }
+      env: {}
       ports: {
         redis: {
           containerPort: 6379
@@ -1245,7 +1212,6 @@ resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview'
     container: {
       image: 'mongo:4.2'
       env: {
-        disableDefaultEnvVars: 'True'
         MONGO_INITDB_ROOT_USERNAME: mongoUsername
         MONGO_INITDB_ROOT_PASSWORD: mongoPassword
       }
