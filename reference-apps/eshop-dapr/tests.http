@@ -1,0 +1,10 @@
+@host = gateway.eshopondapr.20.86.200.245.nip.io
+
+### Catalog Brands
+GET http://{{host}}/api/c/api/v1/catalog/brands
+
+### Catalog Pictures
+GET http://{{host}}/api/c/pics/15.png
+
+### Identity API OpenID configuration
+GET http://{{host}}/identity/.well-known/openid-configuration
