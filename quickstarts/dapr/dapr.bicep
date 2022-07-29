@@ -35,7 +35,7 @@ resource nodeapplication 'Applications.Core/containers@2022-03-15-privatepreview
       }
     }
     connections: {
-      statestore: {
+      orders: {
         source: statestore.id
       }
     }
