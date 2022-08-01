@@ -4,7 +4,10 @@ import kubernetes as kubernetes {
 }
 
 param namespace string = 'default'
-param name string
+param name string = 'mongo'
+param dbName string = 'db'
+
+var port = 27017
 
 resource statefulset 'apps/StatefulSet@v1' = {
   metadata: {
@@ -43,7 +46,7 @@ resource statefulset 'apps/StatefulSet@v1' = {
             env: [
               {
                 name: 'MONGO_INITDB_DATABASE'
-                value: name
+                value: dbName
               }
             ]
             securityContext: {
@@ -51,7 +54,7 @@ resource statefulset 'apps/StatefulSet@v1' = {
             }
             ports: [
               {
-                containerPort: 27017
+                containerPort: port
               }
             ]
             volumeMounts: [
@@ -152,7 +155,7 @@ resource secret 'core/Secret@v1' = {
   }
   stringData: {
     database: name
-    connectionString: 'mongodb://${name}.${namespace}.svc.cluster.local:27017/${name}?authSource=admin'
+    connectionString: 'mongodb://${name}.${namespace}.svc.cluster.local:${port}/${dbName}?authSource=admin'
   }
 }
 
@@ -167,7 +170,7 @@ resource service 'core/Service@v1' = {
     clusterIP: 'None'
     ports: [
       {
-        port: 27017
+        port: port
       }
     ]
     selector: {
@@ -175,3 +178,7 @@ resource service 'core/Service@v1' = {
     }
   }
 }
+
+output name string = name
+output dbName string = dbName
+output port int = port

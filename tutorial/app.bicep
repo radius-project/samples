@@ -2,6 +2,8 @@ import radius as radius
 
 param environment string
 
+
+
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'webapp'
   location: 'global'
@@ -22,9 +24,6 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
           containerPort: 3000
           provides: frontendRoute.id
         }
-      }
-      env: {
-        DBCONNECTION: db.connectionString()
       }
     }
     connections: {
@@ -50,7 +49,8 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
     application: app.id
     routes: [
       {
-         destination: frontendRoute.id
+        path: '/'
+        destination: frontendRoute.id
       }
     ]
   }
@@ -59,21 +59,13 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'db'
   location: 'global'
-  dependsOn: [
-    mongo
-  ]
   properties: {
     environment: app.properties.environment
     application: app.id
-    secrets: {
-      connectionString: 'mongodb://db:27017/db?authSource=admin'
-    }
+    resource: mongo.outputs.dbName
   }
 }
 
-module mongo 'mongo-container.bicep' = {
+module mongo 'azure-cosmosdb.bicep' = {
   name: 'mongo-module'
-  params: {
-    name: 'webappdb'
-  }
 }

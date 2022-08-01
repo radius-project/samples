@@ -4,6 +4,7 @@ param location string = resourceGroup().location
 
 param name string = 'todoapp-cosmos-${uniqueString(resourceGroup().id)}'
 
+var port =27017
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: toLower(name)
@@ -35,3 +36,5 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   }
 
 }
+
+output dbName string = cosmosAccount::cosmosDb.id
