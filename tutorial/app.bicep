@@ -74,6 +74,6 @@ resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = 
 module mongo 'mongo-container.bicep' = {
   name: 'mongo-module'
   params: {
-    name: 'db'
+    name: 'webappdb'
   }
 }
