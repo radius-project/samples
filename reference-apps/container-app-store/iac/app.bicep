@@ -1,13 +1,25 @@
+import radius as radius
+
 param go_service_build object
 param node_service_build object
 param python_service_build object
+param environment string
 
-resource app 'radius.dev/Application@v1alpha3' existing = {
+
+resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'store'
+  location: 'global'
+  properties: {
+    environment: environment
+  }
 
-  resource go_app 'Container' = {
+}
+
+  resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
     name: 'go-app'
+    location: 'global'
     properties: {
+      application: app.id
       container: {
         image: go_service_build.image
         ports: {
@@ -16,9 +28,9 @@ resource app 'radius.dev/Application@v1alpha3' existing = {
           }
         }
       }
-      traits: [
+      extensions: [
         {
-          kind: 'dapr.io/Sidecar@v1alpha1'
+          kind: 'daprSidecar'
           appId: 'go-app'
           appPort: 8050
           provides: go_app_route.id
@@ -27,25 +39,42 @@ resource app 'radius.dev/Application@v1alpha3' existing = {
     }
   }
 
-  resource go_app_route 'dapr.io.InvokeHttpRoute' = {
+  resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
     name: 'go-app'
+    location: 'global'
     properties: {
+      application: app.id
+      environment: environment
       appId: 'go-app'
     }
   }
 
-  resource node_app_route 'HttpRoute' = {
+  resource node_app_route 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
     name: 'node-app'
+    location: 'global'
     properties: {
-      gateway: {
-        hostname: '*'
-      }
+      application: app.id
     }
   }
 
-  resource node_app 'Container' = {
-    name: 'node-app'
+  resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+    name: 'node-app-gateway'
+    location: 'global'
     properties: {
+      application: app.id
+      routes: [ 
+        {
+          path: '/'
+          destination: node_app_route.id
+        }
+    ]
+    }
+  }
+  resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
+    name: 'node-app'
+    location: 'global'
+    properties: {
+      application: app.id
       container: {
         image: node_service_build.image
         env: {
@@ -61,26 +90,26 @@ resource app 'radius.dev/Application@v1alpha3' existing = {
       }
       connections: {
         inventory: {
-          kind: 'dapr.io/InvokeHttp'
           source: go_app_route.id
         }
         orders: {
-          kind: 'dapr.io/InvokeHttp'
           source: python_app_route.id
         }
       }
-      traits: [
+      extensions: [
         {
-          kind: 'dapr.io/Sidecar@v1alpha1'
+          kind: 'daprSidecar'
           appId: 'node-app'
         }
       ]
     }
   }
 
-  resource python_app 'Container' = {
+  resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
     name: 'python-app'
+    location: 'global'
     properties: {
+      application: app.id
       container: {
         image: python_service_build.image
         ports: {
@@ -91,13 +120,12 @@ resource app 'radius.dev/Application@v1alpha3' existing = {
       }
       connections: {
         kind: {
-          kind: 'dapr.io/StateStore'
           source: statestore.id
         }
       }
-      traits: [
+      extensions: [
         {
-          kind: 'dapr.io/Sidecar@v1alpha1'
+          kind: 'daprSidecar'
           appId: 'python-app'
           appPort: 5000
           provides: python_app_route.id
@@ -106,14 +134,23 @@ resource app 'radius.dev/Application@v1alpha3' existing = {
     }
   }
 
-  resource python_app_route 'dapr.io.InvokeHttpRoute' = {
+  resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
     name: 'python-app'
+    location: 'global'
     properties: {
+      application: app.id
+      environment: environment
       appId: 'python-app'
     }
   }
 
-  resource statestore 'dapr.io.StateStore' existing = {
+  resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
     name: 'orders'
+    location: 'global'
+    properties: {
+      kind: 'state.azure.tablestorage'
+      environment: environment
+      resource: //table.id
+    }
   }
-}
+
