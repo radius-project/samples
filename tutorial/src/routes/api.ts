@@ -83,7 +83,7 @@ export const register = (app: express.Application) => {
 
 function connectToDb(connectionString: string | null): Promise<Repository> {
     if (connectionString){
-        console.log("connecting with database connection");
+        console.log("connecting with a database connection");
         return connect(connectionString).then(value => new MongoRepository(value));
     } else {
         console.log("connecting without a database connection");
