@@ -4,30 +4,20 @@ param location string = resourceGroup().location
 param environment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
-  name: 'dapr-hello'
+  name: 'dapr-quickstart'
   location: location
   properties: {
     environment: environment
   }
 }
 
-resource nodeapplication_dapr 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'nodeapp'
-  location: location
-  properties: {
-    environment: environment
-    application: app.id
-    appId: 'nodeapp'
-  }
-}
-
-resource nodeapplication 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'nodeapp'
+resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'backend'
   location: location
   properties: {
     application: app.id
     container: {
-      image: 'radiusteam/tutorial-nodeapp'
+      image: 'radius.azurecr.io/daprtutorial-backend:latest'
       ports: {
         web: {
           containerPort: 3000
@@ -35,38 +25,76 @@ resource nodeapplication 'Applications.Core/containers@2022-03-15-privatepreview
       }
     }
     connections: {
-      statestore: {
-        source: statestore.id
+      orders: {
+        source: stateStore.id
       }
     }
     extensions: [
       {
         kind: 'daprSidecar'
-        provides: nodeapplication_dapr.id
-        appId: 'nodeapp'
+        provides: backendRoute.id
+        appId: 'backend'
         appPort: 3000
       }
     ]
   }
 }
 
-resource pythonapplication 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'pythonapp'
+resource backendRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+  name: 'backend-route'
+  location: location
+  properties: {
+    environment: environment
+    application: app.id
+    appId: 'backend'
+  }
+}
+
+resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'frontend'
   location: location
   properties: {
     application: app.id
-    connections: {
-      nodeapp: {
-        source: nodeapplication_dapr.id
+    container: {
+      image: 'radius.azurecr.io/daprtutorial-frontend:latest'
+      ports: {
+        ui: {
+          containerPort: 80
+          provides: frontendRoute.id
+        }
       }
     }
-    container: {
-      image: 'radiusteam/tutorial-pythonapp'
+    connections: {
+      backend: {
+        source: backendRoute.id
+      }
     }
     extensions: [
       {
         kind: 'daprSidecar'
-        appId: 'pythonapp'
+        appId: 'frontend'
+      }
+    ]
+  }
+}
+
+resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
+  name: 'frontend-route'
+  location: location
+  properties: {
+    application: app.id
+  }
+}
+
+resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+  name: 'gateway'
+  location: location
+  properties: {
+    application: app.id
+    routes: [
+      {
+        path: '/'
+        destination: frontendRoute.id
       }
     ]
   }
@@ -98,7 +126,7 @@ resource redisRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
+resource stateStore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
   name: 'statestore'
   location: location
   properties: {
