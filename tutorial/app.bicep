@@ -2,8 +2,6 @@ import radius as radius
 
 param environment string
 
-
-
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'webapp'
   location: 'global'
@@ -18,7 +16,7 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/webapptutorial-todoapp'
+      image: 'radius.azurecr.io/tutorial/webapp:edge'
       ports: {
         web: {
           containerPort: 3000
@@ -62,10 +60,12 @@ resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = 
   properties: {
     environment: app.properties.environment
     application: app.id
-    resource: mongo.outputs.dbName
+    secrets: {
+      connectionString: 'mongodb://${mongo.outputs.name}:${mongo.outputs.port}/${mongo.outputs.dbName}?authSource=admin'
+    }
   }
 }
 
-module mongo 'azure-cosmosdb.bicep' = {
+module mongo 'mongo-container.bicep' = {
   name: 'mongo-module'
 }
