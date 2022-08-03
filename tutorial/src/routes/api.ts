@@ -20,9 +20,9 @@ interface Repository {
 const items = <Item[]>[]
 
 export const register = (app: express.Application) => {
-    const respository = connectToDb(app.get("connectionString"))
 
     app.get(`/api/todos`, async (req, res) => {
+        const respository = connectToDb(app.get("connectionString"))
         const repo = await respository;
         const items = await repo.list()
 
@@ -36,6 +36,7 @@ export const register = (app: express.Application) => {
     });
 
     app.get(`/api/todos/:id`, async (req, res) => {
+        const respository = connectToDb(app.get("connectionString"))
         const id = req.params.id;
         const item = await (await respository).get(id);
         if (!item) {
@@ -48,6 +49,7 @@ export const register = (app: express.Application) => {
     });
 
     app.delete(`/api/todos/:id`, async (req, res) => {
+        const respository = connectToDb(app.get("connectionString"))
         const id = req.params.id;
         await (await respository).delete(id);
 
@@ -55,6 +57,7 @@ export const register = (app: express.Application) => {
     });
 
     app.put(`/api/todos/:id`, async (req, res) => {
+        const respository = connectToDb(app.get("connectionString"))
         const item = req.body as Item;
         item.id = req.params.id
 
@@ -69,6 +72,7 @@ export const register = (app: express.Application) => {
     });
 
     app.post(`/api/todos`, async (req, res) => {
+        const respository = connectToDb(app.get("connectionString"))
         const item = req.body as Item;
         const updated = await (await respository).create(item);
 
@@ -79,10 +83,10 @@ export const register = (app: express.Application) => {
 
 function connectToDb(connectionString: string | null): Promise<Repository> {
     if (connectionString){
-        console.log("initialized with a database connection");
+        console.log("connecting with a database connection");
         return connect(connectionString).then(value => new MongoRepository(value));
     } else {
-        console.log("initialized without a database connection");
+        console.log("connecting without a database connection");
         return Promise.resolve(new InMemoryRepository());
     }
 }
