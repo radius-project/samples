@@ -1,8 +1,5 @@
 import radius as radius
 
-param go_service_build object
-param node_service_build object
-param python_service_build object
 param environment string
 
 
@@ -148,9 +145,12 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
     name: 'orders'
     location: 'global'
     properties: {
-      kind: 'state.azure.tablestorage'
+      kind:  'state.azure.tablestorage'
       environment: environment
-      resource: //table.id
+      resource: infraFile.outputs.tableId
     }
   }
 
+  module infraFile 'infra.bicep' = {
+    name: 'infrastructure'
+  }  
