@@ -1,10 +1,8 @@
 import radius as radius
 
-param location string = resourceGroup().location
+param location string
 
 param name string = 'todoapp-cosmos-${uniqueString(resourceGroup().id)}'
-
-var port =27017
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: toLower(name)
@@ -22,7 +20,6 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
     ]
   }
   
-
   resource cosmosDb 'mongodbDatabases' = {
     name: 'db'
     properties: {
