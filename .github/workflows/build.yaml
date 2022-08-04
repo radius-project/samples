@@ -4,18 +4,10 @@ on:
   push:
     branches:
       - edge
-    paths:
-      - 'quickstarts/**'
-      - 'tutorial/**'
-      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - edge
-    paths:
-      - 'quickstarts/**'
-      - 'tutorial/**'
-      - '.github/workflows/quickstarts.yaml'
 
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
@@ -46,6 +38,14 @@ jobs:
           docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
+      - name: Build and push reference-apps container app store images
+        run: |
+          docker build ./reference-apps/container-app-store/go-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
+          docker build ./reference-apps/container-app-store/node-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
+          docker build ./reference-apps/container-app-store/python-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
   code:
     name: Zip and upload code
     if: github.ref == 'refs/heads/edge'
@@ -82,3 +82,6 @@ jobs:
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/webapp:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-go-service:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-node-service:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-python-service:${{ env.VERSION }}" --yes
