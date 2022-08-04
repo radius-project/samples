@@ -64,7 +64,7 @@ jobs:
       - name: Upload zip artifacts to blob storage
         uses: bacongobbler/azure-blob-storage-upload@v2.0.0
         with:
-          source_dir: ./tzip
+          source_dir: tzip/
           container_name: code
           connection_string: ${{ secrets.RADIUSPUBLIC_BLOBSTORAGE_CONNECTIONSTRING }}
           extra_args: '--destination-path ${{ env.REL_CHANNEL }}/ --pattern *.zip --timeout 300'
