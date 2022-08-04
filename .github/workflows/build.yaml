@@ -46,6 +46,29 @@ jobs:
           docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
+  code:
+    name: Zip and upload code
+    if: github.ref == 'refs/heads/edge'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Parse release version and set environment variables
+        run: python ./.github/scripts/get_release_version.py
+      - name: Generate Code ZIP Packages
+        run: |
+          mkdir ./tzip
+          cp ./tutorial/azure-cosmosdb.bicep ./tutorial/mongo-container.bicep ./tzip/
+          touch ./tzip/app.bicep
+          zip -r tutorial.zip ./tutorial/
+      - name: Upload zip artifacts to blob storage
+        uses: bacongobbler/azure-blob-storage-upload@v2.0.0
+        with:
+          source_dir: ./tzip
+          container_name: code
+          connection_string: ${{ secrets.RADIUSPUBLIC_BLOBSTORAGE_CONNECTIONSTRING }}
+          extra_args: '--destination-path ${{ env.REL_CHANNEL }}/ --pattern *.zip --timeout 300'
+          overwrite: 'true'
   cleanup:
     name: Cleanup PR images
     if: github.event.action == 'closed'
