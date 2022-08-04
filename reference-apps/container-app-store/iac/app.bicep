@@ -11,7 +11,7 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
 }
 
 resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'go-app'
+  name: 'goapp'
   location: 'global'
   properties: {
     application: app.id
@@ -35,7 +35,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
 }
 
 resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'go-app'
+  name: 'go-app-route'
   location: 'global'
   properties: {
     application: app.id
@@ -45,7 +45,7 @@ resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-pr
 }
 
 resource node_app_route 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
-  name: 'node-app'
+  name: 'node-app-route'
   location: 'global'
   properties: {
     application: app.id
@@ -66,7 +66,7 @@ resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview'
   }
 }
 resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'node-app'
+  name: 'nodeapp'
   location: 'global'
   properties: {
     application: app.id
@@ -101,7 +101,7 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
 }
 
 resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'python-app'
+  name: 'pythonapp'
   location: 'global'
   properties: {
     application: app.id
@@ -115,7 +115,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
     }
     connections: {
       kind: {
-        source: statestore.id
+        source: infraFile.outputs.statestoreID
       }
     }
     extensions: [
@@ -139,16 +139,31 @@ resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-1
   }
 }
 
-resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
-  name: 'orders'
-  location: 'global'
-  properties: {
-    kind:  'state.azure.tablestorage'
-    environment: environment
-    resource: infraFile.outputs.tableId
-  }
-}
+// resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
+//   name: 'orders'
+//   location: 'global'
+//   properties: {
+//     kind:  'state.azure.tablestorage'
+//     environment: environment
+//     resource: infraFile.outputs.tableId
+//   }
+// }
 
-module infraFile 'infra-azure.bicep' = {
+// resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
+//   name: 'orders'
+//   location: 'global'
+//   properties: {
+//     kind:  'state.azure.tablestorage'
+//     environment: environment
+    
+//   }
+// }
+
+
+module infraFile 'infra-selfhosted.bicep' = {
   name: 'infrastructure'
+  params: {
+    environment: environment
+    applicationId: app.id
+  }
 }  
