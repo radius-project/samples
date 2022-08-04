@@ -16,7 +16,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'jkotalik.azurecr.io/reference-apps/container-app-go-service:latest'
+      image: 'radius.azurecr.io/reference-apps/container-app-go-service:edge'
       ports: {
         web: {
           containerPort: 8050
@@ -71,7 +71,7 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'jkotalik.azurecr.io/reference-apps/container-app-node-service:latest'
+      image: 'radius.azurecr.io/reference-apps/container-app-node-service:edge'
       env: {
         'ORDER_SERVICE_NAME': python_app_route.properties.appId
         'INVENTORY_SERVICE_NAME': go_app_route.properties.appId
@@ -106,7 +106,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'jkotalik.azurecr.io/reference-apps/container-app-python-service:latest'
+      image: 'radius.azurecr.io/reference-apps/container-app-python-service:edge'
       ports: {
         web: {
           containerPort: 5000
@@ -138,27 +138,6 @@ resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-1
     appId: 'python-app'
   }
 }
-
-// resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
-//   name: 'orders'
-//   location: 'global'
-//   properties: {
-//     kind:  'state.azure.tablestorage'
-//     environment: environment
-//     resource: infraFile.outputs.tableId
-//   }
-// }
-
-// resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
-//   name: 'orders'
-//   location: 'global'
-//   properties: {
-//     kind:  'state.azure.tablestorage'
-//     environment: environment
-    
-//   }
-// }
-
 
 module infraFile 'infra-selfhosted.bicep' = {
   name: 'infrastructure'
