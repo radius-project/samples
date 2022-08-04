@@ -4,18 +4,10 @@ on:
   push:
     branches:
       - edge
-    paths:
-      - 'quickstarts/**'
-      - 'tutorial/**'
-      - '.github/workflows/**'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - edge
-    paths:
-      - 'quickstarts/**'
-      - 'tutorial/**'
-      - '.github/workflows/quickstarts.yaml'
 
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
