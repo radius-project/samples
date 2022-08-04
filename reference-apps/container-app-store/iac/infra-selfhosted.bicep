@@ -14,10 +14,7 @@ resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
     resource table 'tables' = {
       name: 'dapr'
     }
-
-
   }
-
 }
 
 output tableId string = account::tableServices::table.id 
