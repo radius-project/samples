@@ -4,7 +4,6 @@ param applicationId string
 
 param environment string
 
-
 resource redisContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis'
   location: 'global'
