@@ -60,11 +60,7 @@ jobs:
           mkdir ./tzip
           cp ./tutorial/azure-cosmosdb.bicep ./tutorial/mongo-container.bicep ./tzip/
           touch ./tzip/app.bicep
-          zip -r tutorial.zip ./tutorial/
-      - name: Test directories
-        run: |
-          ls -la
-          ls -la  tzip/
+          zip -r ./tzip/tutorial.zip ./tutorial/
       - name: Upload zip artifacts to blob storage
         uses: bacongobbler/azure-blob-storage-upload@v2.0.0
         with:
