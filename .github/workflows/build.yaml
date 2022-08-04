@@ -25,7 +25,6 @@ env:
 jobs:
   build:
     name: Build and push quickstart container images
-    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
