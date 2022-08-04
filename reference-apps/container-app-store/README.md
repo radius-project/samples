@@ -17,5 +17,6 @@ This reference app is a "radified" version of the [Container Apps Store](https:/
    ```
 1. Deploy the app:
     ```bash
-    rad app deploy
+    rad deploy iac/app.bicep
     ```
+1. To swap from using redis as a container to Microsoft.Storage/storageAccounts, change the module in the app.bicep file from `infra-selfhosted.bicep` to `infra-azure.bicep`.
