@@ -36,6 +36,7 @@ resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepr
   properties: {
     kind:  'generic'
     type: 'state.redis'
+    application: applicationId
     environment: environment
     version: 'v1'
     metadata: {
