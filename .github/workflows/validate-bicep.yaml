@@ -8,7 +8,7 @@ on:
   pull_request:
     branches:
       - edge
-      - v*
+      - v*.*
 jobs:
   build:
     name: Validate Bicep Code

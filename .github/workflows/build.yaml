@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - edge
+      - v*.*
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - edge
+      - v*.*
 
 env:
-  VERSION: ${{ github.event.pull_request.number || 'edge' }}
+  VERSION: ${{ github.event.pull_request.number || github.sha }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
 

@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - v0.11
+      - edge
+      - v*.*
     paths:
       - 'quickstarts/**'
       - 'reference-apps/**'
@@ -12,7 +13,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - v0.11
+      - edge
+      - v*.*
     paths:
       - 'quickstarts/**'
       - 'reference-apps/**'
