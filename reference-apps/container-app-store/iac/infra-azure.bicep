@@ -28,6 +28,7 @@ resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepr
   location: 'global'
   properties: {
     kind:  'state.azure.tablestorage'
+    application: applicationId
     environment: environment
     resource: account::tableServices::table.id 
   }
