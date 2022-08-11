@@ -4,7 +4,7 @@ echo "Starting Post Create Command"
 
 k3d cluster delete
 
-k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0' --volume '/etc/resolv.conf:/etc/resolv.conf@server:0'
+k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'
 
 RAD_VERSION=$(rad version | awk 'NR==2{print $1}')
 
