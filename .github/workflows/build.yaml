@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - edge
+      - v*.*
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - edge
+      - v*.*
 
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
