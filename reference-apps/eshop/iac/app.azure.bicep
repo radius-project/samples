@@ -1195,13 +1195,68 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   }
 }
 
+resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'redis-container-basket-data'
+  location: ucpLocation
+  properties: {
+    application: eshop.id
+    container: {
+      image: 'redis:6.2'
+      env: {}
+      ports: {
+        redis: {
+          containerPort: 6379
+          provides: redisBasketRoute.id
+        }
+      }
+    }
+  }
+}
+
+resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+  name: 'redis-route-basket-data'
+  location: ucpLocation
+  properties: {
+    application: eshop.id
+    port: 6379
+  }
+}
+
 resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
   location: ucpLocation
   properties: {
     application: eshop.id
     environment: environment
-    resource: basketCache.id
+    host: redisBasketRoute.properties.hostname
+    port: redisBasketRoute.properties.port
+  }
+}
+
+resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'redis-container-keystore-data'
+  location: ucpLocation
+  properties: {
+    application: eshop.id
+    container: {
+      image: 'redis:6.2'
+      env: {}
+      ports: {
+        redis: {
+          containerPort: 6379
+          provides: redisKeystoreRoute.id
+        }
+      }
+    }
+  }
+}
+
+resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+  name: 'redis-route-keystore-data'
+  location: ucpLocation
+  properties: {
+    application: eshop.id
+    port: 6379
   }
 }
 
@@ -1211,7 +1266,8 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   properties: {
     application: eshop.id
     environment: environment
-    resource: keystoreCache.id
+    host: redisKeystoreRoute.properties.hostname
+    port: redisKeystoreRoute.properties.port
   }
 }
 
