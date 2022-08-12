@@ -50,7 +50,7 @@ jobs:
           docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
   code:
     name: Zip and upload code
-    if: github.ref == 'refs/heads/edge'
+    if: github.ref == 'refs/heads/v0.12'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
