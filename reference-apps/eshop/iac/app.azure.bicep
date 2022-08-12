@@ -1202,7 +1202,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
     application: eshop.id
     environment: environment
     host: basketCache.properties.hostName
-    port: basketCache.properties.port
+    port: basketCache.properties.sslPort
     secrets: {
       password: basketCache.listKeys().primaryKey
       connectionString: '${basketCache.properties.hostName}:${basketCache.properties.port},password=${basketCache.listKeys().primaryKey},ssl=True,abortConnect=False'
@@ -1217,7 +1217,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
     application: eshop.id
     environment: environment
     host: keystoreCache.properties.hostName
-    port: keystoreCache.properties.port
+    port: keystoreCache.properties.sslPort
     secrets: {
       password: keystoreCache.listKeys().primaryKey
       connectionString: '${keystoreCache.properties.hostName}:${keystoreCache.properties.port},password=${keystoreCache.listKeys().primaryKey},ssl=True,abortConnect=False'
