@@ -152,7 +152,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
@@ -301,7 +301,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},ssl=True,abortConnect=False,sslprotocols=tls12'
+        ConnectionString: redisBasket.connectionString()
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -610,7 +610,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        SignalrStoreConnectionString: redisKeystore.connectionString()
         IdentityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -772,7 +772,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -829,7 +829,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         UseCustomizationData: 'False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
@@ -1195,68 +1195,18 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-basket-data'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {}
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisBasketRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-basket-data'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    port: 6379
-  }
-}
-
 resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
   location: ucpLocation
   properties: {
     application: eshop.id
     environment: environment
-    host: redisBasketRoute.properties.hostname
-    port: redisBasketRoute.properties.port
-  }
-}
-
-resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-keystore-data'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {}
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisKeystoreRoute.id
-        }
-      }
+    host: basketCache.properties.hostName
+    port: basketCache.properties.port
+    secrets: {
+      password: basketCache.listKeys().primaryKey
+      connectionString: '${basketCache.properties.hostName}:${basketCache.properties.port},password=${basketCache.listKeys().primaryKey},ssl=True,abortConnect=False'
     }
-  }
-}
-
-resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-keystore-data'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    port: 6379
   }
 }
 
@@ -1266,8 +1216,12 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   properties: {
     application: eshop.id
     environment: environment
-    host: redisKeystoreRoute.properties.hostname
-    port: redisKeystoreRoute.properties.port
+    host: keystoreCache.properties.hostName
+    port: keystoreCache.properties.port
+    secrets: {
+      password: keystoreCache.listKeys().primaryKey
+      connectionString: '${keystoreCache.properties.hostName}:${keystoreCache.properties.port},password=${keystoreCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    }
   }
 }
 
