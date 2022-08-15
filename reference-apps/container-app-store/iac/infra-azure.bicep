@@ -7,7 +7,7 @@ param applicationId string
 param environment string
 
 resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: '${uniqueString(resourceGroup().id)}'
+  name: uniqueString(resourceGroup().id)
   location: location
   sku: {
     name: 'Standard_LRS'
