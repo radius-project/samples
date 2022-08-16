@@ -43,7 +43,7 @@ jobs:
       - name: Deploy eShop reference app
         run: |
           cd ./reference-apps/eshop/
-          rad app deploy -p "CLUSTER_IP=0.0.0.0" -p "adminPassword=P@ssw0rd4@36"
+          rad deploy ./iac/app.bicep -p "CLUSTER_IP=0.0.0.0" -p "adminPassword=P@ssw0rd4@36"
           rad app delete eshop -y
       - name: Deploy Container Apps Store reference app
         run: |
