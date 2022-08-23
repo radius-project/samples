@@ -1,6 +1,10 @@
 import radius as radius
 
+@description('resource id of the radius environment')
 param environment string
+
+@description('name of the radius connector resource for the mongo database. must be pre-created')
+param dbname string = 'tododb'
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'webapp'
@@ -15,6 +19,11 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   location: 'global'
   properties: {
     application: app.id
+    connections: {
+      itemstore: {
+        source: db.id
+      }
+    }
     container: {
       image: 'radius.azurecr.io/tutorial/webapp:edge'
       ports: {
@@ -24,12 +33,11 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-    connections: {
-      itemstore: {
-        source: db.id
-      }
-    }
   }
+}
+
+resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' existing = {
+  name: dbname
 }
 
 resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
@@ -52,20 +60,4 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
       }
     ]
   }
-}
-
-resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
-  name: 'db'
-  location: 'global'
-  properties: {
-    environment: app.properties.environment
-    application: app.id
-    secrets: {
-      connectionString: 'mongodb://${mongo.outputs.name}:${mongo.outputs.port}/${mongo.outputs.dbName}?authSource=admin'
-    }
-  }
-}
-
-module mongo 'mongo-container.bicep' = {
-  name: 'mongo-module'
 }

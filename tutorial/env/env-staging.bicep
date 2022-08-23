@@ -1,32 +1,53 @@
+import radius as radius
 import kubernetes as kubernetes {
   kubeConfig: ''
   namespace: namespace
 }
 
+@description('resource id of the radius environment')
+param environment string
+
+@description('namespace for kubernetes resources')
 param namespace string = 'default'
-param name string = 'mongo'
+
+@description('name of the database. used for kubernetes resources and radius connector')
+param dbname string = 'tododb'
 
 var port = 27017
+var hostname = '${dbname}.${namespace}.svc.cluster.local'
+
+resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
+  name: dbname
+  location: 'global'
+  properties: {
+    environment: environment
+    host: hostname
+    port: port
+    secrets: {
+      connectionString: 'mongodb://${hostname}:${port}/${dbname}?authSource=admin'
+    }
+  }
+}
 
 resource statefulset 'apps/StatefulSet@v1' = {
   metadata: {
-    name: name
+    name: dbname
     labels: {
-      app: name
+      app: dbname
     }
   }
   spec: {
     replicas: 1
-    serviceName: name
+    serviceName: dbname
     selector: {
       matchLabels: {
-        app: name
+        app: dbname
       }
     }
     template: {
       metadata: {
         labels: {
-          app: name
+          app: dbname
         }
       }
       spec: {
@@ -39,13 +60,13 @@ resource statefulset 'apps/StatefulSet@v1' = {
             image: 'mongo:5'
             command: [
               'mongod'
-              '--replSet=${name}'
+              '--replSet=${dbname}'
               '--bind_ip_all'
             ]
             env: [
               {
                 name: 'MONGO_INITDB_DATABASE'
-                value: name
+                value: dbname
               }
             ]
             securityContext: {
@@ -69,11 +90,11 @@ resource statefulset 'apps/StatefulSet@v1' = {
             env: [
               {
                 name: 'MONGO_SIDECAR_POD_LABELS'
-                value: 'app=${name}'
+                value: 'app=${dbname}'
               }
               {
                 name: 'KUBERNETES_MONGO_SERVICE_NAME'
-                value: name
+                value: dbname
               }
             ]
           }
@@ -98,15 +119,35 @@ resource statefulset 'apps/StatefulSet@v1' = {
   }
 }
 
+resource service 'core/Service@v1' = {
+  metadata: {
+    name: dbname
+    labels: {
+      app: dbname
+    }
+  }
+  spec: {
+    clusterIP: 'None'
+    ports: [
+      {
+        port: port
+      }
+    ]
+    selector: {
+      app: dbname
+    }
+  }
+}
+
 resource sa 'core/ServiceAccount@v1' = {
   metadata: {
-    name: name
+    name: dbname
   }
 }
 
 resource crb 'rbac.authorization.k8s.io/ClusterRoleBinding@v1' = {
   metadata: {
-    name: name
+    name: dbname
   }
   roleRef: {
     apiGroup: 'rbac.authorization.k8s.io'
@@ -124,7 +165,7 @@ resource crb 'rbac.authorization.k8s.io/ClusterRoleBinding@v1' = {
 
 resource clusterrole 'rbac.authorization.k8s.io/ClusterRole@v1' = {
   metadata: {
-    name: name
+    name: dbname
   }
   rules: [
     {
@@ -144,42 +185,3 @@ resource clusterrole 'rbac.authorization.k8s.io/ClusterRole@v1' = {
     }
   ]
 }
-
-resource secret 'core/Secret@v1' = {
-  metadata: {
-    name: name
-    labels: {
-      app: name
-    }
-  }
-  stringData: {
-    database: name
-    connectionString: 'mongodb://${name}.${namespace}.svc.cluster.local:${port}/${name}?authSource=admin'
-  }
-}
-
-resource service 'core/Service@v1' = {
-  metadata: {
-    name: name
-    labels: {
-      app: name
-    }
-  }
-  spec: {
-    clusterIP: 'None'
-    ports: [
-      {
-        port: port
-      }
-    ]
-    selector: {
-      app: name
-    }
-  }
-}
-
-output name string = '${name}.${namespace}.svc.cluster.local'
-output dbName string = name
-output port int = port
-
-
