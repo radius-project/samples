@@ -1,0 +1,13 @@
+# Explore
+
+# List Radius Resources
+curl http://localhost:8001/apis/api.ucp.dev/v1alpha3/planes/radius/local/resourceGroups/staging/providers/Applications.Core/containers\?api-version\=2022-03-15-privatepreview
+
+
+# List Planes
+curl http://localhost:8001/apis/api.ucp.dev/v1alpha3/planes
+
+# List AWS resources
+curl http://localhost:8001/apis/api.ucp.dev/v1alpha3/planes/aws/aws/accounts/664787032730/regions/us-west-2/providers/AWS.Kinesis/Stream/example
+
+arn:aws:kinesis:us-west-2:664787032730:stream/streamy
