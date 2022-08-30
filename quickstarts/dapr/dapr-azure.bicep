@@ -17,7 +17,7 @@ resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/qucikstart/dapr-backend:edge'
+      image: 'radius.azurecr.io/quickstarts/dapr-backend:edge'
       ports: {
         web: {
           containerPort: 3000
