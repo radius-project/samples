@@ -1,7 +1,6 @@
 import radius as radius
 
 param appId string
-param location string
 param endpointUrl string
 
 param identityApiRouteName string
@@ -27,7 +26,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'identity-api'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {

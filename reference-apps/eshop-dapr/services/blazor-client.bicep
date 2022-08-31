@@ -1,7 +1,6 @@
 import radius as radius
 
 param appId string
-param location string
 param endpointUrl string
 
 param blazorClientRouteName string
@@ -17,7 +16,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource blazorClient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'blazor-client'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {

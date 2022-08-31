@@ -1,11 +1,10 @@
 import radius as radius
 
-param location string = resourceGroup().location
 param environment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'dapr-quickstart'
-  location: location
+  location: 'global'
   properties: {
     environment: environment
   }
@@ -13,7 +12,7 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'backend'
-  location: location
+  location: 'global'
   properties: {
     application: app.id
     container: {
@@ -42,7 +41,7 @@ resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource backendRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'backend-route'
-  location: location
+  location: 'global'
   properties: {
     environment: environment
     application: app.id
@@ -52,7 +51,7 @@ resource backendRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-pr
 
 resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'frontend'
-  location: location
+  location: 'global'
   properties: {
     application: app.id
     container: {
@@ -80,7 +79,7 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   name: 'frontend-route'
-  location: location
+  location: 'global'
   properties: {
     application: app.id
   }
@@ -88,7 +87,7 @@ resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' 
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: location
+  location: 'global'
   properties: {
     application: app.id
     routes: [
@@ -102,7 +101,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 
 resource stateStore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
   name: 'statestore'
-  location: location
+  location: 'global'
   properties: {
     environment: environment
     application: app.id
