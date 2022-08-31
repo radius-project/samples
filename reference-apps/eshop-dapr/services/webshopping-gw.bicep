@@ -1,7 +1,6 @@
 import radius as radius
 
 param appId string
-param location string
 
 param catalogApiRouteName string
 param catalogApiDaprRouteName string
@@ -33,7 +32,7 @@ resource webshoppingGwRoute 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource webshoppingGw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshopping-gw'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {

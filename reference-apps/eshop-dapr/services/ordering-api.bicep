@@ -2,7 +2,6 @@ import radius as radius
 
 param appId string
 param environment string
-param location string
 param endpointUrl string
 
 param daprPubSubBrokerName string
@@ -40,7 +39,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -86,7 +85,7 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
 
 resource orderingApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'ordering-api-dapr-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     environment: environment

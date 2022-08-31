@@ -2,7 +2,6 @@ import radius as radius
 
 param appId string
 param environment string
-param location string
 param endpointUrl string
 
 param basketApiRouteName string
@@ -35,7 +34,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource basketApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'basket-api'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -78,7 +77,7 @@ resource basketApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource basketApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'basket-api-dapr-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     environment: environment

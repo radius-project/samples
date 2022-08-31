@@ -2,7 +2,6 @@ import radius as radius
 
 param appId string
 param environment string
-param location string
 
 param catalogApiRouteName string
 param catalogDbConnectorName string
@@ -34,7 +33,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -77,7 +76,7 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource catalogApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'catalog-api-dapr-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     environment: environment

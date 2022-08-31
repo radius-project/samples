@@ -1,7 +1,6 @@
 import radius as radius
 
 param appId string
-param location string
 param endpointUrl string
 
 param basketApiRouteName string
@@ -34,7 +33,7 @@ resource webshoppingAggRoute 'Applications.Core/httproutes@2022-03-15-privatepre
 
 resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshopping-agg'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -77,7 +76,7 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webshoppingAggDaprRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshopping-agg-dapr-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
   }

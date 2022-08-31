@@ -1,7 +1,6 @@
 import radius as radius
 
 param appId string
-param location string
 
 param blazorClientApiRouteName string
 param identityApiRouteName string
@@ -23,7 +22,7 @@ resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview'
 
 resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webstatus'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {

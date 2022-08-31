@@ -3,8 +3,6 @@ import radius as radius
 // Parameters --------------------------------------------
 param environment string
 
-param location string = resourceGroup().location
-
 param mongoUsername string = 'admin'
 param mongoPassword string = newGuid()
 param OCHESTRATOR_TYPE string = 'K8S'
@@ -22,7 +20,7 @@ param adminPassword string
 
 resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshop'
-  location: location
+  location: 'global'
   properties: {
     environment: environment
   }
@@ -30,7 +28,7 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     routes: [
@@ -81,7 +79,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
 resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -124,7 +122,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5101
@@ -133,7 +131,7 @@ resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-grpc'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9101
@@ -143,7 +141,7 @@ resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/identity-api
 resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'identity-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -208,7 +206,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'identity-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5105
@@ -218,7 +216,7 @@ resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
 resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -269,7 +267,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5102
@@ -278,7 +276,7 @@ resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-grpc'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9102
@@ -288,7 +286,7 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/basket-api
 resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'basket-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -335,7 +333,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5103
@@ -344,7 +342,7 @@ resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-grpc'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9103
@@ -354,7 +352,7 @@ resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
 resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -394,7 +392,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooks-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5113
@@ -404,7 +402,7 @@ resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/payment-api
 resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -434,7 +432,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'payment-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5108
@@ -444,7 +442,7 @@ resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
 resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-backgroundtasks'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -483,7 +481,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 
 resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderbgtasks-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5111
@@ -495,7 +493,7 @@ resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privateprevie
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingagg'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -549,7 +547,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingagg-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5121
@@ -559,7 +557,7 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
 resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -582,7 +580,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
 
 resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5202
@@ -591,7 +589,7 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
 
 resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http-2'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 15202
@@ -601,7 +599,7 @@ resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatep
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
 resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-signalrhub'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -651,7 +649,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
 
 resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderingsignalrhub-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5112
@@ -661,7 +659,7 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
 resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-client'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -696,7 +694,7 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooksclient-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5114
@@ -709,7 +707,7 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webstatus
 resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webstatus'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -753,7 +751,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webstatus-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 8107
@@ -763,7 +761,7 @@ resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
 resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'web-spa'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -812,7 +810,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webspa-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5104
@@ -822,7 +820,7 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
 resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webmvc'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -873,7 +871,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webmvc-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5100
@@ -884,7 +882,7 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -905,7 +903,7 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-http'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5340
@@ -914,7 +912,7 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'rabbitmq-container-eshop-event-bus'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -932,7 +930,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
 
 resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'rabbitmq-route-eshop-event-bus'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5672
@@ -941,7 +939,7 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 
 resource rabbitmq 'Applications.Connector/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -954,7 +952,7 @@ resource rabbitmq 'Applications.Connector/rabbitmqMessageQueues@2022-03-15-priva
 
 resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-identitydb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -976,7 +974,7 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-identitydb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 1433
@@ -985,7 +983,7 @@ resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -996,7 +994,7 @@ resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
 
 resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-catalogdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1018,7 +1016,7 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
 
 resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-catalogdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 1433
@@ -1027,7 +1025,7 @@ resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
 
 resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -1038,7 +1036,7 @@ resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepre
 
 resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-orderingdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1060,7 +1058,7 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-orderingdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 1433
@@ -1069,7 +1067,7 @@ resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -1080,7 +1078,7 @@ resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
 
 resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-webhooksdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1102,7 +1100,7 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-webhooksdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 1433
@@ -1111,7 +1109,7 @@ resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -1122,7 +1120,7 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
 
 resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis-container-basket-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1140,7 +1138,7 @@ resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'redis-route-basket-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 6379
@@ -1149,7 +1147,7 @@ resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -1160,7 +1158,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
 
 resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis-container-keystore-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1178,7 +1176,7 @@ resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-private
 
 resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'redis-route-keystore-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 6379
@@ -1187,7 +1185,7 @@ resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
@@ -1198,7 +1196,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
 
 resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'mongo-container'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -1219,7 +1217,7 @@ resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource mongoRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'mongo-route'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     port: 27017
@@ -1228,7 +1226,7 @@ resource mongoRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'mongo'
-  location: location
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
