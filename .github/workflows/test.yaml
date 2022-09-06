@@ -47,4 +47,4 @@ jobs:
       - name: Deploy Container Apps Store reference app
         run:  rad deploy ./reference-apps/container-app-store/iac/app.bicep
       - name: Delete Container Apps Store reference app
-        run:  rad delete store -y
+        run:  rad app delete store -y
