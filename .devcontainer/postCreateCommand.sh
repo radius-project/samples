@@ -12,6 +12,6 @@ if [ "$RAD_VERSION" = "edge" ]; then
     wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s edge
 fi
 
-rad env init kubernetes --public-endpoint-override 'http://localhost:8081'
+rad env init kubernetes --public-endpoint-override 'localhost:8081'
 
 echo "Ending Post Create Command"
