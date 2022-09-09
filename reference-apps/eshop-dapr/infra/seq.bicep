@@ -1,11 +1,10 @@
 import radius as radius
 
 param appId string
-param location string
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -25,7 +24,7 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource seqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
   }

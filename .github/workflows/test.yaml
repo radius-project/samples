@@ -27,26 +27,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Download k3d
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+        run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad
-        run: wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+        run:  wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
-        run: rad env init dev
+        run:  rad env init dev
       - name: Deploy webapp tutorial
-        run: |
-          rad deploy ./tutorial/template.bicep
-          rad app delete webapp -y
+        run:  rad deploy ./tutorial/app.bicep
+      - name: Delete webapp tutorial
+        run:  rad app delete webapp -y
       - name: Deploy Dapr quickstart
-        run: |
-          rad deploy ./quickstarts/dapr/dapr.bicep
-          rad app delete dapr-tutorial -y
+        run:  rad deploy ./quickstarts/dapr/dapr.bicep
+      - name: Delete Dapr quickstart
+        run:  rad app delete dapr-quickstart -y
       - name: Deploy eShop reference app
-        run: |
-          cd ./reference-apps/eshop/
-          rad app deploy -p "CLUSTER_IP=0.0.0.0" -p "adminPassword=P@ssw0rd4@36"
-          rad app delete eshop -y
+        run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
+      - name: Delete eShop reference app
+        run:  rad app delete eshop -y
       - name: Deploy Container Apps Store reference app
-        run: |
-          cd ./reference-apps/container-app-store/
-          rad app deploy --profile dev
-          rad app delete store -y
+        run:  rad deploy ./reference-apps/container-app-store/iac/app.bicep
+      - name: Delete Container Apps Store reference app
+        run:  rad app delete store -y

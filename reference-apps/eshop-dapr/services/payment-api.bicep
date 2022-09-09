@@ -2,7 +2,6 @@ import radius as radius
 
 param appId string
 param environment string
-param location string
 
 param daprPubSubBrokerName string
 param paymentApiRouteName string
@@ -24,7 +23,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     container: {
@@ -62,7 +61,7 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource paymentApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'payment-api-dapr-route'
-  location: location
+  location: 'global'
   properties: {
     application: appId
     environment: environment
