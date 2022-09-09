@@ -1201,8 +1201,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
   properties: {
     application: eshop.id
     environment: environment
-    host: basketCache.properties.hostName
-    port: basketCache.properties.sslPort
+    resource: basketCache.id
   }
 }
 
@@ -1212,8 +1211,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   properties: {
     application: eshop.id
     environment: environment
-    host: keystoreCache.properties.hostName
-    port: keystoreCache.properties.sslPort
+    resource: keystoreCache.id
   }
 }
 
