@@ -2,7 +2,7 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.162.0/containers/javascript-node
 {
 	"name": "Radius Sample Container",
-    "image": "radius.azurecr.io/devcontainer/samples:0.12",
+    "image": "radius.azurecr.io/devcontainer/samples:0.13",
 
     "settings": {
 		"terminal.integrated.defaultProfile.linux": "bash"

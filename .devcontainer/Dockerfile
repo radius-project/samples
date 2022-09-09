@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/vscode/devcontainers/base:debian
 
 # [Option] Select Radius release channel - either major.minor or 'edge'
-ARG RADIUS_VERSION="0.12"
+ARG RADIUS_VERSION="0.13"
 # [Option] Install zsh
 ARG INSTALL_ZSH="true"
 # [Option] Upgrade OS packages to their latest versions
@@ -32,7 +32,7 @@ RUN apt-get update \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/
 
 # Install Radius CLI
-RUN wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
+RUN wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
 
 # Download Radius Bicep extension.
 RUN wget -O /home/rad-vscode-bicep.vsix https://radiuspublic.blob.core.windows.net/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix

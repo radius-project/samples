@@ -9,9 +9,9 @@ k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server
 RAD_VERSION=$(rad version | awk 'NR==2{print $1}')
 
 if [ "$RAD_VERSION" = "edge" ]; then
-    wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s edge
+    wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
 fi
 
-rad env init kubernetes --public-endpoint-override 'https://localhost:8081'
+rad env init kubernetes --public-endpoint-override 'localhost:8081'
 
 echo "Ending Post Create Command"
