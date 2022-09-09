@@ -1203,10 +1203,6 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
     environment: environment
     host: basketCache.properties.hostName
     port: basketCache.properties.sslPort
-    secrets: {
-      password: basketCache.listKeys().primaryKey
-      connectionString: '${basketCache.properties.hostName}:${basketCache.properties.sslPort},password=${basketCache.listKeys().primaryKey},ssl=True,abortConnect=False'
-    }
   }
 }
 
@@ -1218,10 +1214,6 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
     environment: environment
     host: keystoreCache.properties.hostName
     port: keystoreCache.properties.sslPort
-    secrets: {
-      password: keystoreCache.listKeys().primaryKey
-      connectionString: '${keystoreCache.properties.hostName}:${keystoreCache.properties.sslPort},password=${keystoreCache.listKeys().primaryKey},ssl=True,abortConnect=False'
-    }
   }
 }
 
