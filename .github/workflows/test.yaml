@@ -31,7 +31,9 @@ jobs:
       - name: Download rad
         run:  wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
-        run:  rad env init dev
+        run: |
+          k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+          rad env init kubernetes --public-endpoint-override 'localhost:8081' -e test
       - name: Deploy webapp tutorial
         run:  rad deploy ./tutorial/app.bicep
       - name: Delete webapp tutorial
@@ -40,6 +42,10 @@ jobs:
         run:  rad deploy ./quickstarts/dapr/dapr.bicep
       - name: Delete Dapr quickstart
         run:  rad app delete dapr-quickstart -y
+      - name: Deploy container app quickstart
+        run:  rad deploy ./quickstarts/environment-variables/app.bicep
+      - name: Delete Container Apps Store reference app
+        run:  rad app delete myapp -y
       - name: Deploy eShop reference app
         run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
       - name: Delete eShop reference app
