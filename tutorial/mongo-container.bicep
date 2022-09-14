@@ -182,4 +182,4 @@ output name string = '${name}.${namespace}.svc.cluster.local'
 output dbName string = name
 output port int = port
 
-
+output connectionString string = 'mongodb://${name}:${port}/${name}?authSource=admin'
