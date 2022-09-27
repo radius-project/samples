@@ -27,6 +27,21 @@ def index():
             for file in os.listdir("/tmpdir"):
                 html += f"<li>📄 {file}</li>"
             html += "</ul>"
+            html += """
+            <h2>Create a file</h2>
+            <p>Enter a filename and click the button to create a file in /tmpdir:</p>
+            <form class="form-inline" action="/newfile" method="post">
+            <div class="form-row">
+                <div class="col-md-4">
+                    <label for="filename" class="sr-only"><b>File name</b></label>
+                    <input type="text" class="form-control" name="filename" id="filename">
+                </div>
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-primary mb-2">Create file</button>
+                </div>
+            </div>
+            </form>
+            """
         else:
             html += """
             <div class="alert alert-primary" role="alert">
@@ -41,19 +56,6 @@ def index():
         """
     
     html += """
-    <h2>Create a file</h2>
-    <p>Enter a filename and click the button to create a file in /tmpdir:</p>
-    <form class="form-inline" action="/newfile" method="post">
-    <div class="form-row">
-        <div class="col-md-4">
-            <label for="filename" class="sr-only"><b>File name</b></label>
-            <input type="text" class="form-control" name="filename" id="filename">
-        </div>
-        <div class="col-sm-10">
-            <button type="submit" class="btn btn-primary mb-2">Create file</button>
-        </div>
-    </div>
-    </form>
     </div>
     </body>
     </html>
