@@ -12,7 +12,7 @@ on:
       - v*.*
 
 env:
-  VERSION: ${{ github.event.pull_request.number || '0.13' }}
+  VERSION: ${{ github.event.pull_request.number || 'edge' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
 
@@ -50,7 +50,7 @@ jobs:
           docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
   code:
     name: Zip and upload code
-    if: github.ref == 'refs/heads/v0.13'
+    if: github.ref == 'refs/heads/edge'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

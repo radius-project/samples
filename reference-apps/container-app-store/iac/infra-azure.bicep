@@ -6,8 +6,10 @@ param applicationId string
 
 param environment string
 
+param accountGuid string = newGuid()
+
 resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: uniqueString(resourceGroup().id)
+  name: uniqueString(accountGuid)
   location: location
   sku: {
     name: 'Standard_LRS'

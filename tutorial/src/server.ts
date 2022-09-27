@@ -1,35 +1,14 @@
 import express from 'express';
 import path from 'path';
 import * as routes from "./routes";
-import { SecretClient } from "@azure/keyvault-secrets";
-import { DefaultAzureCredential } from "@azure/identity";
+import { RepostoryFactory as RepositoryFactory } from "./db/repository";
+import { MongoRepositoryFactory as MongoFactory } from './db/mongo';
+import { RedisRepositoryFactory as RedisFactory } from './db/redis';
+import { InMemoryFactory } from './db/inmemory';
 
 export async function main(): Promise<void> {
   const app = express();
   const port = process.env.PORT || 3000;
-
-  // If we have a URI for keyvault then look there .
-  const kvURI = process.env.KV_URI || '';
-  var connectionString:string = '';
-
-  if (kvURI) {
-    // Using the DBCONNECTION secret to get the secret name for the DB connection string
-    const secretName = "DBCONNECTION";
-    console.log("Secret name: ", secretName)
-
-    // Access the key vault to fetch the DB connection string
-    const credential = new DefaultAzureCredential();
-    const client = new SecretClient(kvURI, credential);
-    connectionString = (await client.getSecret(secretName)).value || '';
-    console.log("Retrieved DB connection string from Key Vault")
-  } else if (process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING) {
-    connectionString = process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING
-    console.log("Retrieved DB connection string from environment variable")
-  }
-
-  if (connectionString) {
-    app.set("connectionString", connectionString);
-  }
 
   app.use(express.json());
 
@@ -38,7 +17,7 @@ export async function main(): Promise<void> {
 
   app.use(express.static(path.join(__dirname, "www")));
 
-  routes.register(app);
+  routes.register(app, createFactory());
 
   function logError(err: any, req: any, res: any, next: any) {
     console.log(err)
@@ -46,14 +25,52 @@ export async function main(): Promise<void> {
   }
   app.use(logError)
 
-  process.on('SIGINT', function() {
-    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+  process.on('SIGINT', function () {
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
     process.exit(1);
   });
 
   app.listen(port, () =>
     console.log(`App listening on port ${port}!`),
   );
+}
+
+function createFactory(): RepositoryFactory {
+  if (process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING) { // Used by tutorial
+    console.log("Using MongoDB: found connection string in environment variable CONNECTION_ITEMSTORE_CONNECTIONSTRING");
+    return new MongoFactory(process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING);
+  }
+
+  if (process.env.CONNECTION_MONGODB_CONNECTIONSTRING) {
+    console.log("Using MongoDB: found connection string in environment variable CONNECTION_MONGODB_CONNECTIONSTRING");
+    return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
+  }
+
+  if (process.env.CONNECTION_REDIS_HOST) {
+    console.log("Using Redis: found hostname in environment variable CONNECTION_REDIS_HOST");
+    const connection = { 
+      host: process.env.CONNECTION_REDIS_HOST!, 
+      port: process.env.CONNECTION_REDIS_PORT!,
+      username: process.env.CONNECTION_REDIS_USERNAME,
+      password: process.env.CONNECTION_REDIS_PASSWORD,
+    }
+
+    let scheme = "redis"
+    if (connection.port === "6380") {
+      scheme = "rediss"
+    }
+
+    let usernamePass = "";
+    if (connection.username && connection.username !== "" && connection.password && connection.password !== "") {
+      usernamePass = `${connection.username}:${connection.password}@`
+    }
+
+    const url = `${scheme}://${usernamePass}${connection.host}:${connection.port}`
+    return new RedisFactory(url);
+  }
+
+  console.log("Using in-memory store: no connection string found");
+  return new InMemoryFactory();
 }
 
 main()
