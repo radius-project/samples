@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 const daprPort = process.env.DAPR_HTTP_PORT; 
 const daprGRPCPort = process.env.DAPR_GRPC_PORT;
 
-const stateStoreName =  process.env.CONNECTION_ORDERS_STATESTORENAME;
+const stateStoreName =  process.env.CONNECTION_ORDERS_COMPONENTNAME;
 const stateUrl = `http://localhost:${daprPort}/v1.0/state/${stateStoreName}`;
 const port = 3000;
 
@@ -20,7 +20,7 @@ app.get('/order', (_req, res) => {
         return;
     }
 
-    if (!process.env.CONNECTION_ORDERS_STATESTORENAME) {
+    if (!process.env.CONNECTION_ORDERS_COMPONENTNAME) {
         res.status(400).send({message: "The container is running, but the state store name is not set."});
         return;
     }
