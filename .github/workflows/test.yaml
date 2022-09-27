@@ -42,9 +42,9 @@ jobs:
         run:  rad deploy ./quickstarts/dapr/dapr.bicep
       - name: Delete Dapr quickstart
         run:  rad app delete dapr-quickstart -y
-      - name: Deploy container app quickstart
+      - name: Deploy environment variables quickstart
         run:  rad deploy ./quickstarts/environment-variables/app.bicep
-      - name: Delete Container Apps Store reference app
+      - name: Delete environment variables quickstart
         run:  rad app delete myapp -y
       - name: Deploy eShop reference app
         run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
