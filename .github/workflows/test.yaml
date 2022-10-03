@@ -31,7 +31,9 @@ jobs:
       - name: Download rad
         run:  wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
-        run:  rad env init kubernetes --public-endpoint-override 'localhost:9000'
+        run: |
+          k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+          rad env init kubernetes --public-endpoint-override 'localhost:8081' -e test
       - name: Deploy webapp tutorial
         run:  rad deploy ./tutorial/app.bicep
       - name: Delete webapp tutorial
