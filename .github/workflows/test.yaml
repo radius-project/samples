@@ -31,7 +31,7 @@ jobs:
       - name: Download rad
         run:  wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
       - name: Init local environment
-        run:  rad env init dev
+        run:  rad env init kubernetes --public-endpoint-override 'localhost:9000'
       - name: Deploy webapp tutorial
         run:  rad deploy ./tutorial/app.bicep
       - name: Delete webapp tutorial
