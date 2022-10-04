@@ -1,7 +1,7 @@
 import radius as radius
 
 param appId string
-param environment string
+param radEnvironment string
 param location string
 param uniqueSeed string
 
@@ -19,7 +19,7 @@ resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-p
   location: 'global'
   properties: {
     application: appId
-    environment: environment
+    environment: radEnvironment
     kind: 'pubsub.azure.servicebus'
     resource: serviceBus.id
   }

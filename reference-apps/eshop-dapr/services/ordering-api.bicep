@@ -1,7 +1,7 @@
 import radius as radius
 
 param appId string
-param environment string
+param radEnvironment string
 param endpointUrl string
 
 param daprPubSubBrokerName string
@@ -88,7 +88,7 @@ resource orderingApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-
   location: 'global'
   properties: {
     application: appId
-    environment: environment
+    environment: radEnvironment
     appId: daprAppId
   }
 }

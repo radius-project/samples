@@ -1,7 +1,7 @@
 import radius as radius
 
 // Parameters --------------------------------------------
-param environment string
+param radEnvironment string
 
 param mongoUsername string = 'admin'
 param mongoPassword string = newGuid()
@@ -22,7 +22,7 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshop'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
   }
 }
 
@@ -942,7 +942,7 @@ resource rabbitmq 'Applications.Connector/rabbitmqMessageQueues@2022-03-15-priva
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname
@@ -986,7 +986,7 @@ resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     server: sqlIdentityRoute.properties.hostname
     database: 'IdentityDb'
   }
@@ -1028,7 +1028,7 @@ resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepre
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     server: sqlCatalogRoute.properties.hostname
     database: 'CatalogDb'
   }
@@ -1070,7 +1070,7 @@ resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     server: sqlOrderingRoute.properties.hostname
     database: 'OrderingDb'
   }
@@ -1112,7 +1112,7 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     server: sqlWebhooksRoute.properties.hostname
     database: 'WebhooksDb'
   }
@@ -1150,7 +1150,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     host: redisBasketRoute.properties.hostname
     port: redisBasketRoute.properties.port
   }
@@ -1188,7 +1188,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     host: redisKeystoreRoute.properties.hostname
     port: redisKeystoreRoute.properties.port
   }
@@ -1229,7 +1229,7 @@ resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview'
   location: 'global'
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     secrets: {
       connectionString: 'mongodb://${mongoUsername}:${mongoPassword}@${mongoRoute.properties.hostname}:${mongoRoute.properties.port}'
       username: mongoUsername

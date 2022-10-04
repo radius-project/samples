@@ -1,12 +1,12 @@
 import radius as radius
 
-param environment string
+param radEnvironment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'store'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
   }
 }
 
@@ -39,7 +39,7 @@ resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-pr
   location: 'global'
   properties: {
     application: app.id
-    environment: environment
+    environment: radEnvironment
     appId: 'go-app'
   }
 }
@@ -134,7 +134,7 @@ resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-1
   location: 'global'
   properties: {
     application: app.id
-    environment: environment
+    environment: radEnvironment
     appId: 'python-app'
   }
 }
@@ -142,7 +142,7 @@ resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-1
 module infraFile 'infra-selfhosted.bicep' = {
   name: 'infrastructure'
   params: {
-    environment: environment
+    environment: radEnvironment
     applicationId: app.id
   }
 }  

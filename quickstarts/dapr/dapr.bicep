@@ -1,12 +1,12 @@
 import radius as radius
 
-param environment string
+param radEnvironment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'dapr-quickstart'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
   }
 }
 
@@ -43,7 +43,7 @@ resource backendRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-pr
   name: 'backend-route'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
     application: app.id
     appId: 'backend'
   }
@@ -103,7 +103,7 @@ resource stateStore 'Applications.Connector/daprStateStores@2022-03-15-privatepr
   name: 'statestore'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
     application: app.id
     kind: 'generic'
     type: 'state.redis'

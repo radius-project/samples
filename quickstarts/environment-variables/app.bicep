@@ -1,12 +1,12 @@
 import radius as rad
 
-param environment string
+param radEnvironment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'myapp'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
   }
 }
 
@@ -38,7 +38,7 @@ resource mongoConnector 'Applications.Connector/mongoDatabases@2022-03-15-privat
   name: 'mongo-connector'
   location: 'global'
   properties: {
-    environment: environment
+    environment: radEnvironment
     application: app.id
     secrets: {
       connectionString: mongoContainerModule.outputs.connectionString

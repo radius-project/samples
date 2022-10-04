@@ -1,7 +1,7 @@
 import radius as radius
 
 // Parameters --------------------------------------------
-param environment string
+param radEnvironment string
 
 param ucpLocation string = 'global'
 param azureLocation string = resourceGroup().location
@@ -23,7 +23,7 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshop'
   location: ucpLocation
   properties: {
-    environment: environment
+    environment: radEnvironment
   }
 }
 
@@ -1160,7 +1160,7 @@ resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: sql::identityDb.id
   }
 }
@@ -1170,7 +1170,7 @@ resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepre
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: sql::catalogDb.id
   }
 }
@@ -1180,7 +1180,7 @@ resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: sql::orderingDb.id
   }
 }
@@ -1190,7 +1190,7 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: sql::webhooksDb.id
   }
 }
@@ -1200,7 +1200,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: basketCache.id
   }
 }
@@ -1210,7 +1210,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: keystoreCache.id
   }
 }
@@ -1220,7 +1220,7 @@ resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview'
   location: ucpLocation
   properties: {
     application: eshop.id
-    environment: environment
+    environment: radEnvironment
     resource: cosmosAccount::cosmosDb.id
   }
 }
