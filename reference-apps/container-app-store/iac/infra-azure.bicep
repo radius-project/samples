@@ -4,7 +4,7 @@ param location string = resourceGroup().location
 
 param applicationId string
 
-param radEnvironment string
+param environmentId string
 
 param accountGuid string = newGuid()
 
@@ -31,7 +31,7 @@ resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepr
   properties: {
     kind:  'state.azure.tablestorage'
     application: applicationId
-    environment: radEnvironment
+    environment: environmentId
     resource: account::tableServices::table.id 
   }
 }

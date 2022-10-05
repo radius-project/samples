@@ -1,7 +1,7 @@
 import radius as radius
 
 param appId string
-param radEnvironment string
+param environmentId string
 param location string
 param uniqueSeed string
 
@@ -65,7 +65,7 @@ resource daprStateStore 'Applications.Connector/daprStateStores@2022-03-15-priva
   ]
   properties: {
     application: appId
-    environment: radEnvironment
+    environment: environmentId
     kind: 'generic'
     type: 'state.azure.cosmosdb'
     version: 'v1'

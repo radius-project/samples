@@ -1,7 +1,7 @@
 import radius as radius
 
 param appId string
-param radEnvironment string
+param environmentId string
 param location string
 param uniqueSeed string
 
@@ -63,7 +63,7 @@ resource catalogDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-priv
   location: location
   properties: {
     application: appId
-    environment: radEnvironment
+    environment: environmentId
     resource: sqlServer::catalogDb.id
   }
 }
@@ -73,7 +73,7 @@ resource identityDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-pri
   location: location
   properties: {
     application: appId
-    environment: radEnvironment
+    environment: environmentId
     resource: sqlServer::identityDb.id
   }
 }
@@ -83,7 +83,7 @@ resource orderingDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-pri
   location: location
   properties: {
     application: appId
-    environment: radEnvironment
+    environment: environmentId
     resource: sqlServer::orderingDb.id
   }
 }

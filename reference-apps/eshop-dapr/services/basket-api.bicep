@@ -1,7 +1,7 @@
 import radius as radius
 
 param appId string
-param radEnvironment string
+param environmentId string
 param endpointUrl string
 
 param basketApiRouteName string
@@ -80,7 +80,7 @@ resource basketApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03
   location: 'global'
   properties: {
     application: appId
-    environment: radEnvironment
+    environment: environmentId
     appId: daprAppId
   }
 }

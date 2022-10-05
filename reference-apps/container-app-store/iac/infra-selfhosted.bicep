@@ -2,7 +2,7 @@ import radius as radius
 
 param applicationId string
 
-param radEnvironment string
+param environmentId string
 
 resource redisContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis'
@@ -37,7 +37,7 @@ resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepr
     kind:  'generic'
     type: 'state.redis'
     application: applicationId
-    environment: radEnvironment
+    environment: environmentId
     version: 'v1'
     metadata: {
       redisHost: '${redisRoute.properties.hostname}:${redisRoute.properties.port}'

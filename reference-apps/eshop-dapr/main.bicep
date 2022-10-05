@@ -1,6 +1,6 @@
 import radius as radius
 
-param radEnvironment string
+param environmentId string
 
 param location string = resourceGroup().location
 param uniqueSeed string = resourceGroup().id
@@ -12,7 +12,7 @@ resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' 
   name: 'eshopondapr'
   location: 'global'
   properties: {
-    environment: radEnvironment
+    environment: environmentId
   }
 }
 
@@ -25,7 +25,7 @@ module sqlServer 'infra/sql-server.bicep' = {
   name: '${deployment().name}-sql'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     location: location
     uniqueSeed: uniqueSeed
     sqlAdministratorLogin: sqlAdministratorLogin
@@ -41,7 +41,7 @@ module daprPubSub 'infra/dapr-pub-sub.bicep' = {
   name: '${deployment().name}-dapr-pubsub'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     location: location
     uniqueSeed: uniqueSeed
   }
@@ -52,7 +52,7 @@ module stateStore 'infra/dapr-state-store.bicep' = {
   name: '${deployment().name}-dapr-state-store'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     location: location
     uniqueSeed: uniqueSeed
   }
@@ -104,7 +104,7 @@ module basketApi 'services/basket-api.bicep' = {
   name: '${deployment().name}-basket-api'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     endpointUrl: gateway.outputs.url
     basketApiRouteName: httpRoutes.outputs.basketApiRouteName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
@@ -118,7 +118,7 @@ module catalogApi 'services/catalog-api.bicep' = {
   name: '${deployment().name}-catalog-api'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     catalogDbConnectorName: sqlServer.outputs.catalogDbConnectorName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
@@ -145,7 +145,7 @@ module orderingApi 'services/ordering-api.bicep' = {
   name: '${deployment().name}-ordering-api'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     endpointUrl: gateway.outputs.url
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
@@ -161,7 +161,7 @@ module paymentApi 'services/payment-api.bicep' = {
   name: '${deployment().name}-payment-api'
   params: {
     appId: eShopOnDapr.id
-    environment: radEnvironment
+    environment: environmentId
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     paymentApiRouteName: httpRoutes.outputs.paymentApiRouteName
     seqRouteName: seq.outputs.seqRouteName
