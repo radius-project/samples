@@ -4,6 +4,7 @@ import * as routes from "./routes";
 import { RepostoryFactory as RepositoryFactory } from "./db/repository";
 import { MongoRepositoryFactory as MongoFactory } from './db/mongo';
 import { RedisRepositoryFactory as RedisFactory } from './db/redis';
+import { PostgresRepositoryFactory as PostgresFactory } from './db/postgres';
 import { InMemoryFactory } from './db/inmemory';
 
 export async function main(): Promise<void> {
@@ -72,6 +73,11 @@ function createFactory(): RepositoryFactory {
 
     const url = `${scheme}://${usernamePass}${connection.host}:${connection.port}`
     return new RedisFactory(url);
+  }
+
+  if (process.env.CONNECTION_POSTGRES_SERVER) {
+    console.log("Using PostgreSQL: found connection string in environment variable CONNECTION_POSTGRES_SERVER");
+    return new PostgresFactory(process.env.CONNECTION_POSTGRES_SERVER);
   }
 
   console.log("Using in-memory store: no connection string found");
