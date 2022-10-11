@@ -19,7 +19,7 @@ Special thanks to [@amolenk](https://github.com/amolenk) for his implementation 
    ```
 1. Deploy the app:
    ```bash
-   rad deploy main.bicep
+   rad deploy main.bicep --parameters sqlAdministratorLoginPassword=Pass@word
    ```
 
 ## Endpoints
