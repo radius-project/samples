@@ -25,7 +25,7 @@
     "@types/fs-extra": "^9.0.9",
     "@types/materialize-css": "^1.0.8",
     "@types/mongodb": "^3.6.11",
-    "@types/node": "^14.14.37",
+    "@types/node": "^14.18.32",
     "@types/shelljs": "^0.8.8",
     "@types/vue": "^2.0.0",
     "fs-extra": "^9.1.0",
@@ -45,11 +45,11 @@
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "install": "^0.13.0",
+    "ioredis": "^5.2.3",
     "materialize-css": "^1.0.0",
     "mongodb": "^3.6.5",
     "npm": "^7.7.6",
     "package.json": "^2.0.1",
-    "redis": "^4.2.0",
     "uuid": "^3.4.0",
     "vue": "^2.6.12"
   }

@@ -1,8 +1,8 @@
 import { Item, Repository } from "./repository";
-import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
+import { Cluster as RedisCluster } from 'ioredis';
 
-type RedisClientType = ReturnType<typeof createClient>;
+type RedisClientType = RedisCluster
 
 export class RedisRepositoryFactory implements RedisRepositoryFactory {
     constructor(connectionString: string) {
@@ -12,14 +12,23 @@ export class RedisRepositoryFactory implements RedisRepositoryFactory {
     readonly connectionString: string;
 
     async create(): Promise<Repository> {
-        let client = createClient({
-            url: this.connectionString,
-        });
-
+        const redisOptions = this.connectionString.startsWith('rediss') ? {
+            tls: {}
+        } : undefined
+        const client = new RedisCluster([this.connectionString], {
+            dnsLookup: (address, callback) => callback(null, address),
+            redisOptions
+        })
         client.on('error', (err) => console.log('Redis Error', err));
-        client.connect();
-
-        await client.ping();
+        try {
+            await client.connect();
+        } catch (err) {
+            if (err instanceof Error && err.message.includes('Redis is already connecting/connected')) {
+                console.log('Reconnecting to Redis');
+            } else {
+                console.error('Redis Error', err);
+            }
+        }
         return new RedisRepository(client)
     }
 }
@@ -35,7 +44,7 @@ export class RedisRepository implements Repository {
         return true;
     }
     async get(id: string): Promise<Item | null> {
-        let result = await this.client.hGet('items', id);
+        let result = await this.client.hget('items', id);
         if (result) {
             return JSON.parse(result) as Item;
         }
@@ -43,27 +52,27 @@ export class RedisRepository implements Repository {
         return null;
     }
     async list(): Promise<Item[]> {
-        let result = await this.client.hVals('items');
+        let result = await this.client.hvals('items');
         return result.map(s => JSON.parse(s) as Item);
     }
     async update(item: Item): Promise<Item | null> {
-        if (!await this.client.hExists('items', item.id!)) {
+        if (!await this.client.hexists('items', item.id!)) {
             return null
         }
 
-        await this.client.hSet('items', item.id!, JSON.stringify(item));
+        await this.client.hset('items', item.id!, JSON.stringify(item));
         return item;
     }
     async create(item: Item): Promise<Item> {
         const id = uuidv4();
         item.id = id;
-        await this.client.hSet('items', item.id!, JSON.stringify(item));
+        await this.client.hset('items', item.id!, JSON.stringify(item));
         return item;
     }
     async delete(id: string): Promise<void> {
-        await this.client.hDel('items', id);
+        await this.client.hdel('items', id);
     }
     async dispose(): Promise<void> {
-        await this.client.quit()
+        this.client.quit()
     }
 }
