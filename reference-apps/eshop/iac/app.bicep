@@ -4,6 +4,7 @@ import radius as radius
 param environment string
 
 param mongoUsername string = 'admin'
+@secure()
 param mongoPassword string = newGuid()
 param OCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
