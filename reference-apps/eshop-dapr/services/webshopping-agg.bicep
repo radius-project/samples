@@ -11,14 +11,6 @@ param webshoppingAggRouteName string
 
 var daprAppId = 'webshoppingagg'
 
-resource basketApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketApiRouteName
-}
-
-resource catalogApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogApiRouteName
-}
-
 resource identityApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: identityApiRouteName
 }
