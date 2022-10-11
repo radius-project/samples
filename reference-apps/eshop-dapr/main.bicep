@@ -6,6 +6,7 @@ param location string = resourceGroup().location
 param uniqueSeed string = resourceGroup().id
 
 param sqlAdministratorLogin string  = 'server_admin'
+@secure()
 param sqlAdministratorLoginPassword string = 'Pass@word'
 
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
