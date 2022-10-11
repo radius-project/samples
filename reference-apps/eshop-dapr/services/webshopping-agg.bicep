@@ -3,8 +3,6 @@ import radius as radius
 param appId string
 param endpointUrl string
 
-param basketApiRouteName string
-param catalogApiRouteName string
 param identityApiRouteName string
 param seqRouteName string
 param webshoppingAggRouteName string
