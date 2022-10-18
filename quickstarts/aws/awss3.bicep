@@ -1,9 +1,11 @@
 import aws as aws
-
 import radius as radius
 
 param environment string
+
 param location string = 'global'
+
+param bucket string
 
 @secure()
 param aws_access_key_id string
@@ -15,16 +17,12 @@ param aws_secret_access_key string
 param aws_region string
 
 resource s3 'AWS.S3/Bucket@default' = {
-  name: 'my-bucket-14829032'
+  name: bucket
   properties: {
-    BucketName: 'my-bucket-14829032'
+    BucketName: bucket
     AccessControl: 'PublicRead'
   }
 }
-
-// resource s3 'AWS.S3/Bucket@default' existing = {
-//   name: 'my-bucket-14829032'
-// }
 
 // get a radius container which uses the s3 bucket
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
