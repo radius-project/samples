@@ -48,6 +48,10 @@ jobs:
         run: |
           docker build ./quickstarts/environment-variables/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
+      - name: Build and push aws-sqs quickstart images
+        run: |
+          docker build ./reference-apps/aws-sqs/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/aws-sqs-sample:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/aws-sqs-sample:${{ env.VERSION }}"
       - name: Build and push reference-apps container app store images
         run: |
           docker build ./reference-apps/container-app-store/go-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
