@@ -40,6 +40,10 @@ jobs:
           docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
+      - name: Build and push quickstart AWS images
+        run: |
+          docker build ./quickstarts/aws/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/aws:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/aws:${{ env.VERSION }}"
       - name: Build and push environment variables quickstart image
         run: |
           docker build ./quickstarts/environment-variables/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
@@ -88,6 +92,7 @@ jobs:
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/webapp:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/aws:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/envvars:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-go-service:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-node-service:${{ env.VERSION }}" --yes
