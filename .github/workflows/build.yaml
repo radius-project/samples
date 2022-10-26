@@ -98,6 +98,7 @@ jobs:
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/envvars:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/aws:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/aws-sqs-sample:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-go-service:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-node-service:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-python-service:${{ env.VERSION }}" --yes
