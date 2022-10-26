@@ -77,14 +77,21 @@ func receive(w http.ResponseWriter, req *http.Request) {
 		VisibilityTimeout:   aws.Int64(int64(visibilityTimeout.Seconds())),
 	})
 	if err != nil {
-		fmt.Fprintln(w, "error receiving sqs message request: "+err.Error())
+		fmt.Fprint(w, "error receiving sqs message request: "+err.Error())
 		return
 	}
 
-	for _, msg := range resp.Messages {
-		fmt.Fprintln(w, awsutil.Prettify(*msg))
+	if len(resp.Messages) == 0 {
+
+		fmt.Fprintln(w, "no messages in queue")
 	}
 
+	msg := resp.Messages[0]
+	fmt.Fprint(w, awsutil.Prettify(*msg))
+	_, _ = svc.DeleteMessage(&sqs.DeleteMessageInput{
+		QueueUrl:      aws.String(queueUrl),
+		ReceiptHandle: msg.ReceiptHandle,
+	})
 }
 
 func main() {
@@ -93,6 +100,6 @@ func main() {
 	http.HandleFunc("/receive", receive)
 
 	sess = session.Must(session.NewSession())
-
-	_ = http.ListenAndServe(":3000", nil)
+	port := os.Getenv("HTTP_SERVER_PORT")
+	_ = http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
 }
