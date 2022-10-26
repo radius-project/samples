@@ -45,8 +45,7 @@ resource producer 'Applications.Core/containers@2022-03-15-privatepreview' = {
         },
         awsCredential
       )
-      image: 'asilverman.azurecr.io/sqsgo:latest'
-      // image: 'radius.azurecr.io//quickstarts/aws-sqs-sample:edge'
+      image: 'radius.azurecr.io/quickstarts/aws-sqs-sample:edge'
     }
   }
 }
@@ -64,8 +63,7 @@ resource consumer 'Applications.Core/containers@2022-03-15-privatepreview' = {
         },
         awsCredential
       )
-      image: 'asilverman.azurecr.io/sqsgo:latest'
-      // image: 'radius.azurecr.io//quickstarts/aws-sqs-sample:edge'
+      image: 'radius.azurecr.io/quickstarts/aws-sqs-sample:edge'
     }
   }
 }
