@@ -58,8 +58,8 @@ resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   }
 }
 
-resource catalogDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'catalog-db-connector'
+resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'catalog-db-link'
   location: location
   properties: {
     application: appId
@@ -68,8 +68,8 @@ resource catalogDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-priv
   }
 }
 
-resource identityDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'identity-db-connector'
+resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'identity-db-link'
   location: location
   properties: {
     application: appId
@@ -78,8 +78,8 @@ resource identityDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-pri
   }
 }
 
-resource orderingDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'ordering-db-connector'
+resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'ordering-db-link'
   location: location
   properties: {
     application: appId
@@ -88,6 +88,6 @@ resource orderingDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-pri
   }
 }
 
-output catalogDbConnectorName string = catalogDbConnector.name
-output identityDbConnectorName string = identityDbConnector.name
-output orderingDbConnectorName string = orderingDbConnector.name
+output catalogDbLinkName string = catalogDbLink.name
+output identityDbLinkName string = identityDbLink.name
+output orderingDbLinkName string = orderingDbLink.name

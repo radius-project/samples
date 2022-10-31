@@ -34,7 +34,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource go_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'go-app-route'
   location: 'global'
   properties: {
@@ -129,7 +129,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource python_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'python-app'
   location: 'global'
   properties: {
