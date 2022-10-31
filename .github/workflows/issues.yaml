@@ -33,7 +33,8 @@ jobs:
               fi
             fi
           done
-  alert:
+  ado:
+    name: Sync issue to Azure DevOps
     runs-on: ubuntu-latest
     steps:
       - uses: danhellem/github-actions-issue-to-work-item@v2.0
