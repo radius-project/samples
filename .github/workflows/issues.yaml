@@ -2,11 +2,12 @@ name: Issues Automation
 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited, deleted, closed, reopened, labeled, unlabeled, assigned]
 
 jobs:
   customer:
     name: Add a label if Issue created by customer
+    if: github.event.action == 'opened'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
