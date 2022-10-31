@@ -7,7 +7,7 @@ param endpointUrl string
 param daprPubSubBrokerName string
 param identityApiRouteName string
 param orderingApiRouteName string
-param orderingDbConnectorName string
+param orderingDbLinkName string
 param seqRouteName string
 
 @secure()
@@ -17,7 +17,7 @@ param sqlAdministratorLoginPassword string
 
 var daprAppId = 'ordering-api'
 
-resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
@@ -29,8 +29,8 @@ resource orderingApiRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   name: orderingApiRouteName
 }
 
-resource orderingDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: orderingDbConnectorName
+resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+  name: orderingDbLinkName
 }
 
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
@@ -47,7 +47,7 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ConnectionStrings__OrderingDB: 'Server=tcp:${orderingDbConnector.properties.server},1433;Initial Catalog=${orderingDbConnector.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__OrderingDB: 'Server=tcp:${orderingDbLink.properties.server},1433;Initial Catalog=${orderingDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
         IdentityUrl: identityApiRoute.properties.url
         IdentityUrlExternal: '${endpointUrl}/identity/'
         RetryMigrations: 'true'
@@ -74,7 +74,7 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
         source: seqRoute.id
       }
       sql: {
-        source: orderingDbConnector.id
+        source: orderingDbLink.id
       }
       pubsub: {
         source: daprPubSubBroker.id
@@ -83,7 +83,7 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   }
 }
 
-resource orderingApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource orderingApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'ordering-api-dapr-route'
   location: 'global'
   properties: {

@@ -14,7 +14,7 @@ resource catalogApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview
   name: catalogApiRouteName
 }
 
-resource catalogApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
   name: catalogApiDaprRouteName
 }
 
@@ -22,7 +22,7 @@ resource orderingApiRoute 'Applications.Core/httpRoutes@2022-03-15-privateprevie
   name: orderingApiRouteName
 }
 
-resource orderingApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
   name: orderingApiDaprRouteName
 }
 

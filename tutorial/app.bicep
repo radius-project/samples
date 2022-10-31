@@ -54,7 +54,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   }
 }
 
-resource db 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
+resource db 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'db'
   location: 'global'
   properties: {

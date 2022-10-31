@@ -16,11 +16,11 @@ resource basketApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview'
   name: basketApiRouteName
 }
 
-resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprStateStore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' existing = {
+resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' existing = {
   name: daprStateStoreName
 }
 
@@ -75,7 +75,7 @@ resource basketApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource basketApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource basketApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'basket-api-dapr-route'
   location: 'global'
   properties: {
