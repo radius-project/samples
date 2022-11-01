@@ -174,8 +174,6 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   params: {
     appId: eShopOnDapr.id
     endpointUrl: gateway.outputs.url
-    basketApiRouteName: httpRoutes.outputs.basketApiRouteName
-    catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     seqRouteName: seq.outputs.seqRouteName
     webshoppingAggRouteName: httpRoutes.outputs.webshoppingAggRouteName
