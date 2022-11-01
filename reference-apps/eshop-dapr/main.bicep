@@ -6,6 +6,7 @@ param location string = resourceGroup().location
 param uniqueSeed string = resourceGroup().id
 
 param sqlAdministratorLogin string  = 'server_admin'
+@secure()
 param sqlAdministratorLoginPassword string = 'Pass@word'
 
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
@@ -120,7 +121,7 @@ module catalogApi 'services/catalog-api.bicep' = {
     appId: eShopOnDapr.id
     environment: environment
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
-    catalogDbConnectorName: sqlServer.outputs.catalogDbConnectorName
+    catalogDbLinkName: sqlServer.outputs.catalogDbLinkName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     seqRouteName: seq.outputs.seqRouteName
     sqlAdministratorLogin: sqlAdministratorLogin
@@ -134,7 +135,7 @@ module identityApi 'services/identity-api.bicep' = {
     appId: eShopOnDapr.id
     endpointUrl: gateway.outputs.url
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
-    identityDbConnectorName: sqlServer.outputs.identityDbConnectorName
+    identityDbLinkName: sqlServer.outputs.identityDbLinkName
     seqRouteName: seq.outputs.seqRouteName
     sqlAdministratorLogin: sqlAdministratorLogin
     sqlAdministratorLoginPassword: sqlAdministratorLoginPassword
@@ -150,7 +151,7 @@ module orderingApi 'services/ordering-api.bicep' = {
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     orderingApiRouteName: httpRoutes.outputs.orderingApiRouteName
-    orderingDbConnectorName: sqlServer.outputs.orderingDbConnectorName
+    orderingDbLinkName: sqlServer.outputs.orderingDbLinkName
     seqRouteName: seq.outputs.seqRouteName
     sqlAdministratorLogin: sqlAdministratorLogin
     sqlAdministratorLoginPassword: sqlAdministratorLoginPassword

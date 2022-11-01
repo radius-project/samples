@@ -4,7 +4,7 @@ param appId string
 param endpointUrl string
 
 param identityApiRouteName string
-param identityDbConnectorName string
+param identityDbLinkName string
 param seqRouteName string
 
 @secure()
@@ -16,8 +16,8 @@ resource identityApiRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   name: identityApiRouteName
 }
 
-resource identityDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: identityDbConnectorName
+resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+  name: identityDbLinkName
 }
 
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
@@ -37,7 +37,7 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
         PATH_BASE: '/identity/'
         BlazorClientUrlExternal: endpointUrl
         IssuerUrl: '${endpointUrl}/identity/'
-        ConnectionStrings__IdentityDB: 'Server=tcp:${identityDbConnector.properties.server},1433;Initial Catalog=${identityDbConnector.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__IdentityDB: 'Server=tcp:${identityDbLink.properties.server},1433;Initial Catalog=${identityDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
         RetryMigrations: 'true'
         SeqServerUrl: seqRoute.properties.url
       }
@@ -53,7 +53,7 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
         source: seqRoute.id
       }
       sql: {
-        source: identityDbConnector.id
+        source: identityDbLink.id
       }
     }
   }

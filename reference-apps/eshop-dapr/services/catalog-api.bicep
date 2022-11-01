@@ -4,7 +4,7 @@ param appId string
 param environment string
 
 param catalogApiRouteName string
-param catalogDbConnectorName string
+param catalogDbLinkName string
 param daprPubSubBrokerName string
 param seqRouteName string
 
@@ -19,11 +19,11 @@ resource catalogApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
   name: catalogApiRouteName
 }
 
-resource catalogDbConnector 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: catalogDbConnectorName
+resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+  name: catalogDbLinkName
 }
 
-resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
@@ -41,7 +41,7 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ConnectionStrings__CatalogDB: 'Server=tcp:${catalogDbConnector.properties.server},1433;Initial Catalog=${catalogDbConnector.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__CatalogDB: 'Server=tcp:${catalogDbLink.properties.server},1433;Initial Catalog=${catalogDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
         RetryMigrations: 'true'
         SeqServerUrl: seqRoute.properties.url
       }
@@ -65,7 +65,7 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
         source: seqRoute.id
       }
       sql: {
-        source: catalogDbConnector.id
+        source: catalogDbLink.id
       }
       pubsub: {
         source: daprPubSubBroker.id
@@ -74,7 +74,7 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource catalogApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'catalog-api-dapr-route'
   location: 'global'
   properties: {

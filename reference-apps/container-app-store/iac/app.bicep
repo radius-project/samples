@@ -16,7 +16,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-go-service:0.13'
+      image: 'radius.azurecr.io/reference-apps/container-app-go-service:0.14'
       ports: {
         web: {
           containerPort: 8050
@@ -34,7 +34,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource go_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource go_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'go-app-route'
   location: 'global'
   properties: {
@@ -71,10 +71,10 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-node-service:0.13'
+      image: 'radius.azurecr.io/reference-apps/container-app-node-service:0.14'
       env: {
-        'ORDER_SERVICE_NAME': python_app_route.properties.appId
-        'INVENTORY_SERVICE_NAME': go_app_route.properties.appId
+        ORDER_SERVICE_NAME: python_app_route.properties.appId
+        INVENTORY_SERVICE_NAME: go_app_route.properties.appId
       }
       ports: {
         web: {
@@ -106,7 +106,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-python-service:0.13'
+      image: 'radius.azurecr.io/reference-apps/container-app-python-service:0.14'
       ports: {
         web: {
           containerPort: 5000
@@ -129,7 +129,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource python_app_route 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource python_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'python-app'
   location: 'global'
   properties: {

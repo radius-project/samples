@@ -1153,9 +1153,9 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
 
 }
 
-// Connectors ----------------------------------------------------------------------------
+// Links ----------------------------------------------------------------------------
 
-resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   location: ucpLocation
   properties: {
@@ -1165,7 +1165,7 @@ resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
   location: ucpLocation
   properties: {
@@ -1175,7 +1175,7 @@ resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepre
   }
 }
 
-resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
   location: ucpLocation
   properties: {
@@ -1185,7 +1185,7 @@ resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
   location: ucpLocation
   properties: {
@@ -1195,7 +1195,7 @@ resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
   location: ucpLocation
   properties: {
@@ -1205,7 +1205,7 @@ resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privateprevi
   }
 }
 
-resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
   location: ucpLocation
   properties: {
@@ -1215,7 +1215,7 @@ resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepre
   }
 }
 
-resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
+resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'mongo'
   location: ucpLocation
   properties: {

@@ -14,7 +14,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
   }
 }
 
-resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-privatepreview' = {
+resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' = {
   name: 'pubsub'
   location: 'global'
   properties: {

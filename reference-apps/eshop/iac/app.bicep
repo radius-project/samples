@@ -4,6 +4,7 @@ import radius as radius
 param environment string
 
 param mongoUsername string = 'admin'
+@secure()
 param mongoPassword string = newGuid()
 param OCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
@@ -937,7 +938,7 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
   }
 }
 
-resource rabbitmq 'Applications.Connector/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
+resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
   location: 'global'
   properties: {
@@ -981,7 +982,7 @@ resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource sqlIdentityDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   location: 'global'
   properties: {
@@ -1023,7 +1024,7 @@ resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
   }
 }
 
-resource sqlCatalogDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
   location: 'global'
   properties: {
@@ -1065,7 +1066,7 @@ resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource sqlOrderingDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
   location: 'global'
   properties: {
@@ -1107,7 +1108,7 @@ resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource sqlWebhooksDb 'Applications.Connector/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
   location: 'global'
   properties: {
@@ -1145,7 +1146,7 @@ resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource redisBasket 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
   location: 'global'
   properties: {
@@ -1183,7 +1184,7 @@ resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privateprev
   }
 }
 
-resource redisKeystore 'Applications.Connector/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
   location: 'global'
   properties: {
@@ -1224,7 +1225,7 @@ resource mongoRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource mongo 'Applications.Connector/mongoDatabases@2022-03-15-privatepreview' = {
+resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'mongo'
   location: 'global'
   properties: {

@@ -6,10 +6,8 @@ param applicationId string
 
 param environment string
 
-param accountGuid string = newGuid()
-
 resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: uniqueString(accountGuid)
+  name: 'store${uniqueString(resourceGroup().id)}'
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -25,7 +23,7 @@ resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource statestore 'Applications.Connector/daprStateStores@2022-03-15-privatepreview' = {
+resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
   name: 'orders'
   location: 'global'
   properties: {

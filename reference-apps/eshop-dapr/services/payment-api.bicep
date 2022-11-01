@@ -9,7 +9,7 @@ param seqRouteName string
 
 var daprAppId = 'payment-api'
 
-resource daprPubSubBroker 'Applications.Connector/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
@@ -59,7 +59,7 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource paymentApiDaprRoute 'Applications.Connector/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource paymentApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'payment-api-dapr-route'
   location: 'global'
   properties: {
