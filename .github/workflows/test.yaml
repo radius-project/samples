@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - v*.*
+      - edge
     paths:
       - 'quickstarts/**'
       - 'reference-apps/**'
@@ -13,10 +14,11 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
+      - edge
     paths:
       - 'quickstarts/**'
       - 'reference-apps/**'
-      - '.github/workflows/quickstarts.yaml'
+      - '.github/workflows/**'
 
 jobs:
   build:
@@ -35,7 +37,12 @@ jobs:
       - name: Download k3d
         run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad
-        run:  wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+        run: |
+           if [ "$GITHUB_BASE_REF" = "edge" ]; then
+             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+           else
+             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+           fi
       - name: Init local environment
         run: |
           k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
