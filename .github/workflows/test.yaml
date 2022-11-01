@@ -38,7 +38,7 @@ jobs:
         run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad
         run: |
-           if ["$GITHUB_BASE_REF" = "edge"]; then
+           if [ "$GITHUB_BASE_REF" = "edge" ]; then
              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
            else
              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
