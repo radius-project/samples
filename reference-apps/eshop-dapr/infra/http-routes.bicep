@@ -81,5 +81,5 @@ output identityApiRouteName string = identityApiRoute.name
 output orderingApiRouteName string = orderingApiRoute.name
 output paymentApiRouteName string = paymentApiRoute.name
 output webshoppingAggRouteName string = webshoppingAggRoute.name
-output webshoppingGwRouteName resource = webshoppingGwRoute.name
+output webshoppingGwRouteName string = webshoppingGwRoute.name
 output webstatusRouteName string = webstatusRoute.name

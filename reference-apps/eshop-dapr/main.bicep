@@ -7,7 +7,7 @@ param uniqueSeed string = resourceGroup().id
 
 param sqlAdministratorLogin string  = 'server_admin'
 @secure()
-param sqlAdministratorLoginPassword string = 'Pass@word'
+param sqlAdministratorLoginPassword string
 
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
@@ -174,8 +174,6 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   params: {
     appId: eShopOnDapr.id
     endpointUrl: gateway.outputs.url
-    basketApiRouteName: httpRoutes.outputs.basketApiRouteName
-    catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     seqRouteName: seq.outputs.seqRouteName
     webshoppingAggRouteName: httpRoutes.outputs.webshoppingAggRouteName
