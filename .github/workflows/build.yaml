@@ -48,6 +48,10 @@ jobs:
         run: |
           docker build ./quickstarts/environment-variables/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
+      - name: Build and push volumes quickstart image
+        run: |
+          docker build ./quickstarts/volumes/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}"
       - name: Build and push aws-sqs quickstart images
         run: |
           docker build ./reference-apps/aws-sqs/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}"
@@ -75,7 +79,7 @@ jobs:
           cp ./tutorial/azure-cosmosdb.bicep ./tutorial/mongo-container.bicep ./tutorial/app.bicep ./tzip/
           zip -r ./tutorial.zip ./tzip/
       - name: Upload zip artifacts to blob storage
-        uses: bacongobbler/azure-blob-storage-upload@v2.0.0
+        uses: bacongobbler/azure-blob-storage-upload@main
         with:
           source_dir: ./
           container_name: code
@@ -97,6 +101,7 @@ jobs:
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/envvars:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/volumes:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/aws:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/aws-sqs-sample:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-go-service:${{ env.VERSION }}" --yes
