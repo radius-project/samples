@@ -988,9 +988,9 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     server: sqlIdentityRoute.properties.hostname
     database: 'IdentityDb'
-    mode: 'values'
   }
 }
 
@@ -1031,9 +1031,9 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     server: sqlCatalogRoute.properties.hostname
     database: 'CatalogDb'
-    mode: 'values'
   }
 }
 
@@ -1074,9 +1074,9 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     server: sqlOrderingRoute.properties.hostname
     database: 'OrderingDb'
-    mode: 'values'
   }
 }
 
@@ -1117,9 +1117,9 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     server: sqlWebhooksRoute.properties.hostname
     database: 'WebhooksDb'
-    mode: 'values'
   }
 }
 
