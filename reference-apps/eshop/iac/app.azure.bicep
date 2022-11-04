@@ -1162,6 +1162,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: eshop.id
     environment: environment
     resource: sql::identityDb.id
+    mode: 'resource'
   }
 }
 
@@ -1172,6 +1173,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     application: eshop.id
     environment: environment
     resource: sql::catalogDb.id
+    mode: 'resource'
   }
 }
 
@@ -1182,6 +1184,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: eshop.id
     environment: environment
     resource: sql::orderingDb.id
+    mode: 'resource'
   }
 }
 
@@ -1192,6 +1195,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: eshop.id
     environment: environment
     resource: sql::webhooksDb.id
+    mode: 'resource'
   }
 }
 

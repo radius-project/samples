@@ -990,6 +990,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     environment: environment
     server: sqlIdentityRoute.properties.hostname
     database: 'IdentityDb'
+    mode: 'values'
   }
 }
 
@@ -1032,6 +1033,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     environment: environment
     server: sqlCatalogRoute.properties.hostname
     database: 'CatalogDb'
+    mode: 'values'
   }
 }
 
@@ -1074,6 +1076,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     environment: environment
     server: sqlOrderingRoute.properties.hostname
     database: 'OrderingDb'
+    mode: 'values'
   }
 }
 
@@ -1116,6 +1119,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     environment: environment
     server: sqlWebhooksRoute.properties.hostname
     database: 'WebhooksDb'
+    mode: 'values'
   }
 }
 
