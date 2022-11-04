@@ -64,6 +64,7 @@ resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: appId
     environment: environment
+    mode: 'resource'
     resource: sqlServer::catalogDb.id
   }
 }
@@ -74,6 +75,7 @@ resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privateprevie
   properties: {
     application: appId
     environment: environment
+    mode: 'resource'
     resource: sqlServer::identityDb.id
   }
 }
@@ -84,6 +86,7 @@ resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privateprevie
   properties: {
     application: appId
     environment: environment
+    mode: 'resource'
     resource: sqlServer::orderingDb.id
   }
 }
