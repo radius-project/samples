@@ -1,0 +1,36 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "This application is used to demonstrate Radius basics as part of our 'first application' tutorial.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "npm run build:server && npm run build:client",
+    "build:client": "node build-client.js",
+    "build:server": "rimraf ./dist && rimraf ./www && tsc",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
+    "start:client": "node start-client.js",
+    "start:server": "npm run build && node dist/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.11.9",
+    "concurrently": "^7.5.0",
+    "nodemon": "^2.0.20",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@types/mongodb": "^4.0.7",
+    "@types/morgan": "^1.9.3",
+    "@types/uuid": "^8.3.4",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongodb": "^4.11.0",
+    "morgan": "^1.10.0",
+    "redis": "^4.4.0",
+    "uuid": "^9.0.0"
+  }
+}
