@@ -34,6 +34,10 @@ jobs:
         run: |
           docker build ./tutorial/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
+      - name: Build and push demo webapp image
+        run: |
+          docker build ./demo/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
       - name: Build and push quickstart Dapr images
         run: |
           docker build ./quickstarts/dapr/nodeapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
@@ -98,6 +102,7 @@ jobs:
       - name: Delete PR images
         run: |
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/webapp:${{ env.VERSION }}" --yes
+          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/demo:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
           az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/envvars:${{ env.VERSION }}" --yes
