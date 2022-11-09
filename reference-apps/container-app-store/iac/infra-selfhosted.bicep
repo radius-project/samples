@@ -35,6 +35,7 @@ resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   location: 'global'
   properties: {
     kind:  'generic'
+    mode: 'values'
     type: 'state.redis'
     application: applicationId
     environment: environment
