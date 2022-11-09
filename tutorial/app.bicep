@@ -60,6 +60,9 @@ resource db 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
   properties: {
     environment: app.properties.environment
     application: app.id
+    mode: 'values'
+    host: mongo.outputs.name
+    port: mongo.outputs.port
     secrets: {
       connectionString: 'mongodb://${mongo.outputs.name}:${mongo.outputs.port}/${mongo.outputs.dbName}?authSource=admin'
     }
