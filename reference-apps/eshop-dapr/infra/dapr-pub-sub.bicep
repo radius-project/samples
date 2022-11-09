@@ -21,6 +21,7 @@ resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privat
     application: appId
     environment: environment
     kind: 'pubsub.azure.servicebus'
+    mode: 'resource'
     resource: serviceBus.id
   }
 }
