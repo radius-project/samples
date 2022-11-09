@@ -41,6 +41,8 @@ resource mongoLink 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' 
     environment: environment
     application: app.id
     mode:'values'
+    host:mongoContainerModule.outputs.name
+    port:mongoContainerModule.outputs.port
     secrets: {
       connectionString: mongoContainerModule.outputs.connectionString
     }

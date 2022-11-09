@@ -1232,6 +1232,8 @@ resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
     application: eshop.id
     environment: environment
     mode:'values'
+    host:mongoRoute.properties.hostname
+    port:mongoRoute.properties.port
     secrets: {
       connectionString: 'mongodb://${mongoUsername}:${mongoPassword}@${mongoRoute.properties.hostname}:${mongoRoute.properties.port}'
       username: mongoUsername
