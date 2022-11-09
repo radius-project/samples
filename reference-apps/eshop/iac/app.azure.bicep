@@ -1221,7 +1221,7 @@ resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     environment: environment
-    mode:'resource'
+    mode: 'resource'
     resource: cosmosAccount::cosmosDb.id
   }
 }
