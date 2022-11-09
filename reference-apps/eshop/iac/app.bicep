@@ -944,6 +944,7 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname
