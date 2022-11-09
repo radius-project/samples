@@ -1157,6 +1157,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     host: redisBasketRoute.properties.hostname
     port: redisBasketRoute.properties.port
   }
@@ -1195,6 +1196,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'values'
     host: redisKeystoreRoute.properties.hostname
     port: redisKeystoreRoute.properties.port
   }
