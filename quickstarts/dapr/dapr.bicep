@@ -105,8 +105,8 @@ resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   properties: {
     environment: environment
     application: app.id
-    kind: 'generic'
     mode: 'values'
+    kind: 'generic'
     type: 'state.redis'
     version: 'v1'
     metadata: {
