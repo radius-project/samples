@@ -1205,6 +1205,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'resource'
     resource: basketCache.id
   }
 }
@@ -1215,6 +1216,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     environment: environment
+    mode: 'resource'
     resource: keystoreCache.id
   }
 }
