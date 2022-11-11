@@ -65,6 +65,7 @@ resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview'
   ]
   }
 }
+
 resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'nodeapp'
   location: 'global'
