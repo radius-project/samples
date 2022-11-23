@@ -16,7 +16,6 @@ param aws_secret_access_key string
 param aws_region string
 
 resource s3 'AWS.S3/Bucket@default' = {
-  name: bucket
   properties: {
     BucketName: bucket
     AccessControl: 'PublicRead'
