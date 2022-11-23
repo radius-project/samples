@@ -8,7 +8,7 @@ jobs:
   customer:
     name: Add a label if Issue created by customer
     if: github.event.action == 'opened'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
     steps:
@@ -36,7 +36,7 @@ jobs:
           done
   ado:
     name: Sync issue to Azure DevOps
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: danhellem/github-actions-issue-to-work-item@v2.0
         env:

@@ -24,7 +24,7 @@ jobs:
   build:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
     steps:

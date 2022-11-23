@@ -20,7 +20,7 @@ jobs:
   build:
     name: Build and push quickstart container images
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -71,7 +71,7 @@ jobs:
   code:
     name: Zip and upload code
     if: github.ref == 'refs/heads/edge'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -93,7 +93,7 @@ jobs:
   cleanup:
     name: Cleanup PR images
     if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Login to az cli and ACR
         run: |

@@ -25,7 +25,7 @@ jobs:
   build:
     name: Build and push codespace image
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -43,7 +43,7 @@ jobs:
   cleanup:
     name: Cleanup PR image
     if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Login to az cli and ACR
         run: |
