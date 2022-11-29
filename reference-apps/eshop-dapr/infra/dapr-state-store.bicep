@@ -67,7 +67,6 @@ resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepre
     application: appId
     environment: environment
     mode: 'values'
-    kind: 'generic'
     type: 'state.azure.cosmosdb'
     version: 'v1'
     metadata: {
