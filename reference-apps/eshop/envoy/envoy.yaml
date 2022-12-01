@@ -19,7 +19,6 @@ static_resources:
           route_config:
             name: eshop_backend_route
             virtual_hosts:
-            # http://gateway.eshop.20.62.190.117.nip.io/webshoppingapigw/c/api/v1/catalog/catalogbrands
             - name: eshop_backend
               domains:
               - "*"

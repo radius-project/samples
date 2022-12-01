@@ -17,5 +17,5 @@ This reference app is a "radified" version of the [eShop on containers](https://
    ```
 1. Deploy the app:
     ```bash
-    rad app deploy
+    rad deploy iac/app.bicep
     ```
