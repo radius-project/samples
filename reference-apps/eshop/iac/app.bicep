@@ -154,7 +154,6 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
-        // DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},ssl=True,abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
@@ -563,7 +562,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
   properties: {
     application: eshop.id
     container: {
-      image: 'jkotalik.azurecr.io/envoy:latest'
+      image: 'radius.azurecr.io/eshop-envoy:0.1.4'
       env: {}
       ports: {
         http: {
@@ -778,7 +777,6 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
-        // DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},ssl=True,abortConnect=False'
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -834,7 +832,6 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
-        // DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},ssl=True,abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         OrchestratorType: OCHESTRATOR_TYPE
