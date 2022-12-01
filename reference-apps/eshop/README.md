@@ -17,5 +17,5 @@ This reference app is a "radified" version of the [eShop on containers](https://
    ```
 1. Deploy the app:
     ```bash
-    rad deploy iac/app.bicep
+    rad deploy iac/app.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
     ```
