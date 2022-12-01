@@ -19,6 +19,7 @@ static_resources:
           route_config:
             name: eshop_backend_route
             virtual_hosts:
+            # http://gateway.eshop.20.62.190.117.nip.io/webshoppingapigw/c/api/v1/catalog/catalogbrands
             - name: eshop_backend
               domains:
               - "*"
@@ -106,7 +107,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: eshop-webshoppingagg-http
+        address: webshoppingagg-http
         port_value: 5121
   - name: catalog
     connect_timeout: 0.25s
@@ -114,7 +115,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: eshop-catalog-http
+        address: catalog-http
         port_value: 5101
   - name: basket
     connect_timeout: 0.25s
@@ -122,7 +123,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: eshop-basket-http
+        address: basket-http
         port_value: 5103
   - name: ordering
     connect_timeout: 0.25s
@@ -130,7 +131,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: eshop-ordering-http
+        address: ordering-http
         port_value: 5102
   - name: signalr-hub
     connect_timeout: 0.25s
@@ -138,6 +139,6 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: ordering-signalrhub
+        address: orderingsignalrhub-http
         port_value: 5112
   
