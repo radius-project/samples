@@ -27,7 +27,6 @@ resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   name: 'orders'
   location: 'global'
   properties: {
-    kind:  'state.azure.tablestorage'
     application: applicationId
     environment: environment
     mode: 'resource'

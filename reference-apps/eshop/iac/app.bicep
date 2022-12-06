@@ -153,7 +153,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
@@ -302,7 +302,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},ssl=True,abortConnect=False'
+        ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},abortConnect=False'
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -562,7 +562,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
   properties: {
     application: eshop.id
     container: {
-      image: 'radius.azurecr.io/eshop-envoy:0.1.3'
+      image: 'radius.azurecr.io/eshop-envoy:0.1.4'
       env: {}
       ports: {
         http: {
@@ -614,7 +614,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: rabbitmq.connectionString()
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -776,7 +776,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: OCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -831,7 +831,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},ssl=True,abortConnect=False'
+        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         OrchestratorType: OCHESTRATOR_TYPE
@@ -1160,6 +1160,9 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     mode: 'values'
     host: redisBasketRoute.properties.hostname
     port: redisBasketRoute.properties.port
+    secrets: {
+      password: ''
+    }
   }
 }
 
@@ -1199,6 +1202,9 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     mode: 'values'
     host: redisKeystoreRoute.properties.hostname
     port: redisKeystoreRoute.properties.port
+    secrets: {
+      password: ''
+    }
   }
 }
 
