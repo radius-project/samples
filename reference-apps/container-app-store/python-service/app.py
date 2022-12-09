@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.INFO)
 app = flask.Flask(__name__)
 CORS(app)
 
+order = os.environ['CONNECTION_KIND_COMPONENTNAME']
+
 @app.route('/order', methods=['GET'])
 def getOrder():
     app.logger.info('order service called')
@@ -20,7 +22,7 @@ def getOrder():
             id = request.args.get('id')
             if id:
                 # Get the order status from Cosmos DB via Dapr
-                state = d.get_state(store_name='store-orders', key=id)
+                state = d.get_state(store_name=order, key=id)
                 if state.data:
                     resp = jsonify(json.loads(state.data))
                 else:
@@ -47,7 +49,7 @@ def createOrder():
             id = request.json['id']
             if id:
                 # Save the order to Cosmos DB via Dapr
-                d.save_state(store_name='store-orders', key=id, value=json.dumps(request.json))
+                d.save_state(store_name=order, key=id, value=json.dumps(request.json))
                 resp = jsonify(request.json)
                 resp.status_code = 200
                 return resp

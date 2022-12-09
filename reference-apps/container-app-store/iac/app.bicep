@@ -16,7 +16,7 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-go-service:0.14'
+      image: 'radius.azurecr.io/reference-apps/container-app-go-service:edge'
       ports: {
         web: {
           containerPort: 8050
@@ -71,7 +71,7 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-node-service:0.14'
+      image: 'radius.azurecr.io/reference-apps/container-app-node-service:edge'
       env: {
         ORDER_SERVICE_NAME: python_app_route.properties.appId
         INVENTORY_SERVICE_NAME: go_app_route.properties.appId
@@ -106,7 +106,7 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/reference-apps/container-app-python-service:0.14'
+      image: 'radius.azurecr.io/reference-apps/container-app-python-service:edge'
       ports: {
         web: {
           containerPort: 5000
