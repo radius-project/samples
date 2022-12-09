@@ -40,6 +40,7 @@ resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
     environment: environment
     version: 'v1'
     metadata: {
+      //       redisHost: '${service.metadata.name}.${namespace}.svc.cluster.local:${service.spec.ports[0].port}'
       redisHost: '${redisRoute.properties.hostname}:${redisRoute.properties.port}'
       redisPassword: ''
     }
