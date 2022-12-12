@@ -41,7 +41,7 @@ public class S3Controller : ControllerBase
 
     private AmazonS3Client GetAWSClient(IConfiguration configuration)
     {
-        if (configuration["AWS_ACCESS_KEY_ID"] != null && configuration["AWS_SECRET_ACCESS_KEY"] != null && configuration["AWS_REGION"] != null) {
+        if (configuration["AWS_ACCESS_KEY_ID"] != null && configuration["AWS_SECRET_ACCESS_KEY"] != null && configuration["AWS_DEFAULT_REGION"] != null) {
             var accessKey = configuration["AWS_ACCESS_KEY_ID"];
             var secretKey = configuration["AWS_SECRET_ACCESS_KEY"];
             var region =  configuration["AWS_DEFAULT_REGION"];
