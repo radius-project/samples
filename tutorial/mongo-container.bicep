@@ -1,3 +1,4 @@
+//MONGO
 import kubernetes as kubernetes {
   kubeConfig: ''
   namespace: namespace
@@ -8,6 +9,7 @@ param name string = 'mongo'
 
 var port = 27017
 
+//SS
 resource statefulset 'apps/StatefulSet@v1' = {
   metadata: {
     name: name
@@ -97,6 +99,33 @@ resource statefulset 'apps/StatefulSet@v1' = {
     ]
   }
 }
+//SS
+//SERVICE
+resource service 'core/Service@v1' = {
+  metadata: {
+    name: name
+    labels: {
+      app: name
+    }
+  }
+  spec: {
+    clusterIP: 'None'
+    ports: [
+      {
+        port: port
+      }
+    ]
+    selector: {
+      app: name
+    }
+  }
+}
+//SERVICE
+
+output host string = name
+output port int = int(port)
+output connectionString string = 'mongodb://${name}.${namespace}.svc.cluster.local:${port}/${name}?authSource=admin'
+//MONGO
 
 resource sa 'core/ServiceAccount@v1' = {
   metadata: {
@@ -157,29 +186,3 @@ resource secret 'core/Secret@v1' = {
     connectionString: 'mongodb://${name}.${namespace}.svc.cluster.local:${port}/${name}?authSource=admin'
   }
 }
-
-resource service 'core/Service@v1' = {
-  metadata: {
-    name: name
-    labels: {
-      app: name
-    }
-  }
-  spec: {
-    clusterIP: 'None'
-    ports: [
-      {
-        port: port
-      }
-    ]
-    selector: {
-      app: name
-    }
-  }
-}
-
-output name string = '${name}.${namespace}.svc.cluster.local'
-output dbName string = name
-output port int = port
-
-output connectionString string = 'mongodb://${name}.${namespace}.svc.cluster.local:${port}/${name}?authSource=admin'
