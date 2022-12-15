@@ -119,7 +119,7 @@ resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   }
 }
 
-import kubernetes as kubernetes{
+import kubernetes as kubernetes {
   kubeConfig: ''
   namespace: namespace
 }

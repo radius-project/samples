@@ -30,7 +30,7 @@ resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
     application: applicationId
     environment: environment
     mode: 'resource'
-    resource: account::tableServices::table.id 
+    resource: account::tableServices::table.id
   }
 }
 

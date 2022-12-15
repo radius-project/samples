@@ -73,4 +73,3 @@ resource webshoppingAggDaprRoute 'Applications.Core/httproutes@2022-03-15-privat
 }
 
 output webshoppingAggDaprRouteName string = webshoppingAggDaprRoute.name
-

@@ -5,7 +5,7 @@ param environment string
 param location string = resourceGroup().location
 param uniqueSeed string = resourceGroup().id
 
-param sqlAdministratorLogin string  = 'server_admin'
+param sqlAdministratorLogin string = 'server_admin'
 @secure()
 param sqlAdministratorLoginPassword string
 

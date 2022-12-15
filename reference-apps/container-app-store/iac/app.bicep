@@ -57,12 +57,12 @@ resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview'
   location: 'global'
   properties: {
     application: app.id
-    routes: [ 
+    routes: [
       {
         path: '/'
         destination: node_app_route.id
       }
-  ]
+    ]
   }
 }
 resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
@@ -145,4 +145,4 @@ module infraFile 'infra-selfhosted.bicep' = {
     environment: environment
     applicationId: app.id
   }
-}  
+}
