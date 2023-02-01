@@ -46,12 +46,14 @@ jobs:
         run: |
           k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
           rad env init kubernetes --public-endpoint-override 'localhost:8081' -e test
+          helm repo add dapr https://dapr.github.io/helm-charts/
+          helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
       - name: Deploy webapp tutorial
         run:  rad deploy ./tutorial/app.bicep
       - name: Delete webapp tutorial
         run:  rad app delete webapp -y
       - name: Deploy demo tutorial
-        run:  rad deploy ./demo/app.bicep
+        run:  rad deploy ./demo/app.bicep --application demo
       - name: Delete webapp tutorial
         run:  rad app delete demo -y
       - name: Deploy Dapr quickstart
