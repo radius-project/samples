@@ -1,20 +1,12 @@
 import radius as radius
 
-param environment string
-
-resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
-  name: 'demo'
-  location: 'global'
-  properties: {
-    environment: environment
-  }
-}
+param application string
 
 resource demo 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'demo'
   location: 'global'
   properties: {
-    application: app.id
+    application: application
     container: {
       image: 'radius.azurecr.io/tutorial/demo:edge'
       ports: {
