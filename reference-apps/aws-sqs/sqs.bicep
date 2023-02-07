@@ -27,6 +27,7 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
 }
 
 resource queue 'AWS.SQS/Queue@default' = {
+  alias: 'sqs-sample-app-${queue_name}'
   name: 'sqs-sample-app-${queue_name}'
   properties: {
     QueueName: 'sqs-sample-app-${queue_name}'
