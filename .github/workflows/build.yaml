@@ -30,12 +30,10 @@ jobs:
           login-server: ${{ env.DOCKER_REGISTRY }}
           username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
           password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-      - name: Build and push tutorial webapp images
-        run: |
-          docker build ./tutorial/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
       - name: Build and push demo webapp image
         run: |
+          docker build ./demo/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
+          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
           docker build ./demo/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
       - name: Build and push quickstart Dapr images
