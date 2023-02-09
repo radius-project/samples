@@ -94,6 +94,7 @@ jobs:
     name: Cleanup PR images
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Login to az cli and ACR
         run: |
