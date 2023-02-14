@@ -1,6 +1,7 @@
 name: Build samples
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - edge
