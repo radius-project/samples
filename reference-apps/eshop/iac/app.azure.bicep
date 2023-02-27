@@ -6,7 +6,7 @@ param environment string
 param ucpLocation string = 'global'
 param azureLocation string = resourceGroup().location
 
-param OCHESTRATOR_TYPE string = 'K8S'
+param ORCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
 param AZURESERVICEBUSENABLED string = 'True'
@@ -89,7 +89,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         PORT: '80'
         GRPC_PORT: '81'
         PicBaseUrl: PICBASEURL
@@ -150,7 +150,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         DPConnectionString: redisKeystore.connectionString()
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
@@ -228,7 +228,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureServiceBusEnabled: 'True'
         CheckUpdateTime: '30000'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         UseLoadTest: 'False'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         'Serilog__MinimumLevel__Override__ordering-api': 'Verbose'
@@ -297,7 +297,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         PATH_BASE: '/basket-api'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
@@ -360,7 +360,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
@@ -411,7 +411,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
       }
@@ -457,7 +457,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=true'
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
@@ -503,7 +503,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         urls__basket: basketHttp.properties.url
         urls__catalog: catalogHttp.properties.url
         urls__orders: orderingHttp.properties.url
@@ -606,7 +606,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/ordering-signalrhub'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
@@ -733,7 +733,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
         HealthChecksUI__HealthChecks__10__Name: 'Ordering HTTP Background Check'
         HealthChecksUI__HealthChecks__10__Uri: '${orderbgtasksHttp.properties.url}/hc'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
       }
       ports: {
         http: {
@@ -769,7 +769,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: redisKeystore.connectionString()
@@ -830,7 +830,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         DPConnectionString: redisKeystore.connectionString()
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
         CallBackUrl: '${gateway.properties.url}/webmvc'
