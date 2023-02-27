@@ -1123,36 +1123,6 @@ resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
   }
 }
 
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
-  name: 'eshopcosmos${uniqueString(resourceGroup().id)}'
-  location: azureLocation
-  kind: 'MongoDB'
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-    locations: [
-      {
-        locationName: azureLocation
-      }
-    ]
-  }
-
-  resource cosmosDb 'mongodbDatabases' = {
-    name: 'mongo'
-    properties: {
-      resource: {
-        id: 'mongo'
-      }
-      options: {
-        throughput: 400
-      }
-    }
-  }
-
-}
-
 // Links ----------------------------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
@@ -1218,16 +1188,5 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     environment: environment
     mode: 'resource'
     resource: keystoreCache.id
-  }
-}
-
-resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
-  name: 'mongo'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'resource'
-    resource: cosmosAccount::cosmosDb.id
   }
 }
