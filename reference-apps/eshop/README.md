@@ -16,6 +16,13 @@ This reference app is a "radified" version of the [eShop on containers](https://
    cd samples/reference-apps/eshop
    ```
 1. Deploy the app:
+
+   ### Containers
     ```bash
     rad deploy iac/app.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
+    ```
+
+   ### Azure
+    ```bash
+    rad deploy iac/app.azure.bicep
     ```

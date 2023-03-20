@@ -3,15 +3,12 @@ import radius as radius
 // Parameters --------------------------------------------
 param environment string
 
-param mongoUsername string = 'admin'
-@secure()
-param mongoPassword string = newGuid()
-param OCHESTRATOR_TYPE string = 'K8S'
+param ORCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
 param AZURESERVICEBUSENABLED string = 'False'
 param ENABLEDEVSPACES string = 'False'
-param TAG string = 'linux-dev'
+param TAG string = 'linux-20230308'
 
 var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
@@ -84,19 +81,19 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/catalog.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/catalog.api:${TAG}'
       env: {
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         PORT: '80'
         GRPC_PORT: '81'
         PicBaseUrl: PICBASEURL
         AzureStorageEnabled: AZURESTORAGEENABLED
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};'
+        ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
@@ -146,7 +143,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/identity.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/identity.api:${TAG}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -157,7 +154,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
-        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword}'
+        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
         SpaClient: gateway.properties.url
         BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'
@@ -221,7 +218,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/ordering.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -229,14 +226,14 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         CheckUpdateTime: '30000'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         UseLoadTest: 'False'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         'Serilog__MinimumLevel__Override__ordering-api': 'Verbose'
         PATH_BASE: '/ordering-api'
         GRPC_PORT: '81'
         PORT: '80'
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword}'
+        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -291,7 +288,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/basket.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/basket.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -357,14 +354,14 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webhooks.api:linux-dev'
+      image: 'radius.azurecr.io/eshop/webhooks.api:${TAG}'
       env: {
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword}'
+        ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -407,12 +404,12 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/payment.api:linux-dev'
+      image: 'radius.azurecr.io/eshop/payment.api:${TAG}'
       env: {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: rabbitmq.connectionString()
       }
@@ -447,7 +444,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.backgroundtasks:linux-dev'
+      image: 'radius.azurecr.io/eshop/ordering.backgroundtasks:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -457,9 +454,9 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword}'
+        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
@@ -498,12 +495,12 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webshoppingagg:${TAG}'
+      image: 'radius.azurecr.io/eshop/webshoppingagg:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         urls__basket: basketHttp.properties.url
         urls__catalog: catalogHttp.properties.url
@@ -604,13 +601,13 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.signalrhub:${TAG}'
+      image: 'radius.azurecr.io/eshop/ordering.signalrhub:${TAG}'
       env: {
         PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: rabbitmq.connectionString()
@@ -664,7 +661,7 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webhooks.client:linux-dev'
+      image: 'radius.azurecr.io/eshop/webhooks.client:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -712,7 +709,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webstatus:${TAG}'
+      image: 'radius.azurecr.io/eshop/webstatus:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -737,7 +734,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
         HealthChecksUI__HealthChecks__10__Name: 'Ordering HTTP Background Check'
         HealthChecksUI__HealthChecks__10__Uri: '${orderbgtasksHttp.properties.url}/hc'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
       }
       ports: {
         http: {
@@ -766,14 +763,14 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webspa:${TAG}'
+      image: 'radius.azurecr.io/eshop/webspa:${TAG}'
       env: {
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
@@ -825,7 +822,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webmvc:${TAG}'
+      image: 'radius.azurecr.io/eshop/webmvc:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -834,7 +831,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
-        OrchestratorType: OCHESTRATOR_TYPE
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
         CallBackUrl: '${gateway.properties.url}/webmvc'
@@ -1204,53 +1201,6 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     port: redisKeystoreRoute.properties.port
     secrets: {
       password: ''
-    }
-  }
-}
-
-resource mongoContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'mongo-container'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mongo:4.2'
-      env: {
-        MONGO_INITDB_ROOT_USERNAME: mongoUsername
-        MONGO_INITDB_ROOT_PASSWORD: mongoPassword
-      }
-      ports: {
-        mongo: {
-          containerPort: 27017
-          provides: mongoRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource mongoRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'mongo-route'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 27017
-  }
-}
-
-resource mongo 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
-  name: 'mongo'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    host: mongoRoute.properties.hostname
-    port: mongoRoute.properties.port
-    secrets: {
-      connectionString: 'mongodb://${mongoUsername}:${mongoPassword}@${mongoRoute.properties.hostname}:${mongoRoute.properties.port}'
-      username: mongoUsername
-      password: mongoPassword
     }
   }
 }
