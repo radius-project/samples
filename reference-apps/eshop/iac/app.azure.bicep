@@ -11,7 +11,7 @@ param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
 param AZURESERVICEBUSENABLED string = 'True'
 param ENABLEDEVSPACES string = 'False'
-param TAG string = 'linux-20230308'
+param TAG string = 'linux-dotnet7'
 
 var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
