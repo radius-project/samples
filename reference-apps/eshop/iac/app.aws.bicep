@@ -82,7 +82,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/catalog.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/catalog.api:${TAG}'
       env: {
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
@@ -143,7 +143,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/identity.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/identity.api:${TAG}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -218,12 +218,12 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/ordering.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
-        AzureServiceBusEnabled: 'True'
+        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         CheckUpdateTime: '30000'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         OrchestratorType: ORCHESTRATOR_TYPE
@@ -288,7 +288,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'radius.azurecr.io/eshop-basket:linux-latest'
+      image: 'radius.azurecr.io/eshop/basket.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -354,7 +354,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webhooks.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/webhooks.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -402,7 +402,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/payment.api:${TAG}'
+      image: 'radius.azurecr.io/eshop/payment.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -444,7 +444,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.backgroundtasks:${TAG}'
+      image: 'radius.azurecr.io/eshop/ordering.backgroundtasks:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -496,7 +496,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webshoppingagg:${TAG}'
+      image: 'radius.azurecr.io/eshop/webshoppingagg:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
@@ -598,7 +598,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/ordering.signalrhub:${TAG}'
+      image: 'radius.azurecr.io/eshop/ordering.signalrhub:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -658,7 +658,7 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webhooks.client:${TAG}'
+      image: 'radius.azurecr.io/eshop/webhooks.client:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -705,7 +705,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webstatus:${TAG}'
+      image: 'radius.azurecr.io/eshop/webstatus:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -760,7 +760,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webspa:${TAG}'
+      image: 'radius.azurecr.io/eshop/webspa:${TAG}'
       env: {
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
@@ -819,7 +819,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: eshop.id
     container: {
-      image: 'eshop/webmvc:${TAG}'
+      image: 'radius.azurecr.io/eshop/webmvc:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
