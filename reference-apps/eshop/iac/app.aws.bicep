@@ -9,7 +9,7 @@ param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
 param AZURESERVICEBUSENABLED string = 'False'
 param ENABLEDEVSPACES string = 'False'
-param TAG string = 'linux-dev'
+param TAG string = 'linux-dotnet7'
 
 var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
@@ -94,7 +94,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureStorageEnabled: AZURESTORAGEENABLED
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=False'
+        ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
@@ -154,7 +154,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
-        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=False'
+        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
         SpaClient: gateway.properties.url
         BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'
@@ -233,7 +233,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PATH_BASE: '/ordering-api'
         GRPC_PORT: '81'
         PORT: '80'
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=False'
+        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -360,7 +360,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=False'
+        ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -457,7 +457,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=False'
+        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
