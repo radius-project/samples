@@ -1,27 +1,25 @@
 import radius as radius
+import aws as aws
 
 // Parameters --------------------------------------------
 param environment string
 
-param ucpLocation string = 'global'
-param azureLocation string = resourceGroup().location
-
 param ORCHESTRATOR_TYPE string = 'K8S'
 param APPLICATION_INSIGHTS_KEY string = ''
 param AZURESTORAGEENABLED string = 'False'
-param AZURESERVICEBUSENABLED string = 'True'
+param AZURESERVICEBUSENABLED string = 'False'
 param ENABLEDEVSPACES string = 'False'
 param TAG string = 'linux-dotnet7'
 
 var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
-param adminLogin string = 'sqladmin'
+param adminLogin string = 'SA'
 @secure()
-param adminPassword string = newGuid()
+param adminPassword string
 
 resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshop'
-  location: ucpLocation
+  location: 'global'
   properties: {
     environment: environment
   }
@@ -29,7 +27,7 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     routes: [
@@ -80,7 +78,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
 resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -97,7 +95,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
         http: {
@@ -113,8 +111,8 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
       sql: {
         source: sqlCatalogDb.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -122,7 +120,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5101
@@ -131,7 +129,7 @@ resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-grpc'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9101
@@ -141,7 +139,7 @@ resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/identity-api
 resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'identity-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -206,7 +204,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'identity-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5105
@@ -216,7 +214,7 @@ resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
 resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -225,7 +223,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
-        AzureServiceBusEnabled: 'True'
+        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         CheckUpdateTime: '30000'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         OrchestratorType: ORCHESTRATOR_TYPE
@@ -236,7 +234,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         PORT: '80'
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -258,8 +256,8 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
       identity: {
         source: identityHttp.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -267,7 +265,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5102
@@ -276,7 +274,7 @@ resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-grpc'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9102
@@ -286,7 +284,7 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/basket-api
 resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'basket-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -302,7 +300,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -324,8 +322,8 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
       identity: {
         source: identityHttp.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -333,7 +331,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5103
@@ -342,7 +340,7 @@ resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-grpc'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 9103
@@ -352,7 +350,7 @@ resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
 resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -363,7 +361,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -381,8 +379,8 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
       identity: {
         source: identityHttp.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -390,7 +388,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooks-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5113
@@ -400,7 +398,7 @@ resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/payment-api
 resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -413,7 +411,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
         http: {
@@ -423,8 +421,8 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
       }
     }
     connections: {
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -432,7 +430,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'payment-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5108
@@ -442,7 +440,7 @@ resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
 resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-backgroundtasks'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -460,7 +458,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
       }
       ports: {
         http: {
@@ -473,8 +471,8 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
       sql: {
         source: sqlOrderingDb.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -482,7 +480,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 
 resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderbgtasks-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5111
@@ -494,7 +492,7 @@ resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privateprevie
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingagg'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -544,7 +542,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingagg-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5121
@@ -554,7 +552,7 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
 resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -577,7 +575,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
 
 resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5202
@@ -586,7 +584,7 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
 
 resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http-2'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 15202
@@ -596,7 +594,7 @@ resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatep
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
 resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-signalrhub'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -609,7 +607,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: listKeys(servicebus::topic::rootRule.id, servicebus::topic::rootRule.apiVersion).primaryConnectionString
+        EventBusConnection: rabbitmq.connectionString()
         SignalrStoreConnectionString: redisKeystore.connectionString()
         IdentityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -637,8 +635,8 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
       basket: {
         source: basketHttp.id
       }
-      servicebus: {
-        source: servicebus.id
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -646,7 +644,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
 
 resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderingsignalrhub-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5112
@@ -656,7 +654,7 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
 resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-client'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -691,7 +689,7 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooksclient-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5114
@@ -703,7 +701,7 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webstatus
 resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webstatus'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -748,7 +746,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webstatus-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 8107
@@ -758,7 +756,7 @@ resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
 resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'web-spa'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -807,7 +805,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webspa-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5104
@@ -817,7 +815,7 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
 resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webmvc'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -868,7 +866,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webmvc-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5100
@@ -879,7 +877,7 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     container: {
@@ -900,7 +898,7 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-http'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     port: 5340
@@ -909,217 +907,148 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 // Infrastructure --------------------------------------
 
-resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
-  name: 'eshopsb${uniqueString(resourceGroup().id)}'
-  location: azureLocation
-  sku: {
-    name: 'Standard'
-    tier: 'Standard'
-  }
-
-  resource topic 'topics' = {
-    name: 'eshop_event_bus'
-    properties: {
-      defaultMessageTimeToLive: 'P14D'
-      maxSizeInMegabytes: 1024
-      requiresDuplicateDetection: false
-      enableBatchedOperations: true
-      supportOrdering: false
-      enablePartitioning: true
-      enableExpress: false
-    }
-
-    resource rootRule 'authorizationRules' = {
-      name: 'Root'
-      properties: {
-        rights: [
-          'Manage'
-          'Send'
-          'Listen'
-        ]
-      }
-    }
-
-    resource basket 'subscriptions' = {
-      name: 'Basket'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource catalog 'subscriptions' = {
-      name: 'Catalog'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource ordering 'subscriptions' = {
-      name: 'Ordering'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource graceperiod 'subscriptions' = {
-      name: 'GracePeriod'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource payment 'subscriptions' = {
-      name: 'Payment'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource backgroundTasks 'subscriptions' = {
-      name: 'backgroundtasks'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource OrderingSignalrHub 'subscriptions' = {
-      name: 'Ordering.signalrhub'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-    resource webhooks 'subscriptions' = {
-      name: 'Webhooks'
-      properties: {
-        requiresSession: false
-        defaultMessageTimeToLive: 'P14D'
-        deadLetteringOnMessageExpiration: true
-        deadLetteringOnFilterEvaluationExceptions: true
-        maxDeliveryCount: 10
-        enableBatchedOperations: true
-      }
-    }
-
-  }
-
-}
-
-resource sql 'Microsoft.Sql/servers@2021-02-01-preview' = {
-  name: 'eshopsql${uniqueString(resourceGroup().id)}'
-  location: azureLocation
+param eksClusterName string
+resource eksCluster 'AWS.EKS/Cluster@default' existing = {
+  alias: eksClusterName
   properties: {
-    administratorLogin: adminLogin
-    administratorLoginPassword: adminPassword
-  }
-
-  // Allow communication from all other Azure resources
-  resource allowAzureResources 'firewallRules' = {
-    name: 'allow-azure-resources'
-    properties: {
-      startIpAddress: '0.0.0.0'
-      endIpAddress: '0.0.0.0'
-    }
-  }
-
-  resource identityDb 'databases' = {
-    name: 'IdentityDb'
-    location: azureLocation
-    sku: {
-      name: 'Standard'
-      tier: 'Standard'
-    }
-  }
-
-  resource catalogDb 'databases' = {
-    name: 'CatalogDb'
-    location: azureLocation
-    sku: {
-      name: 'Standard'
-      tier: 'Standard'
-    }
-  }
-
-  resource orderingDb 'databases' = {
-    name: 'OrderingDb'
-    location: azureLocation
-    sku: {
-      name: 'Standard'
-      tier: 'Standard'
-    }
-  }
-
-  resource webhooksDb 'databases' = {
-    name: 'WebhooksDb'
-    location: azureLocation
-    sku: {
-      name: 'Standard'
-      tier: 'Standard'
-    }
-  }
-
-}
-
-resource keystoreCache 'Microsoft.Cache/redis@2020-12-01' = {
-  name: 'eshopkeystore${uniqueString(resourceGroup().id)}'
-  location: azureLocation
-  properties: {
-    enableNonSslPort: false
-    minimumTlsVersion: '1.2'
-    sku: {
-      family: 'C'
-      capacity: 1
-      name: 'Basic'
-    }
+    Name: eksClusterName
   }
 }
 
-resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
-  name: 'eshopbasket${uniqueString(resourceGroup().id)}'
-  location: azureLocation
+param sqlSubnetGroupName string = 'eshopsqlsg${uniqueString(newGuid())}'
+resource sqlSubnetGroup 'AWS.RDS/DBSubnetGroup@default' = {
+  alias: sqlSubnetGroupName
   properties: {
-    enableNonSslPort: false
-    minimumTlsVersion: '1.2'
-    sku: {
-      family: 'C'
-      capacity: 1
-      name: 'Basic'
-    }
+    DBSubnetGroupName: sqlSubnetGroupName
+    DBSubnetGroupDescription: sqlSubnetGroupName
+    SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+  }
+}
+
+param identityDbIdentifier string = 'eshopidentitysql${uniqueString(newGuid())}'
+resource identityDb 'AWS.RDS/DBInstance@default' = {
+  alias: identityDbIdentifier
+  properties: {
+    DBInstanceIdentifier: identityDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param catalogDbIdentifier string = 'eshopcatalogsql${uniqueString(newGuid())}'
+resource catalogDb 'AWS.RDS/DBInstance@default' = {
+  alias: catalogDbIdentifier
+  properties: {
+    DBInstanceIdentifier: catalogDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param orderingDbIdentifier string = 'eshoporderingsql${uniqueString(newGuid())}'
+resource orderingDb 'AWS.RDS/DBInstance@default' = {
+  alias: orderingDbIdentifier
+  properties: {
+    DBInstanceIdentifier: orderingDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param webhooksDbIdentifier string = 'eshopwebhookssql${uniqueString(newGuid())}'
+resource webhooksDb 'AWS.RDS/DBInstance@default' = {
+  alias: webhooksDbIdentifier
+  properties: {
+    DBInstanceIdentifier: webhooksDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param redisSubnetGroupName string = 'eshopredissg${uniqueString(newGuid())}'
+resource redisSubnetGroup 'AWS.MemoryDB/SubnetGroup@default' = {
+  alias: redisSubnetGroupName
+  properties: {
+    SubnetGroupName: redisSubnetGroupName
+    SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+  }
+}
+
+param keystoreCacheName string = 'eshopkeystore${uniqueString(newGuid())}'
+resource keystoreCache 'AWS.MemoryDB/Cluster@default' = {
+  alias: keystoreCacheName
+  properties: {
+    ClusterName: keystoreCacheName
+    NodeType: 'db.t4g.small'
+    ACLName: 'open-access'
+    SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
+    SubnetGroupName: redisSubnetGroup.properties.SubnetGroupName
+    NumReplicasPerShard: 0
+  }
+}
+
+param basketCacheName string = 'eshopbasket${uniqueString(newGuid())}'
+resource basketCache 'AWS.MemoryDB/Cluster@default' = {
+  alias: basketCacheName
+  properties: {
+    ClusterName: basketCacheName
+    NodeType: 'db.t4g.small'
+    ACLName: 'open-access'
+    SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
+    SubnetGroupName: redisSubnetGroup.name
+    NumReplicasPerShard: 0
   }
 }
 
@@ -1127,66 +1056,120 @@ resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: sql::identityDb.id
+    mode: 'values'
+    database: 'IdentityDb'
+    server: identityDb.properties.Endpoint.Address
   }
 }
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: sql::catalogDb.id
+    mode: 'values'
+    database: 'CatalogDb'
+    server: catalogDb.properties.Endpoint.Address
   }
 }
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: sql::orderingDb.id
+    mode: 'values'
+    database: 'OrderingDb'
+    server: orderingDb.properties.Endpoint.Address
   }
 }
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: sql::webhooksDb.id
-  }
-}
-
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
-  name: 'basket-data'
-  location: ucpLocation
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'resource'
-    resource: basketCache.id
+    mode: 'values'
+    database: 'WebhooksDb'
+    server: webhooksDb.properties.Endpoint.Address
   }
 }
 
 resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: ucpLocation
+  location: 'global'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: keystoreCache.id
+    mode: 'values'
+    host: keystoreCache.properties.ClusterEndpoint.Address
+    port: keystoreCache.properties.ClusterEndpoint.Port
+    secrets: {
+      connectionString: '${keystoreCache.properties.ClusterEndpoint.Address}:${keystoreCache.properties.ClusterEndpoint.Port},ssl=true'
+    }
+  }
+}
+
+resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+  name: 'basket-data'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    host: basketCache.properties.ClusterEndpoint.Address
+    port: basketCache.properties.ClusterEndpoint.Port
+    secrets: {
+      connectionString: '${basketCache.properties.ClusterEndpoint.Address}:${basketCache.properties.ClusterEndpoint.Port},ssl=true'
+    }
+  }
+}
+
+// TEMP: Using containerized rabbitMQ instead of AWS SNS until AWS nonidempotency is resolved
+resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'rabbitmq-container-eshop-event-bus'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    container: {
+      image: 'rabbitmq:3.9'
+      env: {}
+      ports: {
+        rabbitmq: {
+          containerPort: 5672
+          provides: rabbitmqRoute.id
+        }
+      }
+    }
+  }
+}
+
+resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+  name: 'rabbitmq-route-eshop-event-bus'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    port: 5672
+  }
+}
+
+resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
+  name: 'eshop-event-bus'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    queue: 'eshop-event-bus'
+    secrets: {
+      connectionString: rabbitmqRoute.properties.hostname
+    }
   }
 }
