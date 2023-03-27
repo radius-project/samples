@@ -12,6 +12,10 @@ if [ "$RAD_VERSION" = "edge" ]; then
     wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
 fi
 
-rad env init kubernetes --public-endpoint-override 'localhost:8081'
+rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
+rad group create default
+rad group switch default
+rad env create default
+rad env switch default
 
 echo "Ending Post Create Command"
