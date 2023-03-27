@@ -14,6 +14,7 @@ fi
 
 rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
 rad group create default
+rad workspace create kubernetes default --group default
 rad group switch default
 rad env create default
 rad env switch default
