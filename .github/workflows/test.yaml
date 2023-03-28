@@ -16,8 +16,7 @@ on:
       - v*.*
       - edge
   schedule: # 7:45 AM Pacific Time
-    - cron: '45 7 * * *'
-    timezone: America/Los_Angeles
+    - cron: '45 15 * * *'
 
 jobs:
   test:
