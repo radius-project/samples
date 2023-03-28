@@ -60,7 +60,7 @@ jobs:
           rad env create default
           rad env switch default
       - name: Deploy demo tutorial
-        run:  rad deploy ./demo/appTEST.bicep --application demo
+        run:  rad deploy ./demo/app.bicep --application demo
       - name: Delete demo tutorial
         run:  rad app delete demo -y
       - name: Deploy Dapr quickstart
