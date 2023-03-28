@@ -84,4 +84,6 @@ jobs:
         run:  rad app delete store -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
         run: gh issue create --title "Samples deployment failed" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
