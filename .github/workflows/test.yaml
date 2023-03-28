@@ -75,7 +75,7 @@ jobs:
       - name: Delete volumes quickstart
         run:  rad app delete myapp -y
       - name: Deploy eShop reference app
-        run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
+        run:  rad deploy ./reference-apps/eshop/iac/appTEST.bicep -p "adminPassword=P@ssw0rd4@36"
       - name: Delete eShop reference app
         run:  rad app delete eshop -y
       - name: Deploy Container Apps Store reference app
