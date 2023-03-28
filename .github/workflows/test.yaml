@@ -59,7 +59,7 @@ jobs:
           rad env create default
           rad env switch default
       - name: Deploy demo tutorial
-        run:  rad deploy ./demo/app.bicep --application demo
+        run:  rad deploy ./demo/appTEST.bicep --application demo
       - name: Delete demo tutorial
         run:  rad app delete demo -y
       - name: Deploy Dapr quickstart
@@ -75,7 +75,7 @@ jobs:
       - name: Delete volumes quickstart
         run:  rad app delete myapp -y
       - name: Deploy eShop reference app
-        run:  rad deploy ./reference-apps/eshop/iac/appTEST.bicep -p "adminPassword=P@ssw0rd4@36"
+        run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
       - name: Delete eShop reference app
         run:  rad app delete eshop -y
       - name: Deploy Container Apps Store reference app
@@ -84,16 +84,4 @@ jobs:
         run:  rad app delete store -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issueTitle = `Sample deployments failed`;
-            const issueBody = `The workflow failed on branch ${github.ref}.\n\nError message: ${process.env.GITHUB_JOB} failed`;
-            const octokit = require('@octokit/rest')();
-            octokit.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: issueTitle,
-              body: issueBody
-            });
+        run: gh issue create --title "Samples deployment failed" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
