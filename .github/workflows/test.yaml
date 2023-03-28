@@ -15,9 +15,12 @@ on:
     branches:
       - v*.*
       - edge
+  schedule: # 7:45 AM Pacific Time
+    - cron: '45 7 * * *'
+    timezone: America/Los_Angeles
 
 jobs:
-  build:
+  test:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
@@ -42,12 +45,20 @@ jobs:
            else
              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
            fi
-      - name: Init local environment
+      - name: Create k3d cluster
+        run:  k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+      - name: Install Dapr
         run: |
-          k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
-          rad env init kubernetes --public-endpoint-override 'localhost:8081' -e test
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
+      - name: Init local environment
+        run: |
+          rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
+          rad group create default
+          rad workspace create kubernetes default --group default
+          rad group switch default
+          rad env create default
+          rad env switch default
       - name: Deploy demo tutorial
         run:  rad deploy ./demo/app.bicep --application demo
       - name: Delete demo tutorial
@@ -72,3 +83,18 @@ jobs:
         run:  rad deploy ./reference-apps/container-app-store/iac/app.bicep
       - name: Delete Container Apps Store reference app
         run:  rad app delete store -y
+      - name: Create GitHub issue on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issueTitle = `Sample deployments failed`;
+            const issueBody = `The workflow failed on branch ${github.ref}.\n\nError message: ${process.env.GITHUB_JOB} failed`;
+            const octokit = require('@octokit/rest')();
+            octokit.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody
+            });
