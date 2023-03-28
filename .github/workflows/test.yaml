@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
-      GH_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
