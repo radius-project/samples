@@ -1,4 +1,5 @@
 import radius as radius
+import aws as aws
 
 // Parameters --------------------------------------------
 param environment string
@@ -103,7 +104,6 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
         grpc: {
           containerPort: 81
-          provides: catalogGrpc.id
         }
       }
     }
@@ -148,9 +148,9 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: 'K8S'
+        OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
@@ -253,11 +253,11 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
       sql: {
         source: sqlOrderingDb.id
       }
-      rabbitmq: {
-        source: rabbitmq.id
-      }
       identity: {
         source: identityHttp.id
+      }
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -295,11 +295,11 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         PATH_BASE: '/basket-api'
-        OrchestratorType: 'K8S'
+        OrchestratorType: ORCHESTRATOR_TYPE
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},abortConnect=False'
+        ConnectionString: redisBasket.connectionString()
         EventBusConnection: rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -319,11 +319,11 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
       redis: {
         source: redisBasket.id
       }
-      rabbitmq: {
-        source: rabbitmq.id
-      }
       identity: {
         source: identityHttp.id
+      }
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -356,7 +356,6 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'radius.azurecr.io/eshop/webhooks.api:${TAG}'
       env: {
-        PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: ORCHESTRATOR_TYPE
@@ -373,16 +372,15 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         }
       }
     }
-
     connections: {
       sql: {
         source: sqlWebhooksDb.id
       }
-      rabbitmq: {
-        source: rabbitmq.id
-      }
       identity: {
         source: identityHttp.id
+      }
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -406,6 +404,8 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'radius.azurecr.io/eshop/payment.api:${TAG}'
       env: {
+        ASPNETCORE_ENVIRONMENT: 'Development'
+        ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
@@ -448,6 +448,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
+        PATH_BASE: '/ordering-backgroundtasks'
         UseCustomizationData: 'False'
         CheckUpdateTime: '30000'
         GracePeriodTime: '1'
@@ -501,7 +502,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: ORCHESTRATOR_TYPE
-        IsClusterEnv: 'True'
         urls__basket: basketHttp.properties.url
         urls__catalog: catalogHttp.properties.url
         urls__orders: orderingHttp.properties.url
@@ -524,9 +524,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
       }
     }
     connections: {
-      rabbitmq: {
-        source: rabbitmq.id
-      }
       identity: {
         source: identityHttp.id
       }
@@ -603,16 +600,16 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
     container: {
       image: 'radius.azurecr.io/eshop/ordering.signalrhub:${TAG}'
       env: {
-        PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
+        PATH_BASE: '/ordering-signalrhub'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: rabbitmq.connectionString()
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
-        identityUrl: identityHttp.properties.url
+        SignalrStoreConnectionString: redisKeystore.connectionString()
+        IdentityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
       ports: {
@@ -626,9 +623,6 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
       redis: {
         source: redisKeystore.id
       }
-      rabbitmq: {
-        source: rabbitmq.id
-      }
       identity: {
         source: identityHttp.id
       }
@@ -640,6 +634,9 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
       }
       basket: {
         source: basketHttp.id
+      }
+      rabbitmq: {
+        source: rabbitmq.id
       }
     }
   }
@@ -696,7 +693,6 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   properties: {
     application: eshop.id
     port: 5114
-    hostname: '/webhooks-web'
   }
 }
 
@@ -713,6 +709,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
+        PATH_BASE: '/webstatus'
         HealthChecksUI__HealthChecks__0__Name: 'WebMVC HTTP Check'
         HealthChecksUI__HealthChecks__0__Uri: '${webmvcHttp.properties.url}/hc'
         HealthChecksUI__HealthChecks__1__Name: 'WebSPA HTTP Check'
@@ -773,7 +770,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -828,9 +825,9 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
+        DPConnectionString: redisKeystore.connectionString()
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
@@ -908,6 +905,234 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
+// Infrastructure --------------------------------------
+
+param eksClusterName string
+resource eksCluster 'AWS.EKS/Cluster@default' existing = {
+  alias: eksClusterName
+  properties: {
+    Name: eksClusterName
+  }
+}
+
+param sqlSubnetGroupName string = 'eshopsqlsg${uniqueString(newGuid())}'
+resource sqlSubnetGroup 'AWS.RDS/DBSubnetGroup@default' = {
+  alias: sqlSubnetGroupName
+  properties: {
+    DBSubnetGroupName: sqlSubnetGroupName
+    DBSubnetGroupDescription: sqlSubnetGroupName
+    SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+  }
+}
+
+param identityDbIdentifier string = 'eshopidentitysql${uniqueString(newGuid())}'
+resource identityDb 'AWS.RDS/DBInstance@default' = {
+  alias: identityDbIdentifier
+  properties: {
+    DBInstanceIdentifier: identityDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param catalogDbIdentifier string = 'eshopcatalogsql${uniqueString(newGuid())}'
+resource catalogDb 'AWS.RDS/DBInstance@default' = {
+  alias: catalogDbIdentifier
+  properties: {
+    DBInstanceIdentifier: catalogDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param orderingDbIdentifier string = 'eshoporderingsql${uniqueString(newGuid())}'
+resource orderingDb 'AWS.RDS/DBInstance@default' = {
+  alias: orderingDbIdentifier
+  properties: {
+    DBInstanceIdentifier: orderingDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param webhooksDbIdentifier string = 'eshopwebhookssql${uniqueString(newGuid())}'
+resource webhooksDb 'AWS.RDS/DBInstance@default' = {
+  alias: webhooksDbIdentifier
+  properties: {
+    DBInstanceIdentifier: webhooksDbIdentifier
+    Engine: 'sqlserver-ex'
+    EngineVersion: '15.00.4153.1.v1'
+    DBInstanceClass: 'db.t3.large'
+    AllocatedStorage: '20'
+    MaxAllocatedStorage: 30
+    MasterUsername: adminLogin
+    MasterUserPassword: adminPassword
+    Port: '1433'
+    DBSubnetGroupName: sqlSubnetGroup.properties.DBSubnetGroupName
+    VPCSecurityGroups: [eksCluster.properties.ClusterSecurityGroupId]
+    PreferredMaintenanceWindow: 'Mon:00:00-Mon:03:00'
+    PreferredBackupWindow: '03:00-06:00'
+    LicenseModel: 'license-included'
+    Timezone: 'GMT Standard Time'
+    CharacterSetName: 'Latin1_General_CI_AS'
+  }
+}
+
+param redisSubnetGroupName string = 'eshopredissg${uniqueString(newGuid())}'
+resource redisSubnetGroup 'AWS.MemoryDB/SubnetGroup@default' = {
+  alias: redisSubnetGroupName
+  properties: {
+    SubnetGroupName: redisSubnetGroupName
+    SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+  }
+}
+
+param keystoreCacheName string = 'eshopkeystore${uniqueString(newGuid())}'
+resource keystoreCache 'AWS.MemoryDB/Cluster@default' = {
+  alias: keystoreCacheName
+  properties: {
+    ClusterName: keystoreCacheName
+    NodeType: 'db.t4g.small'
+    ACLName: 'open-access'
+    SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
+    SubnetGroupName: redisSubnetGroup.properties.SubnetGroupName
+    NumReplicasPerShard: 0
+  }
+}
+
+param basketCacheName string = 'eshopbasket${uniqueString(newGuid())}'
+resource basketCache 'AWS.MemoryDB/Cluster@default' = {
+  alias: basketCacheName
+  properties: {
+    ClusterName: basketCacheName
+    NodeType: 'db.t4g.small'
+    ACLName: 'open-access'
+    SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
+    SubnetGroupName: redisSubnetGroup.name
+    NumReplicasPerShard: 0
+  }
+}
+
+// Links ----------------------------------------------------------------------------
+
+resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'identitydb'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    database: 'IdentityDb'
+    server: identityDb.properties.Endpoint.Address
+  }
+}
+
+resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'catalogdb'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    database: 'CatalogDb'
+    server: catalogDb.properties.Endpoint.Address
+  }
+}
+
+resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'orderingdb'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    database: 'OrderingDb'
+    server: orderingDb.properties.Endpoint.Address
+  }
+}
+
+resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+  name: 'webhooksdb'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    database: 'WebhooksDb'
+    server: webhooksDb.properties.Endpoint.Address
+  }
+}
+
+resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+  name: 'keystore-data'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    host: keystoreCache.properties.ClusterEndpoint.Address
+    port: keystoreCache.properties.ClusterEndpoint.Port
+    secrets: {
+      connectionString: '${keystoreCache.properties.ClusterEndpoint.Address}:${keystoreCache.properties.ClusterEndpoint.Port},ssl=true'
+    }
+  }
+}
+
+resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+  name: 'basket-data'
+  location: 'global'
+  properties: {
+    application: eshop.id
+    environment: environment
+    mode: 'values'
+    host: basketCache.properties.ClusterEndpoint.Address
+    port: basketCache.properties.ClusterEndpoint.Port
+    secrets: {
+      connectionString: '${basketCache.properties.ClusterEndpoint.Address}:${basketCache.properties.ClusterEndpoint.Port},ssl=true'
+    }
+  }
+}
+
+// TEMP: Using containerized rabbitMQ instead of AWS SNS until AWS nonidempotency is resolved
 resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'rabbitmq-container-eshop-event-bus'
   location: 'global'
@@ -945,262 +1170,6 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname
-    }
-  }
-}
-
-resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-identitydb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlIdentityRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-identitydb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 1433
-  }
-}
-
-resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'identitydb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    server: sqlIdentityRoute.properties.hostname
-    database: 'IdentityDb'
-  }
-}
-
-resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-catalogdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlCatalogRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-catalogdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 1433
-  }
-}
-
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'catalogdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    server: sqlCatalogRoute.properties.hostname
-    database: 'CatalogDb'
-  }
-}
-
-resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-orderingdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlOrderingRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-orderingdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 1433
-  }
-}
-
-resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'orderingdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    server: sqlOrderingRoute.properties.hostname
-    database: 'OrderingDb'
-  }
-}
-
-resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'sql-server-webhooksdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
-      env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
-        MSSQL_SA_PASSWORD: adminPassword
-      }
-      ports: {
-        sql: {
-          containerPort: 1433
-          provides: sqlWebhooksRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'sql-route-webhooksdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 1433
-  }
-}
-
-resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
-  name: 'webhooksdb'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    server: sqlWebhooksRoute.properties.hostname
-    database: 'WebhooksDb'
-  }
-}
-
-resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-basket-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {}
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisBasketRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-basket-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 6379
-  }
-}
-
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
-  name: 'basket-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    host: redisBasketRoute.properties.hostname
-    port: redisBasketRoute.properties.port
-    secrets: {
-      password: ''
-    }
-  }
-}
-
-resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'redis-container-keystore-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    container: {
-      image: 'redis:6.2'
-      env: {}
-      ports: {
-        redis: {
-          containerPort: 6379
-          provides: redisKeystoreRoute.id
-        }
-      }
-    }
-  }
-}
-
-resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
-  name: 'redis-route-keystore-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    port: 6379
-  }
-}
-
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
-  name: 'keystore-data'
-  location: 'global'
-  properties: {
-    application: eshop.id
-    environment: environment
-    mode: 'values'
-    host: redisKeystoreRoute.properties.hostname
-    port: redisKeystoreRoute.properties.port
-    secrets: {
-      password: ''
     }
   }
 }
