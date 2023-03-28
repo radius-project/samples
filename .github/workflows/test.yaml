@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
+      GH_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -36,9 +37,9 @@ jobs:
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
       - name: Download k3d
         run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-      - name: Download rad
+      - name: Download rad CLI
         run: |
-           echo "Downloading rad with branch: ${BRANCH}"
+           echo "Downloading rad CLI from branch $BRANCH"
            if [ "$BRANCH" = "edge" ]; then
              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
            else
@@ -84,6 +85,4 @@ jobs:
         run:  rad app delete store -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
         run: gh issue create --title "Samples deployment failed" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
