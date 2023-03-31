@@ -34,27 +34,6 @@ param adminPassword string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('Name of the Basket HTTP Route')
-param basketHttpName string
-
-@description('Name of the Ordering HTTP Route')
-param orderingHttpName string
-
-@description('Name of the WebShoppingAgg HTTP Route')
-param webshoppingaggHttpName string
-
-@description('Name of the Webhooks HTTP Route')
-param webhooksHttpName string
-
-@description('Name of the WebhooksClient HTTP Route')
-param webhooksclientHttpName string
-
-@description('Name of the WebMVC HTTP Route')
-param webmvcHttpName string
-
 @description('Name of the Identity SQL Database Link')
 param sqlIdentityDbName string
 
@@ -82,18 +61,18 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
         ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
-        MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
+        MvcClient: '${gateway.properties.url}/webmvc'
         SpaClient: gateway.properties.url
-        BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'
-        OrderingApiClient: '${gateway.properties.url}/${orderingHttp.properties.hostname}'
-        WebShoppingAggClient: '${gateway.properties.url}/${webshoppingaggHttp.properties.hostname}'
-        WebhooksApiClient: '${gateway.properties.url}/${webhooksHttp.properties.hostname}'
-        WebhooksWebClient: '${gateway.properties.url}/${webhooksclientHttp.properties.hostname}'
+        BasketApiClient: '${gateway.properties.url}/basket-api'
+        OrderingApiClient: '${gateway.properties.url}/ordering-api'
+        WebShoppingAggClient: '${gateway.properties.url}/webshoppingagg'
+        WebhooksApiClient: '${gateway.properties.url}/webhooks-api'
+        WebhooksWebClient: '${gateway.properties.url}/webhooks-client'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: identityHttp.id
+          port: 5105
         }
       }
     }
@@ -107,27 +86,27 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         disableDefaultEnvVars: true
       }
       webmvc: {
-        source: webmvcHttp.id
+        source: 'route(webmvc)'
         disableDefaultEnvVars: true
       }
       basket: {
-        source: basketHttp.id
+        source: 'route(basket-api)'
         disableDefaultEnvVars: true
       }
       ordering: {
-        source: orderingHttp.id
+        source: 'route(ordering-api)'
         disableDefaultEnvVars: true
       }
       webshoppingagg: {
-        source: webshoppingaggHttp.id
+        source: 'route(webshoppingagg)'
         disableDefaultEnvVars: true
       }
       webhooks: {
-        source: webhooksHttp.id
+        source:'route(webhooks-api)'
         disableDefaultEnvVars: true
       }
       webhoolsclient: {
-        source: webhooksclientHttp.id
+        source: 'routes(webhooks-client)'
         disableDefaultEnvVars: true
       }
     }
@@ -138,34 +117,6 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketHttpName
-}
-
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingHttpName
-}
-
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webshoppingaggHttpName
-}
-
-resource webhooksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing =  {
-  name: webhooksHttpName
-}
-
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webhooksclientHttpName
-}
-
-resource webmvcHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webmvcHttpName
 }
 
 // LINKS -----------------------------------------------------------

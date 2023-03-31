@@ -37,15 +37,6 @@ param adminPassword string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('Name of the Webhooks HTTP Route')
-param webhooksHttpName string
-
-@description('Name of the WebhooksClient HTTP Route')
-param webhooksclientHttpName string
-
 @description('The name of the Webhooks SQL Link')
 param sqlWebhooksDbName string
 
@@ -74,13 +65,13 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
-        identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        identityUrl: 'http://identity-api:5105'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webhooksHttp.id
+          port: 5113
         }
       }
     }
@@ -90,7 +81,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
         disableDefaultEnvVars: true
       }
     }
@@ -111,24 +102,26 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webhooks-web'
         Token: 'WebHooks-Demo-Web'
-        CallBackUrl: '${gateway.properties.url}/${webhooksclientHttp.properties.hostname}'
-        SelfUrl: webhooksclientHttp.properties.url
-        WebhooksUrl: webhooksHttp.properties.url
-        IdentityUrl: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        CallBackUrl: '${gateway.properties.url}/webhooks-client'
+        SelfUrl: 'http://webhooks-client'
+        WebhooksUrl: 'http://webhooks-api'
+        IdentityUrl: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webhooksclientHttp.id
+          port: 5114
         }
       }
     }
     connections: {
       webhooks: {
-        source: webhooksHttp.id
+        source: 'route(webhooks-api)'
+        disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
+        disableDefaultEnvVars: true
       }
     }
   }
@@ -138,18 +131,6 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityHttpName
-}
-
-resource webhooksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing =  {
-  name: webhooksHttpName
-}
-
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webhooksclientHttpName
 }
 
 // LINKS -----------------------------------------------------------

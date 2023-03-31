@@ -11,9 +11,6 @@ param ucpLocation string
 @description('Radius application ID')
 param application string
 
-@description('Name of the SEQ Http Route')
-param seqHttpName string
-
 // CONTAINERS ------------------------------------------------------------
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
@@ -29,15 +26,10 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
       ports: {
         web: {
           containerPort: 80
-          provides: seqHttp.id
+          port: 5340
         }
       }
     }
   }
 }
 
-// NETWORKING ---------------------------------------------------------------
-
-resource seqHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: seqHttpName
-}

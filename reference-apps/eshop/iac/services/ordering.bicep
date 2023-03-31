@@ -40,27 +40,6 @@ param adminPassword string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('Name of the Basket HTTP Route')
-param basketHttpName string
-
-@description('The name of the Catalog HTTP Route')
-param catalogHttpName string
-
-@description('Name of the Ordering HTTP Route')
-param orderingHttpName string
-
-@description('Name of the Ordering gRPC Route')
-param orderingGrpcName string
-
-@description('Name of the Ordering SignalR Hub HTTP Route')
-param orderingsignalrhubHttpName string
-
-@description('Name of the Ordering background tasks HTTP Route')
-param orderbgtasksHttpName string
-
 @description('Name of the Keystore Redis Link')
 param redisKeystoreName string
 
@@ -100,17 +79,19 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PORT: '80'
         ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
-        identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        identityUrl: 'http://identity-api:5105'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: orderingHttp.id
+          port: 5102
+          scheme: 'http'
         }
         grpc: {
           containerPort: 81
-          provides: orderingGrpc.id
+          port: 9102
+          scheme: 'http'
         }
       }
     }
@@ -120,7 +101,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
         disableDefaultEnvVars: true
       }
     }
@@ -152,7 +133,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
       ports: {
         http: {
           containerPort: 80
-          provides: orderbgtasksHttp.id
+          port: 5111
         }
       }
     }
@@ -183,13 +164,13 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
         SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
-        identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        identityUrl: 'http://identity-api:5105'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: orderingsignalrhubHttp.id
+          port: 5112
         }
       }
     }
@@ -199,19 +180,19 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
         disableDefaultEnvVars: true
       }
       ordering: {
-        source: orderingHttp.id
+        source: 'route(ordering-api)'
         disableDefaultEnvVars: true
       }
       catalog: {
-        source: catalogHttp.id
+        source: 'route(catalog-api)'
         disableDefaultEnvVars: true
       }
       basket: {
-        source: basketHttp.id
+        source: 'route(basket-api)'
         disableDefaultEnvVars: true
       }
     }
@@ -222,34 +203,6 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketHttpName
-}
-
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogHttpName
-}
-
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingHttpName
-}
-
-resource orderingGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingGrpcName
-}
-
-resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingsignalrhubHttpName
-}
-
-resource orderbgtasksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderbgtasksHttpName
 }
 
 // LINKS -----------------------------------------------------------

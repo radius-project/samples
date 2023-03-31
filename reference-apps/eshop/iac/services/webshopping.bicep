@@ -23,39 +23,6 @@ param TAG string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Basket Http Route name')
-param basketHttpName string
-
-@description('Basket gRPC Route name')
-param basketGrpcName string
-
-@description('Ordering Http Route name')
-param orderingHttpName string
-
-@description('Ordering gRPC Route name')
-param orderingGrpcName string
-
-@description('Identity Http Route name')
-param identityHttpName string
-
-@description('Catalog Http Route name')
-param catalogHttpName string
-
-@description('Catalog gRPC Route name')
-param catalogGrpcName string
-
-@description('Payment Http Route name')
-param paymentHttpName string
-
-@description('Web shopping API GW HTTP Route name')
-param webshoppingapigwHttpName string
-
-@description('Web shopping API GW HTTP Route 2 name')
-param webshoppingapigwHttp2Name string
-
-@description('Web Shopping Aggregator Http Route name')
-param webshoppingaggHttpName string
-
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
 
@@ -73,24 +40,24 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
-        urls__basket: basketHttp.properties.url
-        urls__catalog: catalogHttp.properties.url
-        urls__orders: orderingHttp.properties.url
-        urls__identity: identityHttp.properties.url
-        urls__grpcBasket: basketGrpc.properties.url
-        urls__grpcCatalog: catalogGrpc.properties.url
-        urls__grpcOrdering: orderingGrpc.properties.url
-        CatalogUrlHC: '${catalogHttp.properties.url}/hc'
-        OrderingUrlHC: '${orderingHttp.properties.url}/hc'
-        IdentityUrlHC: '${identityHttp.properties.url}/hc'
-        BasketUrlHC: '${basketHttp.properties.url}/hc'
-        PaymentUrlHC: '${paymentHttp.properties.url}/hc'
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        urls__basket: 'http://basket-api:5103'
+        urls__catalog: 'http://catalog-api:5101'
+        urls__orders: 'http://ordering-api:5102'
+        urls__identity: 'http://identity-api:5105'
+        urls__grpcBasket: 'http://basket-api:9103'
+        urls__grpcCatalog: 'http://catalog-api:9101'
+        urls__grpcOrdering: 'http://ordering-api:9102'
+        CatalogUrlHC: 'http://catalog-api:5101/hc'
+        OrderingUrlHC: 'http://ordering-api:5102/hc'
+        IdentityUrlHC: 'http://identity-api:5105/hc'
+        BasketUrlHC: 'http://basket-api:5103/hc'
+        PaymentUrlHC: 'http://payments-api:5108/hc'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingaggHttp.id
+          port: 5121
         }
       }
     }
@@ -100,19 +67,19 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
         disableDefaultEnvVars: true
       }
       ordering: {
-        source: orderingHttp.id
+        source: 'route(ordering-api)'
         disableDefaultEnvVars: true
       }
       catalog: {
-        source: catalogHttp.id
+        source: 'route(catalog-api)'
         disableDefaultEnvVars: true
       }
       basket: {
-        source: basketHttp.id
+        source: 'route(basket-api)'
         disableDefaultEnvVars: true
       }
     }
@@ -131,11 +98,11 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingapigwHttp.id
+          port: 5202
         }
         http2: {
           containerPort: 8001
-          provides: webshoppingapigwHttp2.id
+          port: 15202
         }
       }
     }
@@ -148,49 +115,6 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing
   name: gatewayName
 }
 
-resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketGrpcName
-}
-
-resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogGrpcName
-}
-
-resource orderingGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingGrpcName
-}
-
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketHttpName
-}
-
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingHttpName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityHttpName
-}
-
-resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: paymentHttpName
-}
-
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webshoppingaggHttpName
-}
-
-resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webshoppingapigwHttpName
-}
-
-resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: webshoppingapigwHttp2Name
-}
 
 // LINKS --------------------------------------------------------
 

@@ -112,7 +112,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
 }
 
 // Networking ----------------------------------------------------------
-/*
+
 module networking 'services/networking.bicep' = {
   name: 'networking'
   params: {
@@ -132,9 +132,6 @@ module basket 'services/basket.bicep' = {
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
-    basketHttpName: networking.outputs.basketHttp
-    basketGrpcName: networking.outputs.basketGrpc
     rabbitmqName: rabbitmq.name
     redisBasketName: redisBasket.name
     TAG: TAG
@@ -152,8 +149,6 @@ module catalog 'services/catalog.bicep' = {
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     AZURESTORAGEENABLED: AZURESTORAGEENABLED
-    catalogGrpcName: networking.outputs.catalogGrpc
-    catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     rabbitmqName: rabbitmq.name
@@ -170,19 +165,12 @@ module identity 'services/identity.bicep' = {
     adminPassword: adminPassword
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY
-    basketHttpName: networking.outputs.basketHttp
     ENABLEDEVSPACES: ENABLEDEVSPACES
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
-    orderingHttpName: networking.outputs.orderingHttp
     redisKeystoreName: redisKeystore.name
     sqlIdentityDbName: sqlIdentityDb.name
     TAG: TAG
     ucpLocation: ucpLocation 
-    webhooksclientHttpName: networking.outputs.webhooksclientHttp
-    webhooksHttpName: networking.outputs.webhooksHttp
-    webmvcHttpName: networking.outputs.webmvcHttp
-    webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
   }
 }
 
@@ -194,15 +182,8 @@ module ordering 'services/ordering.bicep' = {
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
-    basketHttpName: networking.outputs.basketHttp
-    catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    orderbgtasksHttpName: networking.outputs.orderbgtasksHttp
-    orderingGrpcName: networking.outputs.orderingGrpc
-    orderingHttpName: networking.outputs.orderingHttp
-    orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
     rabbitmqName: rabbitmq.name
     redisKeystoreName: redisKeystore.name
     sqlOrderingDbName: sqlOrderingDb.name
@@ -219,7 +200,6 @@ module payment 'services/payment.bicep' = {
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: rabbitmq.name
     TAG: TAG
     ucpLocation: ucpLocation 
@@ -231,7 +211,6 @@ module seq 'services/seq.bicep' = {
   name: 'seq'
   params: {
     application: eshop.id 
-    seqHttpName: networking.outputs.seqHttp
     ucpLocation: ucpLocation
   }
 }
@@ -242,16 +221,10 @@ module web 'services/web.bicep' = {
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
     redisKeystoreName: redisKeystore.id
     TAG: TAG
     ucpLocation: ucpLocation
-    webmvcHttpName: networking.outputs.webmvcHttp
-    webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
-    webshoppingapigwHttpName: networking.outputs.webshoppingapigwHttp
-    webspaHttpName: networking.outputs.webspaHttp
   }
 }
 
@@ -263,14 +236,11 @@ module webhooks 'services/webhooks.bicep' = {
     application: eshop.id
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED 
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     rabbitmqName: rabbitmq.name
     sqlWebhooksDbName: sqlWebhooksDb.name
     TAG: TAG
     ucpLocation: ucpLocation 
-    webhooksclientHttpName: networking.outputs.webhooksclientHttp
-    webhooksHttpName: networking.outputs.webhooksHttp
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
   }
 }
@@ -279,22 +249,11 @@ module webshopping 'services/webshopping.bicep' = {
   name: 'webshopping'
   params: {
     application: eshop.id
-    basketGrpcName: networking.outputs.basketGrpc
-    basketHttpName: networking.outputs.basketHttp
-    catalogGrpcName: networking.outputs.catalogGrpc
-    catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
-    identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    orderingGrpcName: networking.outputs.orderingGrpc
-    orderingHttpName: networking.outputs.basketHttp
-    paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: rabbitmq.id
     TAG: TAG
     ucpLocation: ucpLocation 
-    webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
-    webshoppingapigwHttp2Name: networking.outputs.webshoppingapigwHttp2
-    webshoppingapigwHttpName: networking.outputs.webshoppingapigwHttp
   }
 }
 
@@ -303,20 +262,9 @@ module webstatus 'services/webstatus.bicep' = {
   params: {
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 
-    basketHttpName: networking.outputs.basketHttp
-    catalogHttpName: networking.outputs.catalogHttp
-    identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    orderbgtasksHttpName: networking.outputs.orderbgtasksHttp
-    orderingHttpName: networking.outputs.orderingHttp
-    orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    paymentHttpName: networking.outputs.paymentHttp
     TAG: TAG
     ucpLocation: ucpLocation 
-    webmvcHttpName: networking.outputs.webmvcHttp
-    webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
-    webspaHttpName: networking.outputs.webspaHttp
-    webstatusHttpName: networking.outputs.webstatusHttp
   }
 }
 
@@ -350,4 +298,4 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' e
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' existing = {
   name: 'eshop-event-bus'
 }
-*/
+

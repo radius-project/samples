@@ -33,15 +33,6 @@ param ORCHESTRATOR_TYPE string
 @description('The name of the Radius Gateway')
 param gatewayName string
 
-@description('The name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('The name of the Basket HTTP Route')
-param basketHttpName string
-
-@description('The name of the Basket gRPC Route')
-param basketGrpcName string
-
 @description('The name of the Redis Basket Link')
 param redisBasketName string
 
@@ -74,17 +65,17 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: '${redisBasket.properties.host}:${redisBasket.properties.port},password=${redisBasket.password()},abortConnect=False'
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
-        identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        identityUrl: 'http://identity-api:5105'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: basketHttp.id
+          port: 5103
         }
         grpc: {
           containerPort: 81
-          provides: basketGrpc.id
+          port: 9103
         }
       }
     }
@@ -94,7 +85,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'route(identity-api)'
         disableDefaultEnvVars: true
       }
     }
@@ -105,18 +96,6 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketHttpName
-}
-
-resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketGrpcName
 }
 
 // Links ------------------------------------------

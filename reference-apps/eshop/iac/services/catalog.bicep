@@ -47,12 +47,6 @@ param adminPassword string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('The name of the Catalog HTTP Route')
-param catalogHttpName string
-
-@description('The name of the Catalog gRPC Route')
-param catalogGrpcName string
-
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
 
@@ -93,11 +87,12 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: catalogHttp.id
+          port: 5101
         }
         grpc: {
           containerPort: 81
-          provides: catalogGrpc.id
+          port: 9101
+          scheme: 'grpc'
         }
       }
     }
@@ -113,14 +108,6 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
-}
-
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogHttpName
-}
-
-resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogGrpcName
 }
 
 // LINKS -----------------------------------------------------------

@@ -30,9 +30,6 @@ param AZURESERVICEBUSENABLED string
 @description('Cotnainer image tag to use for eshop images')
 param TAG string
 
-@description('Name of the Payment HTTP route')
-param paymentHttpName string
-
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
 
@@ -61,17 +58,11 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: paymentHttp.id
+          port: 5108
         }
       }
     }
   }
-}
-
-// NETWORKING ------------------------------------------------------
-
-resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
-  name: paymentHttpName
 }
 
 // LINKS -----------------------------------------------------------
