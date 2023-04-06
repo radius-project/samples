@@ -43,11 +43,11 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/ordering.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/ordering.api:latest-dotnet7'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ConnectionStrings__OrderingDB: 'Server=tcp:${orderingDbLink.properties.server},1433;Initial Catalog=${orderingDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__OrderingDB: 'Server=tcp:${orderingDbLink.properties.server},1433;Initial Catalog=${orderingDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;'
         IdentityUrl: identityApiRoute.properties.url
         IdentityUrlExternal: '${endpointUrl}/identity/'
         RetryMigrations: 'true'

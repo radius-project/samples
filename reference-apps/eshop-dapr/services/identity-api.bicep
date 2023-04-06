@@ -30,14 +30,14 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/identity.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/identity.api:latest-dotnet7'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/identity/'
         BlazorClientUrlExternal: endpointUrl
         IssuerUrl: '${endpointUrl}/identity/'
-        ConnectionStrings__IdentityDB: 'Server=tcp:${identityDbLink.properties.server},1433;Initial Catalog=${identityDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__IdentityDB: 'Server=tcp:${identityDbLink.properties.server},1433;Initial Catalog=${identityDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;'
         RetryMigrations: 'true'
         SeqServerUrl: seqRoute.properties.url
       }

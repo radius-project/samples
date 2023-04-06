@@ -26,7 +26,7 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/webstatus:latest'
+      image: 'radius.azurecr.io/eshopdapr/webstatus:latest-dotnet7'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

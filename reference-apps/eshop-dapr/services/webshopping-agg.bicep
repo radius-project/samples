@@ -27,7 +27,7 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/webshoppingagg:latest'
+      image: 'radius.azurecr.io/eshopdapr/webshoppingagg:latest-dotnet7'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

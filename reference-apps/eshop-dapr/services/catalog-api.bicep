@@ -37,11 +37,11 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/catalog.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/catalog.api:latest-dotnet7'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ConnectionStrings__CatalogDB: 'Server=tcp:${catalogDbLink.properties.server},1433;Initial Catalog=${catalogDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+        ConnectionStrings__CatalogDB: 'Server=tcp:${catalogDbLink.properties.server},1433;Initial Catalog=${catalogDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=False;Connection Timeout=30;'
         RetryMigrations: 'true'
         SeqServerUrl: seqRoute.properties.url
       }
