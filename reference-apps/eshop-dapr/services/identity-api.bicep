@@ -30,7 +30,7 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/identity.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/identity.api:latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
