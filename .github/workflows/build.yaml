@@ -59,14 +59,6 @@ jobs:
         run: |
           docker build ./reference-apps/aws-sqs/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}"
           docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}"
-      - name: Build and push reference-apps container app store images
-        run: |
-          docker build ./reference-apps/container-app-store/go-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
-          docker build ./reference-apps/container-app-store/node-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
-          docker build ./reference-apps/container-app-store/python-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
   cleanup:
     name: Cleanup PR images
     if: github.event.action == 'closed'

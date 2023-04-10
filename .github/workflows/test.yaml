@@ -79,10 +79,6 @@ jobs:
         run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
       - name: Delete eShop reference app
         run:  rad app delete eshop -y
-      - name: Deploy Container Apps Store reference app
-        run:  rad deploy ./reference-apps/container-app-store/iac/app.bicep
-      - name: Delete Container Apps Store reference app
-        run:  rad app delete store -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
         run: gh issue create --title "Samples deployment failed" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
