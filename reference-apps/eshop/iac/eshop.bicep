@@ -111,6 +111,18 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
   }
 }
 
+// Links -----------------------------------------------------------
+// TODO: Switch to Recipes once ready
+
+module links 'infra/links.bicep' = {
+  name: 'links'
+  dependsOn: [
+    containers
+    azure
+    aws
+  ]
+}
+
 // Networking ----------------------------------------------------------
 
 module networking 'services/networking.bicep' = {
@@ -135,8 +147,8 @@ module basket 'services/basket.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     basketHttpName: networking.outputs.basketHttp
     basketGrpcName: networking.outputs.basketGrpc
-    rabbitmqName: rabbitmq.name
-    redisBasketName: redisBasket.name
+    rabbitmqName: links.outputs.rabbitmq
+    redisBasketName: links.outputs.redisBasket
     TAG: TAG
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
   }
@@ -156,8 +168,8 @@ module catalog 'services/catalog.bicep' = {
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: rabbitmq.name
-    sqlCatalogDbName: sqlCatalogDb.name
+    rabbitmqName: links.outputs.rabbitmq
+    sqlCatalogDbName: links.outputs.sqlCatalogDb
     TAG: TAG
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
   }
@@ -175,8 +187,8 @@ module identity 'services/identity.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     orderingHttpName: networking.outputs.orderingHttp
-    redisKeystoreName: redisKeystore.name
-    sqlIdentityDbName: sqlIdentityDb.name
+    redisKeystoreName: links.outputs.redisKeystore
+    sqlIdentityDbName: links.outputs.sqlIdentityDb
     TAG: TAG
     ucpLocation: ucpLocation 
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
@@ -203,9 +215,9 @@ module ordering 'services/ordering.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.orderingHttp
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    rabbitmqName: rabbitmq.name
-    redisKeystoreName: redisKeystore.name
-    sqlOrderingDbName: sqlOrderingDb.name
+    rabbitmqName: links.outputs.rabbitmq
+    redisKeystoreName: links.outputs.redisKeystore
+    sqlOrderingDbName: links.outputs.sqlOrderingDb
     TAG: TAG
     ucpLocation: ucpLocation
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
@@ -220,7 +232,7 @@ module payment 'services/payment.bicep' = {
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: rabbitmq.name
+    rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
     ucpLocation: ucpLocation 
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
@@ -245,7 +257,7 @@ module web 'services/web.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    redisKeystoreName: redisKeystore.id
+    redisKeystoreName: links.outputs.redisKeystore
     TAG: TAG
     ucpLocation: ucpLocation
     webmvcHttpName: networking.outputs.webmvcHttp
@@ -265,8 +277,8 @@ module webhooks 'services/webhooks.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: rabbitmq.name
-    sqlWebhooksDbName: sqlWebhooksDb.name
+    rabbitmqName: links.outputs.rabbitmq
+    sqlWebhooksDbName: links.outputs.sqlWebhooksDb
     TAG: TAG
     ucpLocation: ucpLocation 
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
@@ -289,7 +301,7 @@ module webshopping 'services/webshopping.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.basketHttp
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: rabbitmq.id
+    rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
     ucpLocation: ucpLocation 
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
@@ -318,35 +330,4 @@ module webstatus 'services/webstatus.bicep' = {
     webspaHttpName: networking.outputs.webspaHttp
     webstatusHttpName: networking.outputs.webstatusHttp
   }
-}
-
-// Links -----------------------------------------------------------
-// TODO: Switch to Recipes once ready
-
-resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: 'identitydb'
-}
-
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: 'catalogdb'
-}
-
-resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: 'orderingdb'
-}
-
-resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: 'webhooksdb'
-}
-
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
-  name: 'keystore-data'
-}
-
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
-  name: 'basket-data'
-}
-
-resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' existing = {
-  name: 'eshop-event-bus'
 }
