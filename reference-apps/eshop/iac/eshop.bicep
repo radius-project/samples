@@ -62,7 +62,7 @@ param TAG string = 'linux-dotnet7'
 @description('Azure Service Bus authorization rule ID')
 param azureAuthRuleId string = 'eshopsb${uniqueString(resourceGroup().id)}/eshop_event_bus/Root'
 
-@description('Name of your EKS cluster')
+@description('Name of your EKS cluster. Only used if deploying with AWS infrastructure.')
 param eksClusterName string = ''
 
 // Application --------------------------------------------------------
@@ -112,7 +112,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
 }
 
 // Networking ----------------------------------------------------------
-/*
+
 module networking 'services/networking.bicep' = {
   name: 'networking'
   params: {
@@ -350,4 +350,3 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' e
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' existing = {
   name: 'eshop-event-bus'
 }
-*/
