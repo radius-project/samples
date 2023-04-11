@@ -125,6 +125,6 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' e
   name: redisBasketName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = if (AZURESERVICEBUSENABLED == 'FALSE') {
+resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

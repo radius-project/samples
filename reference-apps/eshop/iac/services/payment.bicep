@@ -76,6 +76,6 @@ resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
 
 // LINKS -----------------------------------------------------------
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = if (AZURESERVICEBUSENABLED == 'FALSE') {
+resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

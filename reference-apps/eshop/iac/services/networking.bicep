@@ -298,5 +298,5 @@ output webshoppingapigwHttp string = webshoppingapigwHttp.name
 output webshoppingapigwHttp2 string = webshoppingapigwHttp2.name
 
 @description('Name of the WebStatus HTTP route')
-output webstatusHttp string = 'test'//webstatusHttp.name
+output webstatusHttp string = webstatusHttp.name
 

@@ -240,6 +240,18 @@ resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
 // Links ----------------------------------------------------------------------------
 // TODO: Move the Link definitions into the application and use Recipes instead
 
+// Need to deploy a blank rabbitmq instance to let Bicep successfully deploy
+resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
+  name: 'eshop-event-bus'
+  location: ucpLocation
+  properties: {
+    application: application
+    environment: environment
+    mode: 'values'
+    queue: 'eshop-event-bus'
+  }
+}
+
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   location: ucpLocation
@@ -307,6 +319,9 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
 }
 
 // Outputs ------------------------------------
+
+@description('The name of the RabbitMQ Queue')
+output rabbitMqQueue string = rabbitmq.name
 
 @description('The name of the SQL Identity Link')
 output sqlIdentityDb string = sqlIdentityDb.name
