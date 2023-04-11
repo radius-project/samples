@@ -20,7 +20,7 @@ resource blazorClient 'Applications.Core/containers@2022-03-15-privatepreview' =
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/blazor.client:latest'
+      image: 'radius.azurecr.io/eshopdapr/blazor.client:latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

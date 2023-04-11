@@ -173,6 +173,7 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   name: '${deployment().name}-ws-agg'
   params: {
     appId: eShopOnDapr.id
+    environment: environment
     endpointUrl: gateway.outputs.url
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     seqRouteName: seq.outputs.seqRouteName
