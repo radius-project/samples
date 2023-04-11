@@ -10,6 +10,7 @@ Special thanks to [@amolenk](https://github.com/amolenk) for his implementation 
 
 ## Deploy
 
+1. [Install Dapr](https://docs.dapr.io/getting-started/)
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
@@ -19,7 +20,7 @@ Special thanks to [@amolenk](https://github.com/amolenk) for his implementation 
    ```
 1. Deploy the app:
    ```bash
-   rad deploy main.bicep
+   rad deploy main.bicep -p sqlAdministratorLoginPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
    ```
 
 ## Endpoints
