@@ -2,6 +2,7 @@ import radius as radius
 
 param appId string
 param endpointUrl string
+param environment string
 
 param identityApiRouteName string
 param seqRouteName string
@@ -27,7 +28,7 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: appId
     container: {
-      image: 'eshopdapr/webshoppingagg:latest'
+      image: 'radius.azurecr.io/eshopdapr/webshoppingagg:latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -64,11 +65,13 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
   }
 }
 
-resource webshoppingAggDaprRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingAggDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'webshopping-agg-dapr-route'
   location: 'global'
   properties: {
     application: appId
+    environment: environment
+    appId: daprAppId
   }
 }
 
