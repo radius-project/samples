@@ -1,20 +1,41 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
-param environment string
-param location string
-param uniqueSeed string
 
+@description('The Radius environment name.')
+param environment string
+
+@description('The Azure region where the resources will be deployed.')
+param location string = resourceGroup().location
+
+@description('The unique seed used to generate resource names.')
+param uniqueSeed string = resourceGroup().id
+
+@description('The name of the SQL Server.')
 param sqlServerName string = 'sql-${uniqueString(uniqueSeed)}'
 
-@secure()
-param sqlAdministratorLogin string
+@description('The SQL administrator login name.')
+param sqlAdministratorLogin string  = 'server_admin'
+@description('The SQL administrator login password.')
 @secure()
 param sqlAdministratorLoginPassword string
 
-param catalogDbName string
-param identityDbName string
-param orderingDbName string
+@description('The name of the Catalog database.')
+param catalogDbName string = 'Microsoft.eShopOnDapr.Services.CatalogDb'
+
+@description('The name of the Identity database.')
+param identityDbName string = 'Microsoft.eShopOnDapr.Services.IdentityDb'
+
+@description('The name of the Ordering database.')
+param orderingDbName string = 'Microsoft.eShopOnDapr.Services.OrderingDb'
+
+@description('The name of the Key Vault to add the connection strings to.')
+param keyVaultName string
+
+//-----------------------------------------------------------------------------
+// Create the SQL Server and databases
+//-----------------------------------------------------------------------------
 
 resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   name: sqlServerName
@@ -58,7 +79,40 @@ resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   }
 }
 
-resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+//-----------------------------------------------------------------------------
+// Add connection strings to Key Vault
+//-----------------------------------------------------------------------------
+
+resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
+  name: keyVaultName
+
+  resource catalogDBConnectionStringSecret 'secrets' = {
+    name: 'ConnectionStrings--CatalogDB'
+    properties: {
+      value: 'Server=tcp:${catalogDb.properties.server},1433;Initial Catalog=${catalogDb.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    }
+  }
+
+  resource identityDBConnectionStringSecret 'secrets' = {
+    name: 'ConnectionStrings--IdentityDB'
+    properties: {
+      value: 'Server=tcp:${identityDb.properties.server},1433;Initial Catalog=${identityDb.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    }
+  }
+
+  resource orderingDBConnectionStringSecret 'secrets' = {
+    name: 'ConnectionStrings--OrderingDB'
+    properties: {
+      value: 'Server=tcp:${orderingDb.properties.server},1433;Initial Catalog=${orderingDb.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Create Radius links to the databases
+//-----------------------------------------------------------------------------
+
+resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalog-db-link'
   location: location
   properties: {
@@ -69,7 +123,7 @@ resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   }
 }
 
-resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identity-db-link'
   location: location
   properties: {
@@ -80,7 +134,7 @@ resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privateprevie
   }
 }
 
-resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'ordering-db-link'
   location: location
   properties: {
@@ -91,6 +145,10 @@ resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privateprevie
   }
 }
 
-output catalogDbLinkName string = catalogDbLink.name
-output identityDbLinkName string = identityDbLink.name
-output orderingDbLinkName string = orderingDbLink.name
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
+
+output catalogDbName string = catalogDb.name
+output identityDbName string = identityDb.name
+output orderingDbName string = orderingDb.name

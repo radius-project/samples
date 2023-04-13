@@ -1,6 +1,11 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
+
+//-----------------------------------------------------------------------------
+// Create the HTTP routes for the application
+//-----------------------------------------------------------------------------
 
 resource basketApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   name: 'basket-api-route'
@@ -50,6 +55,14 @@ resource paymentApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
   }
 }
 
+resource seqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+  name: 'seq-route'
+  location: 'global'
+  properties: {
+    application: appId
+  }
+}
+
 resource webshoppingAggRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshopping-agg-route'
   location: 'global'
@@ -74,12 +87,17 @@ resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview'
   }
 }
 
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
+
 output basketApiRouteName string = basketApiRoute.name
 output blazorClientRouteName string = blazorClientRoute.name
 output catalogApiRouteName string = catalogApiRoute.name
 output identityApiRouteName string = identityApiRoute.name
 output orderingApiRouteName string = orderingApiRoute.name
 output paymentApiRouteName string = paymentApiRoute.name
+output seqRouteName string = seqRoute.name
 output webshoppingAggRouteName string = webshoppingAggRoute.name
 output webshoppingGwRouteName string = webshoppingGwRoute.name
 output webstatusRouteName string = webstatusRoute.name
