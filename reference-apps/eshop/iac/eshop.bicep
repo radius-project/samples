@@ -42,12 +42,7 @@ param APPLICATION_INSIGHTS_KEY string = ''
 ])
 param AZURESTORAGEENABLED string = 'False'
 
-@description('Use Azure Service Bus for messaging. Defaults to False')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESERVICEBUSENABLED string = 'False'
+var AZURESERVICEBUSENABLED = (platform == 'azure') ? 'True' : 'False'
 
 @description('Use dev spaces. Defaults to False')
 @allowed([
@@ -58,9 +53,6 @@ param ENABLEDEVSPACES string = 'False'
 
 @description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string = 'linux-dotnet7'
-
-@description('Azure Service Bus authorization rule ID')
-param azureAuthRuleId string = 'eshopsb${uniqueString(resourceGroup().id)}/eshop_event_bus/Root'
 
 @description('Name of your EKS cluster. Only used if deploying with AWS infrastructure.')
 param eksClusterName string = ''
@@ -150,7 +142,7 @@ module basket 'services/basket.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     redisBasketName: links.outputs.redisBasket
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -171,7 +163,7 @@ module catalog 'services/catalog.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     sqlCatalogDbName: links.outputs.sqlCatalogDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -220,7 +212,7 @@ module ordering 'services/ordering.bicep' = {
     sqlOrderingDbName: links.outputs.sqlOrderingDb
     TAG: TAG
     ucpLocation: ucpLocation
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -235,7 +227,7 @@ module payment 'services/payment.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
     ucpLocation: ucpLocation 
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -283,7 +275,7 @@ module webhooks 'services/webhooks.bicep' = {
     ucpLocation: ucpLocation 
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? listKeys(azureAuthRuleId, '2022-01-01-preview').primaryConnectionString : ''
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
