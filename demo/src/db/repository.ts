@@ -53,7 +53,7 @@ export function createFactory(): RepositoryFactory {
       }
   
       let usernamePass = "";
-      if (connection.username && connection.username !== "" && connection.password && connection.password !== "") {
+      if (connection.username && connection.password && connection.password !== "") {
         usernamePass = `${connection.username}:${connection.password}@`
       }
   
