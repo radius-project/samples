@@ -79,7 +79,6 @@ param serviceBusConnectionString string
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
 resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: ucpLocation
   properties: {
     application: application
     container: {

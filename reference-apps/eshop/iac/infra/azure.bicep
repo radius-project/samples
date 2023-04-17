@@ -24,7 +24,7 @@ param adminPassword string
 // TODO: Move the infrastructure into Recipes
 
 resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
-  name: 'eshopsb${uniqueString(resourceGroup().id)}'
+  name: 'eshop${uniqueString(resourceGroup().id)}'
   location: location
   sku: {
     name: 'Standard'
@@ -162,12 +162,11 @@ resource sql 'Microsoft.Sql/servers@2021-02-01-preview' = {
     administratorLoginPassword: adminPassword
   }
 
-  // Allow communication from all other Azure resources
-  resource allowAzureResources 'firewallRules' = {
-    name: 'allow-azure-resources'
+  resource allowEverything 'firewallRules' = {
+    name: 'allow-everrything'
     properties: {
       startIpAddress: '0.0.0.0'
-      endIpAddress: '0.0.0.0'
+      endIpAddress: '255.255.255.255'
     }
   }
 
@@ -243,18 +242,19 @@ resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
 // Need to deploy a blank rabbitmq instance to let Bicep successfully deploy
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
     mode: 'values'
     queue: 'eshop-event-bus'
+    secrets: {
+      connectionString: 'test'
+    }
   }
 }
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -265,7 +265,6 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -276,7 +275,6 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -287,7 +285,6 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -298,27 +295,39 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: basketCache.id
+    mode: 'values'
+    host: basketCache.properties.hostName
+    port: basketCache.properties.sslPort
+    secrets: {
+      password: basketCache.listKeys().primaryKey
+      connectionString: '${basketCache.properties.hostName}:${basketCache.properties.sslPort},password=${basketCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    }
   }
 }
 
 resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: keystoreCache.id
+    mode: 'values'
+    host: keystoreCache.properties.hostName
+    port: keystoreCache.properties.sslPort
+    secrets: {
+      password: keystoreCache.listKeys().primaryKey
+      connectionString: '${keystoreCache.properties.hostName}:${keystoreCache.properties.sslPort},password=${keystoreCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    }
   }
 }
 
 // Outputs ------------------------------------
+
+@description('The ID of the auth rule')
+#disable-next-line outputs-should-not-contain-secrets
+output serviceBusAuthConnectionString string = servicebus::topic::rootRule.listKeys().primaryConnectionString
 
 @description('The name of the RabbitMQ Queue')
 output rabbitMqQueue string = rabbitmq.name

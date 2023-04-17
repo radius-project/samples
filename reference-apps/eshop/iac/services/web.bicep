@@ -2,12 +2,6 @@ import radius as rad
 
 // PARAMETERS ---------------------------------------------------------
 
-@description('Radius region to deploy resources into. Only global is supported today')
-@allowed([
-  'global'
-])
-param ucpLocation string
-
 @description('Radius application ID')
 param application string
 
@@ -52,7 +46,6 @@ param redisKeystoreName string
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
 resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'web-spa'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -66,7 +59,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -107,7 +100,6 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
 resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webmvc'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -117,7 +109,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        DPConnectionString: redisKeystore.connectionString()
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         OrchestratorType: ORCHESTRATOR_TYPE
