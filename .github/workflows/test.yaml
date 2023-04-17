@@ -23,6 +23,27 @@ jobs:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: demo
+            app: demo
+            path: ./demo/app.bicep
+            args: --application demo
+          - name: dapr
+            app: dapr-quickstart
+            path: ./quickstarts/dapr/dapr.bicep
+            enableDapr: true
+          - name: environment-variables
+            app: myapp
+            path: ./quickstarts/environment-variables/app.bicep
+          - name: volumes
+            app: myapp
+            path: ./quickstarts/volumes/app.bicep
+          - name: eshop
+            app: eshop
+            path: ./reference-apps/eshop/iac/eshop.bicep
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,6 +69,7 @@ jobs:
       - name: Create k3d cluster
         run:  k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
+        if: ${{ matrix.enableDapr }}
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
@@ -59,30 +81,10 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-      - name: Deploy demo tutorial
-        run:  rad deploy ./demo/app.bicep --application demo
-      - name: Delete demo tutorial
-        run:  rad app delete demo -y
-      - name: Deploy Dapr quickstart
-        run:  rad deploy ./quickstarts/dapr/dapr.bicep
-      - name: Delete Dapr quickstart
-        run:  rad app delete dapr-quickstart -y
-      - name: Deploy environment variables quickstart
-        run:  rad deploy ./quickstarts/environment-variables/app.bicep
-      - name: Delete environment variables quickstart
-        run:  rad app delete myapp -y
-      - name: Deploy volumes quickstart
-        run:  rad deploy ./quickstarts/volumes/app.bicep
-      - name: Delete volumes quickstart
-        run:  rad app delete myapp -y
-      - name: Deploy eShop reference app
-        run:  rad deploy ./reference-apps/eshop/iac/app.bicep -p "adminPassword=P@ssw0rd4@36"
-      - name: Delete eShop reference app
-        run:  rad app delete eshop -y
-      - name: Deploy Container Apps Store reference app
-        run:  rad deploy ./reference-apps/container-app-store/iac/app.bicep
-      - name: Delete Container Apps Store reference app
-        run:  rad app delete store -y
+      - name: Deploy app
+        run:  rad deploy ${{ matrix.path }} ${{ matrix.args }}
+      - name: Delete app
+        run:  rad app delete ${{ matrix.app }} -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
-        run: gh issue create --title "Samples deployment failed" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
