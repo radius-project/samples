@@ -1,8 +1,5 @@
 import radius as rad
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string
-
 @description('Radius environment ID')
 param environment string
 
