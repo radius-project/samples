@@ -4,9 +4,6 @@ import az as az
 @description('Azure region to deploy resources into')
 param location string = resourceGroup().location
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string
-
 @description('Radius environment ID')
 param environment string
 
