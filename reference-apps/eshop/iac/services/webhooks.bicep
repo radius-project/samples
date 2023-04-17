@@ -101,7 +101,6 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
 resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-client'
-  location: 'global'
   properties: {
     application: application
     container: {

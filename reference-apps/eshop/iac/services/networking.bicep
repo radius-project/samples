@@ -130,7 +130,6 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderingsignalrhub-http'
-  location: 'global'
   properties: {
     application: application
     port: 5112
@@ -139,7 +138,6 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
 
 resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderbgtasks-http'
-  location: 'global'
   properties: {
     application: application
     port: 5111

@@ -130,7 +130,6 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
 resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-backgroundtasks'
-  location: 'global'
   properties: {
     application: application
     container: {
@@ -168,7 +167,6 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
 resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-signalrhub'
-  location: 'global'
   properties: {
     application: application
     container: {

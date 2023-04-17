@@ -123,7 +123,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
 resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw'
-  location: 'global'
   properties: {
     application: application
     container: {
