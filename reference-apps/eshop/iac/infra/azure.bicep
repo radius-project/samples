@@ -24,7 +24,7 @@ param adminPassword string
 // TODO: Move the infrastructure into Recipes
 
 resource servicebus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
-  name: 'eshopsb${uniqueString(resourceGroup().id)}'
+  name: 'eshop${uniqueString(resourceGroup().id)}'
   location: location
   sku: {
     name: 'Standard'
@@ -171,6 +171,14 @@ resource sql 'Microsoft.Sql/servers@2021-02-01-preview' = {
     }
   }
 
+  resource allowEverything 'firewallRules' = {
+    name: 'allow-everrything'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '255.255.255.255'
+    }
+  }
+
   resource identityDb 'databases' = {
     name: 'IdentityDb'
     location: location
@@ -249,6 +257,9 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
     environment: environment
     mode: 'values'
     queue: 'eshop-event-bus'
+    secrets: {
+      connectionString: 'test'
+    }
   }
 }
 
@@ -302,8 +313,13 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: basketCache.id
+    mode: 'values'
+    host: basketCache.properties.hostName
+    port: basketCache.properties.sslPort
+    secrets: {
+      password: basketCache.listKeys().primaryKey
+      connectionString: '${basketCache.properties.hostName}:${basketCache.properties.sslPort},password=${basketCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    }
   }
 }
 
@@ -313,12 +329,21 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: keystoreCache.id
+    mode: 'values'
+    host: keystoreCache.properties.hostName
+    port: keystoreCache.properties.sslPort
+    secrets: {
+      password: keystoreCache.listKeys().primaryKey
+      connectionString: '${keystoreCache.properties.hostName}:${keystoreCache.properties.sslPort},password=${keystoreCache.listKeys().primaryKey},ssl=True,abortConnect=False'
+    }
   }
 }
 
 // Outputs ------------------------------------
+
+@description('The ID of the auth rule')
+#disable-next-line outputs-should-not-contain-secrets
+output serviceBusAuthConnectionString string = servicebus::topic::rootRule.listKeys().primaryConnectionString
 
 @description('The name of the RabbitMQ Queue')
 output rabbitMqQueue string = rabbitmq.name
