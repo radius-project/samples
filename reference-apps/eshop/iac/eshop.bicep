@@ -2,9 +2,6 @@ import radius as rad
 
 // Paramaters -------------------------------------------------------
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string = 'global'
-
 @description('Name of the eshop application. Defaults to "eshop"')
 param appName string = 'eshop'
 
@@ -61,7 +58,6 @@ param eksClusterName string = ''
 
 resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: appName
-  location: ucpLocation
   properties: {
     environment: environment
   }
