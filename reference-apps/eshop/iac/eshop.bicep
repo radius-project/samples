@@ -2,9 +2,6 @@ import radius as rad
 
 // Paramaters -------------------------------------------------------
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string = 'global'
-
 @description('Name of the eshop application. Defaults to "eshop"')
 param appName string = 'eshop'
 
@@ -61,7 +58,6 @@ param eksClusterName string = ''
 
 resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: appName
-  location: ucpLocation
   properties: {
     environment: environment
   }
@@ -75,7 +71,6 @@ module containers 'infra/containers.bicep' = if (platform == 'containers') {
     application: eshop.id
     environment: environment
     adminPassword: adminPassword
-    ucpLocation: ucpLocation
   }
 }
 
@@ -88,7 +83,6 @@ module azure 'infra/azure.bicep' = if (platform == 'azure') {
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
-    ucpLocation: ucpLocation
   }
 }
 
@@ -120,7 +114,6 @@ module links 'infra/links.bicep' = {
 module networking 'services/networking.bicep' = {
   name: 'networking'
   params: {
-    ucpLocation: ucpLocation
     application: eshop.id
   }
 }
@@ -130,7 +123,6 @@ module networking 'services/networking.bicep' = {
 module basket 'services/basket.bicep' = {
   name: 'basket'
   params: {
-    ucpLocation: ucpLocation
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
@@ -149,7 +141,6 @@ module basket 'services/basket.bicep' = {
 module catalog 'services/catalog.bicep' = {
   name: 'catalog'
   params: {
-    ucpLocation: ucpLocation
     adminLogin: adminLogin
     adminPassword: adminPassword
     application: eshop.id
@@ -182,7 +173,6 @@ module identity 'services/identity.bicep' = {
     redisKeystoreName: links.outputs.redisKeystore
     sqlIdentityDbName: links.outputs.sqlIdentityDb
     TAG: TAG
-    ucpLocation: ucpLocation 
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
     webmvcHttpName: networking.outputs.webmvcHttp
@@ -211,7 +201,6 @@ module ordering 'services/ordering.bicep' = {
     redisKeystoreName: links.outputs.redisKeystore
     sqlOrderingDbName: links.outputs.sqlOrderingDb
     TAG: TAG
-    ucpLocation: ucpLocation
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
@@ -226,7 +215,6 @@ module payment 'services/payment.bicep' = {
     paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
-    ucpLocation: ucpLocation 
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
@@ -236,7 +224,6 @@ module seq 'services/seq.bicep' = {
   params: {
     application: eshop.id 
     seqHttpName: networking.outputs.seqHttp
-    ucpLocation: ucpLocation
   }
 }
 
@@ -251,7 +238,6 @@ module web 'services/web.bicep' = {
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
     redisKeystoreName: links.outputs.redisKeystore
     TAG: TAG
-    ucpLocation: ucpLocation
     webmvcHttpName: networking.outputs.webmvcHttp
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webshoppingapigwHttpName: networking.outputs.webshoppingapigwHttp
@@ -272,7 +258,6 @@ module webhooks 'services/webhooks.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     sqlWebhooksDbName: links.outputs.sqlWebhooksDb
     TAG: TAG
-    ucpLocation: ucpLocation 
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
     serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
@@ -295,7 +280,6 @@ module webshopping 'services/webshopping.bicep' = {
     paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
-    ucpLocation: ucpLocation 
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webshoppingapigwHttp2Name: networking.outputs.webshoppingapigwHttp2
     webshoppingapigwHttpName: networking.outputs.webshoppingapigwHttp
@@ -316,7 +300,6 @@ module webstatus 'services/webstatus.bicep' = {
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
     paymentHttpName: networking.outputs.paymentHttp
     TAG: TAG
-    ucpLocation: ucpLocation 
     webmvcHttpName: networking.outputs.webmvcHttp
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webspaHttpName: networking.outputs.webspaHttp

@@ -39,7 +39,6 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: 'global'
   properties: {
     application: appId
     container: {
@@ -85,7 +84,6 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
 
 resource orderingApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'ordering-api-dapr-route'
-  location: 'global'
   properties: {
     application: appId
     environment: environment

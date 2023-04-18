@@ -4,9 +4,6 @@ import az as az
 @description('Azure region to deploy resources into')
 param location string = resourceGroup().location
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string
-
 @description('Radius environment ID')
 param environment string
 
@@ -162,15 +159,6 @@ resource sql 'Microsoft.Sql/servers@2021-02-01-preview' = {
     administratorLoginPassword: adminPassword
   }
 
-  // Allow communication from all other Azure resources
-  resource allowAzureResources 'firewallRules' = {
-    name: 'allow-azure-resources'
-    properties: {
-      startIpAddress: '0.0.0.0'
-      endIpAddress: '0.0.0.0'
-    }
-  }
-
   resource allowEverything 'firewallRules' = {
     name: 'allow-everrything'
     properties: {
@@ -251,7 +239,6 @@ resource basketCache 'Microsoft.Cache/redis@2020-12-01' = {
 // Need to deploy a blank rabbitmq instance to let Bicep successfully deploy
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -265,7 +252,6 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -276,7 +262,6 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -287,7 +272,6 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -298,7 +282,6 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -309,7 +292,6 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -325,7 +307,6 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
 
 resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment

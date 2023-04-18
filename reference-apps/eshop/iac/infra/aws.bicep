@@ -166,7 +166,6 @@ resource basketCache 'AWS.MemoryDB/Cluster@default' = {
 // TEMP: Using containerized rabbitMQ instead of AWS SNS until AWS nonidempotency is resolved
 resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'rabbitmq-container-eshop-event-bus'
-  location: 'global'
   properties: {
     application: application
     container: {
@@ -184,7 +183,6 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
 
 resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'rabbitmq-route-eshop-event-bus'
-  location: 'global'
   properties: {
     application: application
     port: 5672
@@ -196,7 +194,6 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -208,7 +205,6 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -220,7 +216,6 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -232,7 +227,6 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -244,7 +238,6 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -259,7 +252,6 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
 
 resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: 'global'
   properties: {
     application: application
     environment: environment
@@ -274,7 +266,6 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
 
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
-  location: 'global'
   properties: {
     application: application
     environment: environment

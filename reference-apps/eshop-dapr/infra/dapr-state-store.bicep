@@ -59,7 +59,6 @@ resource cosmosCollection 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
 
 resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
   name: 'statestore'
-  location: 'global'
   dependsOn: [
     cosmosCollection
   ]
