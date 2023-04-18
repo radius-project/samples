@@ -52,7 +52,7 @@ jobs:
             tag: reference-apps/aws-sqs-sample
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3.5
+        uses: actions/checkout@v3.5.2
       - name: Login to container registry
         uses: azure/docker-login@v1
         with:
