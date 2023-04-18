@@ -28,8 +28,7 @@ export function createFactory(): RepositoryFactory {
       console.log("Using MongoDB: found connection string in environment variable CONNECTION_MONGODB_CONNECTIONSTRING");
       return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
     }
-  
-  
+
     if (process.env.CONNECTION_REDIS_HOST) {
       console.log("Using Redis: found hostname in environment variable CONNECTION_REDIS_HOST");
       const connection = { 
@@ -45,7 +44,7 @@ export function createFactory(): RepositoryFactory {
       }
   
       let usernamePass = "";
-      if (connection.username !== null && connection.password !== null) {
+      if (connection.username !== null && connection.password && connection.password !== "") {
         usernamePass = `${connection.username}:${connection.password}@`
       }
   
