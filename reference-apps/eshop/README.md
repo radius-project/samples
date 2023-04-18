@@ -18,19 +18,17 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Deploy the app (choose which type of hosting infrastructure you wish to use):
 
    ### Containerized infrastructure
-   
     ```bash
-    rad deploy iac/app.bicep
+    rad deploy iac/app.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
     ```
 
    ### Azure infrastructure
-   
     ```bash
-    rad deploy iac/app.azure.bicep -p platform=azure
+    rad deploy iac/app.azure.bicep
     ```
 
    ### AWS infrastructure
-   
     ```bash
-    rad deploy iac/app.aws.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
+    rad deploy iac/app.aws.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS> -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
     ```
+   
