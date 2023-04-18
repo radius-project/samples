@@ -12,6 +12,10 @@ on:
       - edge
       - v*.*
 
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
@@ -19,7 +23,7 @@ env:
 
 jobs:
   build:
-    name: Build and push quickstart container images
+    name: Build and push ${{ matrix.name }}
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     strategy:
@@ -64,7 +68,7 @@ jobs:
       - name: Push ${{ matrix.name }}
         run: docker push "${{ env.DOCKER_REGISTRY }}/${{ matrix.tag }}:${{ env.VERSION }}"
   cleanup:
-    name: Cleanup PR images
+    name: Cleanup ${{ matrix.image }}
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
     strategy:
