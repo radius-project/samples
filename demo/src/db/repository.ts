@@ -42,10 +42,12 @@ export function createFactory(): RepositoryFactory {
       if (connection.port === "6380") {
         scheme = "rediss"
       }
-  
+      console.log("Made it to CONNECTION_REDIS_HOST conditional");
+
       let usernamePass = "";
       if (connection.username !== null && connection.password && connection.password !== "") {
         usernamePass = `${connection.username}:${connection.password}@`
+        console.log("Made it to username conditional");
       }
   
       const url = `${scheme}://${usernamePass}${connection.host}:${connection.port}`
