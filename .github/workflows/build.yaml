@@ -22,6 +22,34 @@ jobs:
     name: Build and push quickstart container images
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: demo
+            path: ./demo/
+            tag: tutorial/demo
+          - name: webapp
+            path: ./demo/
+            tag: tutorial/webapp
+          - name: dapr-backend
+            path: ./quickstarts/dapr/nodeapp/
+            tag: quickstarts/dapr-backend
+          - name: dapr-frontend
+            path: ./quickstarts/dapr/ui/
+            tag: quickstarts/dapr-frontend
+          - name: aws-reference-app
+            path: ./reference-apps/aws/
+            tag: reference-apps/aws
+          - name: environment-variables
+            path: ./quickstarts/environment-variables/
+            tag: quickstarts/envvars
+          - name: volumes
+            path: ./quickstarts/volumes/
+            tag: quickstarts/volumes
+          - name: aws-sqs
+            path: ./reference-apps/aws-sqs/
+            tag: reference-apps/aws-sqs-sample
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -31,61 +59,31 @@ jobs:
           login-server: ${{ env.DOCKER_REGISTRY }}
           username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
           password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-      - name: Build and push demo webapp image
-        run: |
-          docker build ./demo/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}"
-          docker build ./demo/ -t "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}"
-      - name: Build and push quickstart Dapr images
-        run: |
-          docker build ./quickstarts/dapr/nodeapp/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
-          docker build ./quickstarts/dapr/ui/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}"
-      - name: Build and push quickstart AWS images
-        run: |
-          docker build ./reference-apps/aws/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}"
-      - name: Build and push environment variables quickstart image
-        run: |
-          docker build ./quickstarts/environment-variables/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}"
-      - name: Build and push volumes quickstart image
-        run: |
-          docker build ./quickstarts/volumes/ -t "${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}"
-      - name: Build and push aws-sqs quickstart images
-        run: |
-          docker build ./reference-apps/aws-sqs/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}"
-      - name: Build and push reference-apps container app store images
-        run: |
-          docker build ./reference-apps/container-app-store/go-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
-          docker build ./reference-apps/container-app-store/node-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
-          docker build ./reference-apps/container-app-store/python-service/ -t "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-go-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-node-service:${{ env.VERSION }}"
-          docker push "${{ env.DOCKER_REGISTRY }}/reference-apps/container-app-python-service:${{ env.VERSION }}"
+      - name: Build ${{ matrix.name }}
+        run: docker build ${{ matrix.path }} -t "${{ env.DOCKER_REGISTRY }}/${{ matrix.tag }}:${{ env.VERSION }}"
+      - name: Push ${{ matrix.name }}
+        run: docker push "${{ env.DOCKER_REGISTRY }}/${{ matrix.tag }}:${{ env.VERSION }}"
   cleanup:
     name: Cleanup PR images
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [
+          tutorial/webapp,
+          tutorial/demo,
+          quickstarts/dapr-backend,
+          quickstarts/dapr-frontend,
+          quickstarts/envvars,
+          quickstarts/volumes,
+          reference-apps/aws,
+          reference-apps/aws-sqs-sample,
+        ]
     steps:
       - name: Login to az cli and ACR
         run: |
           az login --service-principal --username ${{ secrets.AZURE_SP_DOCKER_USERNAME }} --password ${{ secrets.AZURE_SP_DOCKER_PASSWORD }} --tenant ${{ secrets.AZURE_SP_DOCKER_TENANT }}
           az acr login --name ${{ env.DOCKER_REGISTRY }}
       - name: Delete PR images
-        run: |
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/webapp:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "tutorial/demo:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-backend:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/dapr-frontend:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/envvars:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "quickstarts/volumes:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/aws:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/aws-sqs-sample:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-go-service:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-node-service:${{ env.VERSION }}" --yes
-          az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "reference-apps/container-app-python-service:${{ env.VERSION }}" --yes
+        run: az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "${{ matrix.image }}:${{ env.VERSION }}" --yes
