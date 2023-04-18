@@ -8,6 +8,8 @@ This reference app is a "radified" version of the [eShop on containers](https://
 
 ## Deploy
 
+> Note: If running on a local Kubernetes cluster, make sure to allocate at least 8GB of memory to your cluster. The default configuration is 4GB, which will cause the app to crash if run with other pods.
+
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
