@@ -60,7 +60,6 @@ resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
 
 resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalog-db-link'
-  location: location
   properties: {
     application: appId
     environment: environment
@@ -71,7 +70,6 @@ resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identity-db-link'
-  location: location
   properties: {
     application: appId
     environment: environment
@@ -82,7 +80,6 @@ resource identityDbLink 'Applications.Link/sqlDatabases@2022-03-15-privateprevie
 
 resource orderingDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'ordering-db-link'
-  location: location
   properties: {
     application: appId
     environment: environment

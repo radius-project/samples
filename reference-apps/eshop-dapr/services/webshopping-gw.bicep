@@ -32,7 +32,6 @@ resource webshoppingGwRoute 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource webshoppingGw 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshopping-gw'
-  location: 'global'
   properties: {
     application: appId
     container: {
