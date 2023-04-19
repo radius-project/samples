@@ -19,6 +19,9 @@ param identityApiRouteName string
 @description('The name of the Identity database link.')
 param identityDbName string
 
+@description('The name of the Key Vault to get secrets from.')
+param keyVaultName string
+
 @description('The name of the Seq HTTP route.')
 param seqRouteName string
 
@@ -44,6 +47,10 @@ resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' e
   name: identityDbName
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
+
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: seqRouteName
 }
@@ -58,7 +65,7 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.identity.api:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/identity.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -90,6 +97,16 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
       identityDb: {
         source: identityDb.id
       }
+      // Temporary workaround to grant required role to workload identity.
+      keyVault: {
+        source: keyVault.id
+        iam: {
+          kind: 'azure'
+          roles: [
+            'Key Vault Secrets User'
+          ]
+        }
+      }      
       seqRoute: {
         source: seqRoute.id
       }

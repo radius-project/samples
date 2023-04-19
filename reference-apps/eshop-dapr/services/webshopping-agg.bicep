@@ -72,7 +72,7 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.webshoppingagg:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/webshoppingagg:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

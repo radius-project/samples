@@ -14,26 +14,38 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 
 1. [Deploy an Azure Kubernetes Service cluster](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli). It's recommended to use a node VM size with 16+ GB of memory, such as the `Standard_D4_v3` size. If you use the Azure CLI to deploy the cluster, you can set the VM size using the `--node-vm-size` parameter.
 
-2. [Install Dapr](https://docs.dapr.io/operations/hosting/kubernetes/kubernetes-deploy/)
-3. [Install the rad CLI](https://radapp.dev/getting-started/)
-4. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
-5. Clone the repository and switch to the app directory:
+1. [Install Azure AD Workload Identity](https://azure.github.io/azure-workload-identity/docs/installation.html)
+
+1. Install the Dapr 'edge' version to get Dapr support for Azure AD Workload Identity:
+
+   ```bash
+   helm repo add dapr https://dapr.github.io/helm-charts/
+   helm repo update
+   kubectl create namespace dapr-system
+   helm install dapr dapr/dapr --namespace dapr-system --set global.tag=edge --wait
+   ```
+
+1. [Install the rad CLI](https://radapp.dev/getting-started/)
+
+1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
+
+1. Clone the repository and switch to the app directory:
 
    ```bash
    git clone https://github.com/project-radius/samples.git
    cd samples/reference-apps/eshop-dapr
    ```
 
-6. Get the principal ID of the user-assigned managed identity for the AKS cluster:
+1. Get the Azure AD Workload Identity OIDC Issuer URL:
 
    ```bash
-   az aks show -g <aks-resource-group> -n <aks-name> --query identityProfile.kubeletidentity.objectId -o tsv
+   az aks show -n <namespace> -g <resource-group> --query "oidcIssuerProfile.issuerUrl" -otsv
    ```
 
-7. Deploy the app:
+1. Deploy the app:
 
    ```bash
-   rad deploy main.bicep -p sqlAdministratorLoginPassword=<choose-a-password> -p aksPrincipalId=<principalId>
+   rad deploy main.bicep -p oidcIssuer=<OIDC Issuer URL>
    ```
 
 ## Endpoints

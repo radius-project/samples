@@ -19,6 +19,9 @@ param gatewayName string
 @description('The name of the Identity API HTTP route.')
 param identityApiRouteName string
 
+@description('The name of the Key Vault to get secrets from.')
+param keyVaultName string
+
 @description('The name of the Ordering API HTTP route.')
 param orderingApiRouteName string
 
@@ -59,6 +62,10 @@ resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' e
   name: orderingDbName
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
+
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: seqRouteName
 }
@@ -73,7 +80,7 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.ordering.api:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/ordering.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -108,6 +115,16 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
       identityApiRoute: {
         source: identityApiRoute.id
       }
+      // Temporary workaround to grant required role to workload identity.
+      keyVault: {
+        source: keyVault.id
+        iam: {
+          kind: 'azure'
+          roles: [
+            'Key Vault Secrets User'
+          ]
+        }
+      }      
       orderingDb: {
         source: orderingDb.id
       }

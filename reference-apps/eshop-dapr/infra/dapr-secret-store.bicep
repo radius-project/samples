@@ -25,9 +25,6 @@ param skuName string = 'standard'
 @description('The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault.')
 param tenantId string = subscription().tenantId
 
-@description('The principal ID of the managed identity to grant secret access to.')
-param principalId string
-
 //-----------------------------------------------------------------------------
 // Create the Key Vault
 //-----------------------------------------------------------------------------
@@ -42,25 +39,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
       name: skuName
       family: 'A'
     }
-  }
-}
-
-//-----------------------------------------------------------------------------
-// Assign Key Vault Secrets User role to the given principal
-//-----------------------------------------------------------------------------
-
-resource keyVaultSecretsUserRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
-  scope: subscription()
-  name: '4633458b-17de-408a-b874-0445c86b69e6'
-}
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: keyVault
-  name: guid(keyVault.id, principalId, keyVaultSecretsUserRoleDefinition.id)
-  properties: {
-    roleDefinitionId: keyVaultSecretsUserRoleDefinition.id
-    principalId: principalId
-    principalType: 'ServicePrincipal'
   }
 }
 

@@ -19,6 +19,9 @@ param daprPubSubBrokerName string
 @description('The name of the Dapr secret store component.')
 param daprSecretStoreName string
 
+@description('The name of the Key Vault to get secrets from.')
+param keyVaultName string
+
 @description('The name of the Seq HTTP route.')
 param seqRouteName string
 
@@ -45,6 +48,10 @@ resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatep
   name: daprSecretStoreName
 }
 
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
+
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: seqRouteName
 }
@@ -59,7 +66,7 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.catalog.api:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/catalog.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -90,6 +97,16 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
       }
       daprSecretStore: {
         source: daprSecretStore.id
+      }
+      // Temporary workaround to grant required role to workload identity.
+      keyVault: {
+        source: keyVault.id
+        iam: {
+          kind: 'azure'
+          roles: [
+            'Key Vault Secrets User'
+          ]
+        }
       }
       seqRoute: {
         source: seqRoute.id

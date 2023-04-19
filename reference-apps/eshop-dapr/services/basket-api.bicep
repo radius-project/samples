@@ -65,7 +65,7 @@ resource basketApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.basket.api:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/basket.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

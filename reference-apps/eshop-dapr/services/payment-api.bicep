@@ -44,7 +44,7 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   properties: {
     application: appId
     container: {
-      image: 'amolenk/eshopondapr.payment.api:rad-latest'
+      image: 'radius.azurecr.io/eshopdapr/payment.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -66,11 +66,11 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
       }
     ]
     connections: {
-      seq: {
-        source: seqRoute.id
-      }
       pubsub: {
         source: daprPubSubBroker.id
+      }
+      seq: {
+        source: seqRoute.id
       }
     }
   }
@@ -91,3 +91,4 @@ resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepre
 //-----------------------------------------------------------------------------
 
 output daprRouteName string = daprRoute.name
+output workloadIdentityId string = paymentApi.properties.identity.resource

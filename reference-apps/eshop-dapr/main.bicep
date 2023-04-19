@@ -1,8 +1,5 @@
 import radius as radius
 
-@description('The Radius environment name. This is automatically injected into the Bicep template.')
-param environment string
-
 @description('The Azure region where the resources will be deployed.')
 param location string = resourceGroup().location
 
@@ -13,17 +10,44 @@ param uniqueSeed string = resourceGroup().id
 param sqlAdministratorLogin string  = 'server_admin'
 @description('The SQL administrator login password. This is used to create the SQL Server.')
 @secure()
-param sqlAdministratorLoginPassword string
+#disable-next-line secure-parameter-default
+param sqlAdministratorLoginPassword string = 'P@ssw0rd1'
 
-@description('The principal ID of the user-assigned managed identity of the AKS cluster.')
-param aksPrincipalId string
+@description('Specifies the oidc issuer URL for Workload Identity.')
+param oidcIssuer string
+
+resource environment 'Applications.Core/environments@2022-03-15-privatepreview' = {
+  name: 'eshopondapr'
+  location: 'global'
+  properties: {
+    compute: {
+      kind: 'kubernetes'
+      namespace: 'eshopondapr-env'
+      identity: {
+        kind: 'azure.com.workload'
+        oidcIssuer: oidcIssuer
+      }
+    }
+    providers: {
+      azure: {
+        scope: resourceGroup().id
+      }
+    }
+  }
+}
 
 // The Radius application definition.
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
   location: 'global'
   properties: {
-    environment: environment
+    environment: environment.id
+    extensions: [
+      {
+          kind: 'kubernetesNamespace'
+          namespace: 'eshopondapr-app'
+      }
+    ]
   }
 }
 
@@ -36,7 +60,7 @@ module sqlServer 'infra/sql-server.bicep' = {
   name: '${deployment().name}-sql'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     location: location
     uniqueSeed: uniqueSeed
     sqlAdministratorLogin: sqlAdministratorLogin
@@ -50,10 +74,9 @@ module secretStore 'infra/dapr-secret-store.bicep' = {
   name: '${deployment().name}-dapr-secret-store'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     location: location
     uniqueSeed: uniqueSeed
-    principalId: aksPrincipalId
   }
 }
 
@@ -62,7 +85,7 @@ module daprPubSub 'infra/dapr-pub-sub.bicep' = {
   name: '${deployment().name}-dapr-pubsub'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     location: location
     uniqueSeed: uniqueSeed
   }
@@ -73,7 +96,7 @@ module stateStore 'infra/dapr-state-store.bicep' = {
   name: '${deployment().name}-dapr-state-store'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     location: location
     uniqueSeed: uniqueSeed
   }
@@ -126,7 +149,7 @@ module basketApi 'services/basket-api.bicep' = {
   name: '${deployment().name}-basket-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     basketApiRouteName: httpRoutes.outputs.basketApiRouteName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprStateStoreName: stateStore.outputs.daprStateStoreName
@@ -140,11 +163,12 @@ module catalogApi 'services/catalog-api.bicep' = {
   name: '${deployment().name}-catalog-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     catalogDbName: sqlServer.outputs.catalogDbName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
+    keyVaultName: secretStore.outputs.keyVaultName
     seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
@@ -153,11 +177,12 @@ module identityApi 'services/identity-api.bicep' = {
   name: '${deployment().name}-identity-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     identityDbName: sqlServer.outputs.identityDbName
     gatewayName: gateway.outputs.gatewayName
+    keyVaultName: secretStore.outputs.keyVaultName
     seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
@@ -166,11 +191,12 @@ module orderingApi 'services/ordering-api.bicep' = {
   name: '${deployment().name}-ordering-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     gatewayName: gateway.outputs.gatewayName
+    keyVaultName: secretStore.outputs.keyVaultName
     orderingApiRouteName: httpRoutes.outputs.orderingApiRouteName
     orderingDbName: sqlServer.outputs.orderingDbName
     seqRouteName: httpRoutes.outputs.seqRouteName
@@ -181,7 +207,7 @@ module paymentApi 'services/payment-api.bicep' = {
   name: '${deployment().name}-payment-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     paymentApiRouteName: httpRoutes.outputs.paymentApiRouteName
     seqRouteName: httpRoutes.outputs.seqRouteName
@@ -192,7 +218,7 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   name: '${deployment().name}-ws-agg'
   params: {
     appId: eShopOnDapr.id
-    environment: environment
+    environment: environment.id
     basketApiDaprRouteName: basketApi.outputs.daprRouteName
     catalogApiDaprRouteName: catalogApi.outputs.daprRouteName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
