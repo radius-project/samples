@@ -11,7 +11,6 @@ param sqlAdministratorLoginPassword string
 
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
-  location: 'global'
   properties: {
     environment: environment
   }

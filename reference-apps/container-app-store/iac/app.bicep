@@ -4,7 +4,6 @@ param environment string
 
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'store'
-  location: 'global'
   properties: {
     environment: environment
   }
@@ -12,7 +11,6 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'goapp'
-  location: 'global'
   properties: {
     application: app.id
     container: {
@@ -36,7 +34,6 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource go_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'go-app-route'
-  location: 'global'
   properties: {
     application: app.id
     environment: environment
@@ -46,7 +43,6 @@ resource go_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-private
 
 resource node_app_route 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   name: 'node-app-route'
-  location: 'global'
   properties: {
     application: app.id
   }
@@ -54,7 +50,6 @@ resource node_app_route 'Applications.Core/httpRoutes@2022-03-15-privatepreview'
 
 resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'node-app-gateway'
-  location: 'global'
   properties: {
     application: app.id
     routes: [ 
@@ -67,7 +62,6 @@ resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview'
 }
 resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'nodeapp'
-  location: 'global'
   properties: {
     application: app.id
     container: {
@@ -102,7 +96,6 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'pythonapp'
-  location: 'global'
   properties: {
     application: app.id
     container: {
@@ -131,7 +124,6 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource python_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'python-app'
-  location: 'global'
   properties: {
     application: app.id
     environment: environment

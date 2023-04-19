@@ -4,17 +4,10 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Radius region to deploy resources into. Only global is supported today')
-@allowed([
-  'global'
-])
-param ucpLocation string
-
 // GATEWAY ---------------------------------------------------------
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: ucpLocation
   properties: {
     application: application
     routes: [
@@ -67,7 +60,6 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 
 resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5103
@@ -76,7 +68,6 @@ resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'basket-grpc'
-  location: ucpLocation
   properties: {
     application: application
     port: 9103
@@ -85,7 +76,6 @@ resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5101
@@ -94,7 +84,6 @@ resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'catalog-grpc'
-  location: ucpLocation
   properties: {
     application: application
     port: 9101
@@ -103,7 +92,6 @@ resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'identity-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5105
@@ -112,7 +100,6 @@ resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5102
@@ -121,7 +108,6 @@ resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'ordering-grpc'
-  location: ucpLocation
   properties: {
     application: application
     port: 9102
@@ -130,7 +116,6 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderingsignalrhub-http'
-  location: 'global'
   properties: {
     application: application
     port: 5112
@@ -139,7 +124,6 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
 
 resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'orderbgtasks-http'
-  location: 'global'
   properties: {
     application: application
     port: 5111
@@ -148,7 +132,6 @@ resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'payment-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5108
@@ -157,7 +140,6 @@ resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
 
 resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5340
@@ -166,7 +148,6 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webspa-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5104
@@ -175,7 +156,6 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webmvc-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5100
@@ -184,7 +164,6 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
 
 resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooks-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5113
@@ -193,7 +172,6 @@ resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
 
 resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webhooksclient-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5114
@@ -203,7 +181,6 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingagg-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5121
@@ -212,7 +189,6 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 5202
@@ -221,7 +197,6 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
 
 resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webshoppingapigw-http-2'
-  location: ucpLocation
   properties: {
     application: application
     port: 15202
@@ -230,13 +205,11 @@ resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatep
 
 resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'webstatus-http'
-  location: ucpLocation
   properties: {
     application: application
     port: 8107
   }
 }
-
 
 // OUTPUTS --------------------------------------------------------------------
 

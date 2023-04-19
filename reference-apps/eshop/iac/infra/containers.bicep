@@ -1,8 +1,5 @@
 import radius as rad
 
-@description('Radius region to deploy resources into. Only global is supported today')
-param ucpLocation string
-
 @description('Radius environment ID')
 param environment string
 
@@ -17,7 +14,6 @@ param adminPassword string
 
 resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'rabbitmq-container-eshop-event-bus'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -35,7 +31,6 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
 
 resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'rabbitmq-route-eshop-event-bus'
-  location: ucpLocation
   properties: {
     application: application
     port: 5672
@@ -44,7 +39,6 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 
 resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-identitydb'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -66,7 +60,6 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-identitydb'
-  location: ucpLocation
   properties: {
     application: application
     port: 1433
@@ -75,7 +68,6 @@ resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-catalogdb'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -97,7 +89,6 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
 
 resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-catalogdb'
-  location: ucpLocation
   properties: {
     application: application
     port: 1433
@@ -106,7 +97,6 @@ resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
 
 resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-orderingdb'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -128,7 +118,6 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-orderingdb'
-  location: ucpLocation
   properties: {
     application: application
     port: 1433
@@ -137,7 +126,6 @@ resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'sql-server-webhooksdb'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -159,7 +147,6 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'sql-route-webhooksdb'
-  location: ucpLocation
   properties: {
     application: application
     port: 1433
@@ -168,7 +155,6 @@ resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis-container-basket-data'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -186,7 +172,6 @@ resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepr
 
 resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'redis-route-basket-data'
-  location: ucpLocation
   properties: {
     application: application
     port: 6379
@@ -195,7 +180,6 @@ resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
 
 resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis-container-keystore-data'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -213,7 +197,6 @@ resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-private
 
 resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'redis-route-keystore-data'
-  location: ucpLocation
   properties: {
     application: application
     port: 6379
@@ -224,7 +207,6 @@ resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privateprev
 
 resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' = {
   name: 'eshop-event-bus'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -238,7 +220,6 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -250,7 +231,6 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -262,7 +242,6 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -274,7 +253,6 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -286,7 +264,6 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
 
 resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
@@ -301,7 +278,6 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
 
 resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
-  location: ucpLocation
   properties: {
     application: application
     environment: environment
