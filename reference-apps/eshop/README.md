@@ -8,8 +8,6 @@ This reference app is a "radified" version of the [eShop on containers](https://
 
 ## Deploy
 
-> Note: If running on a local Kubernetes cluster, make sure to allocate at least 8GB of memory to your cluster. The default configuration is 4GB, which will cause the app to crash if run with other pods.
-
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
@@ -20,16 +18,20 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Deploy the app (choose which type of hosting infrastructure you wish to use):
 
    ### Containerized infrastructure
+   
     ```bash
-    rad deploy iac/app.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
+    rad deploy iac/app.bicep
     ```
 
    ### Azure infrastructure
+   
     ```bash
-    rad deploy iac/app.azure.bicep
+    rad deploy iac/app.azure.bicep -p platform=azure
     ```
 
    ### AWS infrastructure
+   
     ```bash
-    rad deploy iac/app.aws.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS> -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
+    rad deploy iac/app.aws.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
     ```
+    

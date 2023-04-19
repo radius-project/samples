@@ -4,7 +4,6 @@ param appId string
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: 'global'
   properties: {
     application: appId
     container: {
@@ -24,7 +23,6 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource seqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   name: 'seq-route'
-  location: 'global'
   properties: {
     application: appId
   }

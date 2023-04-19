@@ -2,12 +2,6 @@ import radius as rad
 
 // PARAMETERS ---------------------------------------------------------
 
-@description('Radius region to deploy resources into. Only global is supported today')
-@allowed([
-  'global'
-])
-param ucpLocation string
-
 @description('Radius application ID')
 param application string
 
@@ -79,7 +73,6 @@ param serviceBusConnectionString string
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
 resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-api'
-  location: ucpLocation
   properties: {
     application: application
     container: {
@@ -130,7 +123,6 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
 resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-backgroundtasks'
-  location: 'global'
   properties: {
     application: application
     container: {
@@ -168,7 +160,6 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
 resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'ordering-signalrhub'
-  location: 'global'
   properties: {
     application: application
     container: {

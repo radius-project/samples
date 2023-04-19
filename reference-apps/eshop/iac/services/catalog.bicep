@@ -2,12 +2,6 @@ import radius as rad
 
 // Parameters ---------------------------------------------------------
 
-@description('Radius region to deploy resources into. Only global is supported today')
-@allowed([
-  'global'
-])
-param ucpLocation string
-
 @description('Radius application ID')
 param application string
 
@@ -71,7 +65,6 @@ var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/it
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
 resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: ucpLocation
   properties: {
     application: application
     container: {
