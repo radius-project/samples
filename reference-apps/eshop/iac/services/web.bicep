@@ -59,7 +59,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},ssl=true'
+        DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
