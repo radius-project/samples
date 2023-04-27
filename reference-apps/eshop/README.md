@@ -20,18 +20,18 @@ This reference app is a "radified" version of the [eShop on containers](https://
    ### Containerized infrastructure
    
     ```bash
-    rad deploy iac/app.bicep
+    rad deploy iac/eshop.bicep
     ```
 
    ### Azure infrastructure
    
     ```bash
-    rad deploy iac/app.azure.bicep -p platform=azure
+    rad deploy iac/eshop.bicep -p platform=azure
     ```
 
    ### AWS infrastructure
    
     ```bash
-    rad deploy iac/app.aws.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
+    rad deploy iac/eshop.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
     ```
     
