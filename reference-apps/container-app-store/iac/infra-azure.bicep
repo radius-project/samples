@@ -25,7 +25,6 @@ resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
 
 resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
   name: 'orders'
-  location: 'global'
   properties: {
     application: applicationId
     environment: environment

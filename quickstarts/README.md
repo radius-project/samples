@@ -5,3 +5,5 @@ Quickstarts provide a quick way to learn a key concept of Project Radius. Pick a
 | Quickstart | Description |
 |------------|-------------|
 | [Dapr](./dapr) | Learn how to add a Dapr sidecar to your application and use Dapr building blocks. |
+| [Recipes](./recipes) | Learn how to use Radius Recipes within your application.|
+
