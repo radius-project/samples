@@ -271,7 +271,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     host: redisBasketRoute.properties.hostname
     port: redisBasketRoute.properties.port
     secrets: {
-      password: ''
+      connectionString: '${redisBasketRoute.properties.hostname}:${redisBasketRoute.properties.port},abortConnect=False'
     }
   }
 }
@@ -285,7 +285,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     host: redisKeystoreRoute.properties.hostname
     port: redisKeystoreRoute.properties.port
     secrets: {
-      password: ''
+      connectionString: '${redisKeystoreRoute.properties.hostname}:${redisKeystoreRoute.properties.port},abortConnect=False'
     }
   }
 }
