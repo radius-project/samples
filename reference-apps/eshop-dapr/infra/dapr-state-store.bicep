@@ -1,13 +1,29 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
-param environment string
-param location string
-param uniqueSeed string
 
+@description('The Radius environment name.')
+param environment string
+
+@description('The Azure region where the resources will be deployed.')
+param location string = resourceGroup().location
+
+@description('The unique seed used to generate resource names.')
+param uniqueSeed string = resourceGroup().id
+
+@description('The Cosmos DB account name.')
 param cosmosAccountName string = 'cosmos-${uniqueString(uniqueSeed)}'
+
+@description('The Cosmos DB database name.')
 param cosmosDbName string = 'eShop'
+
+@description('The Cosmos DB collection name.')
 param cosmosDbCollectionName string = 'state'
+
+//-----------------------------------------------------------------------------
+// Create the Cosmos account, database and collection
+//-----------------------------------------------------------------------------
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-04-15' = {
   name: cosmosAccountName
@@ -57,8 +73,13 @@ resource cosmosCollection 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
   }
 }
 
+//-----------------------------------------------------------------------------
+// Create the Dapr state store component
+//-----------------------------------------------------------------------------
+
 resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
-  name: 'statestore'
+  name: 'eshopondapr-statestore'
+  location: 'global'
   dependsOn: [
     cosmosCollection
   ]
@@ -77,5 +98,9 @@ resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepre
     }
   }
 }
+
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
 
 output daprStateStoreName string = daprStateStore.name

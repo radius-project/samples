@@ -1,9 +1,20 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
+
+@description('The Radius environment name.')
 param environment string
-param location string
-param uniqueSeed string
+
+@description('The Azure region where the resources will be deployed.')
+param location string = resourceGroup().location
+
+@description('The unique seed used to generate resource names.')
+param uniqueSeed string = resourceGroup().id
+
+//-----------------------------------------------------------------------------
+// Create the Service Bus
+//-----------------------------------------------------------------------------
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
   name: 'sb-${uniqueString(uniqueSeed)}'
@@ -14,8 +25,13 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
   }
 }
 
+//-----------------------------------------------------------------------------
+// Create the Dapr pub sub component
+//-----------------------------------------------------------------------------
+
 resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' = {
-  name: 'pubsub'
+  name: 'eshopondapr-pubsub'
+  location: 'global'
   properties: {
     application: appId
     environment: environment
@@ -23,5 +39,9 @@ resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privat
     resource: serviceBus.id
   }
 }
+
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
 
 output daprPubSubBrokerName string = daprPubSubBroker.name
