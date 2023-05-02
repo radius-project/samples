@@ -18,7 +18,6 @@ param oidcIssuer string
 
 resource environment 'Applications.Core/environments@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
-  location: 'global'
   properties: {
     compute: {
       kind: 'kubernetes'
@@ -39,7 +38,6 @@ resource environment 'Applications.Core/environments@2022-03-15-privatepreview' 
 // The Radius application definition.
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
-  location: 'global'
   properties: {
     environment: environment.id
     extensions: [

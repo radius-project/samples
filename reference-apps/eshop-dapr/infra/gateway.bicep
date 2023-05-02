@@ -48,7 +48,6 @@ resource webstatusRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview'
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
-  location: 'global'
   properties: {
     application: appId
     routes: [

@@ -114,7 +114,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
 
 resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalog-db-link'
-  location: 'global'
   properties: {
     application: appId
     environment: environment
@@ -125,7 +124,6 @@ resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = 
 
 resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identity-db-link'
-  location: 'global'
   properties: {
     application: appId
     environment: environment
@@ -136,7 +134,6 @@ resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
 
 resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'ordering-db-link'
-  location: 'global'
   properties: {
     application: appId
     environment: environment

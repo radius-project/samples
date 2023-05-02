@@ -40,7 +40,6 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: 'global'
   properties: {
     application: appId
     container: {
@@ -78,7 +77,6 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'payment-api-dapr-route'
-  location: 'global'
   properties: {
     application: appId
     environment: environment
