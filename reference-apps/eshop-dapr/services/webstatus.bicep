@@ -72,7 +72,6 @@ resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview'
 
 resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webstatus'
-  location: 'global'
   properties: {
     application: appId
     container: {

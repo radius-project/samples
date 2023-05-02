@@ -62,7 +62,6 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: 'global'
   properties: {
     application: appId
     container: {
@@ -117,7 +116,6 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'catalog-api-dapr-route'
-  location: 'global'
   properties: {
     application: appId
     environment: environment

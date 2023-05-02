@@ -20,7 +20,6 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 
 resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'seq'
-  location: 'global'
   properties: {
     application: appId
     container: {
