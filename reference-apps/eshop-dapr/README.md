@@ -39,7 +39,7 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 1. Get the Azure AD Workload Identity OIDC Issuer URL:
 
    ```bash
-   az aks show -n <namespace> -g <resource-group> --query "oidcIssuerProfile.issuerUrl" -otsv
+   az aks show -n <cluster-name> -g <resource-group> --query "oidcIssuerProfile.issuerUrl" -otsv
    ```
 
 1. Deploy the app:
