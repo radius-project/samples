@@ -14,6 +14,9 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 
 1. [Deploy an Azure Kubernetes Service cluster](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli). It's recommended to use a node VM size with 16+ GB of memory, such as the `Standard_D4_v3` size. If you use the Azure CLI to deploy the cluster, you can set the VM size using the `--node-vm-size` parameter.
 
+1. [Enable an OIDC Connector provider on AKS cluster](https://learn.microsoft.com/en-us/azure/aks/use-oidc-issuer)
+
+
 1. [Install Azure AD Workload Identity](https://azure.github.io/azure-workload-identity/docs/installation.html)
 
 1. Install the Dapr 'edge' version to get Dapr support for Azure AD Workload Identity:
