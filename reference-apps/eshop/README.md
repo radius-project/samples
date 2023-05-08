@@ -8,7 +8,8 @@ This reference app is a "radified" version of the [eShop on containers](https://
 
 ## Deploy
 
-1. Have a kubernetes cluster handy from the [supported clusters](https://docs.radapp.dev/operations/platforms/kubernetes/supported-clusters/). To deploy eshop on AWS, make sure that each of the Subnets in your EKS cluster Subnet Group are within the list of [supported MemoryDB availability zones](https://docs.aws.amazon.com/memorydb/latest/devguide/subnetgroups.html) 
+1. Have a kubernetes cluster handy from the [supported clusters](https://docs.radapp.dev/operations/platforms/kubernetes/supported-clusters/).
+   - (AWS only) Make sure that each of the Subnets in your EKS cluster Subnet Group are within the list of [supported MemoryDB availability zones](https://docs.aws.amazon.com/memorydb/latest/devguide/subnetgroups.html) 
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
