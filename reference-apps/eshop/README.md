@@ -8,8 +8,8 @@ This reference app is a "radified" version of the [eShop on containers](https://
 
 ## Deploy
 
-1. [Install the rad CLI](https://radapp.dev/getting-started/)
-1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
+1. [Install the rad CLI](https://docs.radapp.dev/getting-started/install/)
+1. [Initialize a new Radius environment](https://docs.radapp.dev/operations/environments/)
 1. Clone the repository and switch to the app directory:
    ```bash
    git clone https://github.com/project-radius/samples.git
