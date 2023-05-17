@@ -1175,8 +1175,15 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: basketCache.id
+    resourceProvisioning: 'manual'
+    resources: [{
+      id: basketCache.id
+    }]
+    host: basketCache.properties.hostName
+    port: basketCache.properties.port
+    secret: {
+      password: basketCache.listKeys().primaryKey
+    }
   }
 }
 
@@ -1186,7 +1193,14 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'resource'
-    resource: keystoreCache.id
+    resourceProvisioning: 'manual'
+    resources: [{
+      id: keystoreCache.id
+    }]
+    host: basketCache.properties.hostName
+    port: basketCache.properties.port
+    secret: {
+      password: basketCache.listKeys().primaryKey
+    }
   }
 }

@@ -1108,7 +1108,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     host: keystoreCache.properties.ClusterEndpoint.Address
     port: keystoreCache.properties.ClusterEndpoint.Port
     secrets: {
@@ -1123,7 +1123,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: eshop.id
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     host: basketCache.properties.ClusterEndpoint.Address
     port: basketCache.properties.ClusterEndpoint.Port
     secrets: {
