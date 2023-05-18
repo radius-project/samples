@@ -1,24 +1,22 @@
+// Import Radius into your Bicep file.
 import radius as radius
 
-param application string
+// The environment used by your resources for deployment.
 param environment string
 
-resource demo 'Applications.Core/containers@2022-03-15-privatepreview' = {
-  name: 'demo'
+resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
+  name: 'webapp'
   properties: {
-    application: application
+    environment: environment
+  }
+}
+
+resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+  name: 'frontend'
+  properties: {
+    application: app.id
     container: {
       image: 'radius.azurecr.io/tutorial/webapp:edge'
-      ports: {
-        web: {
-          containerPort: 3000
-        }
-      }
-      livenessProbe: {
-        kind: 'httpGet'
-        containerPort: 3000
-        path: '/healthz'
-      }
     }
     connections: {
       redis: {
@@ -28,10 +26,10 @@ resource demo 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
+// Redis Cache Link resource
 resource db 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'db'
   properties: {
-    application: application
     environment: environment
     mode: 'recipe'
     recipe: {

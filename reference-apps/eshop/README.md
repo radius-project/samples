@@ -8,6 +8,8 @@ This reference app is a "radified" version of the [eShop on containers](https://
 
 ## Deploy
 
+1. Have a kubernetes cluster handy from the [supported clusters](https://docs.radapp.dev/operations/platforms/kubernetes/supported-clusters/).
+   - (AWS only) Make sure that each of the Subnets in your EKS cluster Subnet Group are within the list of [supported MemoryDB availability zones](https://docs.aws.amazon.com/memorydb/latest/devguide/subnetgroups.html) 
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
@@ -18,16 +20,20 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Deploy the app (choose which type of hosting infrastructure you wish to use):
 
    ### Containerized infrastructure
+   
     ```bash
-    rad deploy iac/app.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS>
+    rad deploy iac/eshop.bicep
     ```
 
    ### Azure infrastructure
+   
     ```bash
-    rad deploy iac/app.azure.bicep
+    rad deploy iac/eshop.bicep -p platform=azure
     ```
 
    ### AWS infrastructure
+   
     ```bash
-    rad deploy iac/app.aws.bicep -p adminPassword=<INSERT_8_OR_MORE_CHARACTER_PASSWORD_WITH_NUMBERS_LETTERS_AND_SPECIAL_CHARACTERS> -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
+    rad deploy iac/eshop.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
     ```
+    

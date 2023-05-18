@@ -3,8 +3,6 @@ import radius as radius
 
 param environment string
 
-param location string = 'global'
-
 param bucket string
 
 @secure()
@@ -19,14 +17,13 @@ resource s3 'AWS.S3/Bucket@default' = {
   alias: bucket
   properties: {
     BucketName: bucket
-    AccessControl: 'PublicRead'
+    AccessControl: 'Private'
   }
 }
 
 // get a radius container which uses the s3 bucket
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'webapp'
-  location: location
   properties: {
     environment: environment
   }
@@ -34,7 +31,6 @@ resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'frontend'
-  location: location
   properties: {
     application: app.id
     container: {

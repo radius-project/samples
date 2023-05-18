@@ -1,13 +1,26 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
+
+@description('The Radius environment name.')
 param environment string
 
-param daprPubSubBrokerName string
+@description('The name of the Payment API HTTP route.')
 param paymentApiRouteName string
+
+@description('The name of the Seq HTTP route.')
 param seqRouteName string
 
+@description('The Dapr application ID.')
+param daprPubSubBrokerName string
+
+@description('The Dapr application ID.')
 var daprAppId = 'payment-api'
+
+//-----------------------------------------------------------------------------
+// Get references to existing resources 
+//-----------------------------------------------------------------------------
 
 resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
@@ -21,13 +34,16 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
   name: seqRouteName
 }
 
+//-----------------------------------------------------------------------------
+// Deploy Payment API container
+//-----------------------------------------------------------------------------
+
 resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'payment-api'
-  location: 'global'
   properties: {
     application: appId
     container: {
-      image: 'radius.azurecr.io/eshopdapr/payment.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/payment.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -45,23 +61,22 @@ resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: paymentApiDaprRoute.id
+        provides: daprRoute.id
       }
     ]
     connections: {
-      seq: {
-        source: seqRoute.id
-      }
       pubsub: {
         source: daprPubSubBroker.id
+      }
+      seq: {
+        source: seqRoute.id
       }
     }
   }
 }
 
-resource paymentApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'payment-api-dapr-route'
-  location: 'global'
   properties: {
     application: appId
     environment: environment
@@ -69,4 +84,9 @@ resource paymentApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-
   }
 }
 
-output paymentApiDaprRouteName string = paymentApiDaprRoute.name
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
+
+output daprRouteName string = daprRoute.name
+output workloadIdentityId string = paymentApi.properties.identity.resource

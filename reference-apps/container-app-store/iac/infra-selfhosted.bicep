@@ -6,7 +6,6 @@ param environment string
 
 resource redisContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'redis'
-  location: 'global'
   properties: {
     application: applicationId
     container: {
@@ -23,7 +22,6 @@ resource redisContainer 'Applications.Core/containers@2022-03-15-privatepreview'
 
 resource redisRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   name: 'redis-route'
-  location: 'global'
   properties: {
     application: applicationId
     port: 6379
@@ -32,7 +30,6 @@ resource redisRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
 
 resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
   name: 'orders'
-  location: 'global'
   properties: {
     mode: 'values'
     type: 'state.redis'

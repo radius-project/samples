@@ -1,47 +1,74 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
+
+@description('The Radius environment name.')
 param environment string
 
+@description('The name of the Catalog API HTTP route.')
 param catalogApiRouteName string
-param catalogDbLinkName string
+
+@description('The name of the Catalog database link.')
+param catalogDbName string
+
+@description('The name of the Dapr pub/sub component.')
 param daprPubSubBrokerName string
+
+@secure() // Decorated with @secure() to circumvent the false positive warning to use secure parameters
+@description('The name of the Dapr secret store component.')
+param daprSecretStoreName string
+
+@description('The name of the Key Vault to get secrets from.')
+param keyVaultName string
+
+@description('The name of the Seq HTTP route.')
 param seqRouteName string
 
-@secure()
-param sqlAdministratorLogin string
-@secure()
-param sqlAdministratorLoginPassword string
-
+@description('The Dapr application ID.')
 var daprAppId = 'catalog-api'
+
+//-----------------------------------------------------------------------------
+// Get references to existing resources 
+//-----------------------------------------------------------------------------
 
 resource catalogApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
   name: catalogApiRouteName
 }
 
-resource catalogDbLink 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
-  name: catalogDbLinkName
+resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+  name: catalogDbName
 }
 
 resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
+resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatepreview' existing = {
+  name: daprSecretStoreName
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+}
+
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: seqRouteName
 }
 
+//-----------------------------------------------------------------------------
+// Deploy Catalog API container
+//-----------------------------------------------------------------------------
+
 resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'catalog-api'
-  location: 'global'
   properties: {
     application: appId
     container: {
-      image: 'radius.azurecr.io/eshopdapr/catalog.api:latest'
+      image: 'radius.azurecr.io/eshopdapr/catalog.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ConnectionStrings__CatalogDB: 'Server=tcp:${catalogDbLink.properties.server},1433;Initial Catalog=${catalogDbLink.properties.database};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
         RetryMigrations: 'true'
         SeqServerUrl: seqRoute.properties.url
       }
@@ -57,26 +84,38 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: catalogApiDaprRoute.id
+        provides: daprRoute.id
       }
     ]
     connections: {
-      seq: {
-        source: seqRoute.id
+      catalogDb: {
+        source: catalogDb.id
       }
-      sql: {
-        source: catalogDbLink.id
-      }
-      pubsub: {
+      daprPubSubBroker: {
         source: daprPubSubBroker.id
+      }
+      daprSecretStore: {
+        source: daprSecretStore.id
+      }
+      // Temporary workaround to grant required role to workload identity.
+      keyVault: {
+        source: keyVault.id
+        iam: {
+          kind: 'azure'
+          roles: [
+            'Key Vault Secrets User'
+          ]
+        }
+      }
+      seqRoute: {
+        source: seqRoute.id
       }
     }
   }
 }
 
-resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
+resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
   name: 'catalog-api-dapr-route'
-  location: 'global'
   properties: {
     application: appId
     environment: environment
@@ -84,4 +123,8 @@ resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-
   }
 }
 
-output catalogApiDaprRouteName string = catalogApiDaprRoute.name
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
+
+output daprRouteName string = daprRoute.name

@@ -1,7 +1,6 @@
 import aws as aws
 import radius as radius
 
-param location string = 'global'
 param environment string
 param queue_name string
 
@@ -20,7 +19,6 @@ var aws_credential = {
 var app_name = 'sqs-sample-app'
 resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: app_name
-  location: location
   properties: {
     environment: environment
   }
@@ -36,7 +34,6 @@ resource queue 'AWS.SQS/Queue@default' = {
 
 resource producer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'producer'
-  location: location
   properties: {
     application: app.id
     container: {
@@ -54,7 +51,6 @@ resource producer 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource consumer 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'consumer'
-  location: location
   properties: {
     application: app.id
     container: {
