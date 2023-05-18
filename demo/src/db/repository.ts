@@ -23,21 +23,11 @@ export interface Repository {
 }
 
 export function createFactory(): RepositoryFactory {
-    if (process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING) { // Used by tutorial
-      console.log("Using MongoDB: found connection string in environment variable CONNECTION_ITEMSTORE_CONNECTIONSTRING");
-      return new MongoFactory(process.env.CONNECTION_ITEMSTORE_CONNECTIONSTRING);
-    }
-  
     if (process.env.CONNECTION_MONGODB_CONNECTIONSTRING) {
       console.log("Using MongoDB: found connection string in environment variable CONNECTION_MONGODB_CONNECTIONSTRING");
       return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
     }
-  
-    if (process.env.CONNECTION_REDIS_CONNECTIONSTRING) {
-      console.log("Using Redis: found connection string in environment variable CONNECTION_REDIS_CONNECTIONSTRING");
-      return new RedisFactory(process.env.CONNECTION_REDIS_CONNECTIONSTRING);
-    }
-  
+
     if (process.env.CONNECTION_REDIS_HOST) {
       console.log("Using Redis: found hostname in environment variable CONNECTION_REDIS_HOST");
       const connection = { 
