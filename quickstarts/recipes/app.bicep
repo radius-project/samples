@@ -31,7 +31,6 @@ resource db 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
   name: 'db'
   properties: {
     environment: environment
-    mode: 'recipe'
     recipe: {
       name: 'redis-kubernetes'
     }
