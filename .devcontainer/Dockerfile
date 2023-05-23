@@ -33,7 +33,7 @@ RUN apt-get update \
 RUN wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
 
 # Download Radius Bicep extension.
-RUN wget -O /home/rad-vscode-bicep.vsix https://radiuspublic.blob.core.windows.net/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix
+RUN wget -O /home/rad-vscode-bicep.vsix https://get.radapp.dev/tools/vscode-extensibility/stable/rad-vscode-bicep.vsix
 
 # Setup Kubectl
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
