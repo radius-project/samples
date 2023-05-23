@@ -1,7 +1,5 @@
 FROM mcr.microsoft.com/vscode/devcontainers/base:debian
 
-# [Option] Select Radius release channel - either major.minor or 'edge'
-ARG RADIUS_VERSION="0.20"
 # [Option] Install zsh
 ARG INSTALL_ZSH="true"
 # [Option] Upgrade OS packages to their latest versions
