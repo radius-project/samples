@@ -16,4 +16,4 @@ The samples repo is broken down into three categories:
 
 ## Codespace
 
-The current reposotory offers a codespace setup with Radius and its dependencies installed. At startup time the codespace will automatically create a Radius local development environment. For more instructions on how to use the codespace see the official docs page: https://radapp.dev/
+The current repository offers a codespace setup with Radius and its dependencies installed. At startup time the codespace will automatically create a Radius local development environment. For more instructions on how to use the codespace see the official docs page: https://docs.radapp.dev/getting-started/install/
