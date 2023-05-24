@@ -29,9 +29,6 @@ RUN apt-get update \
     # Clean up
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/
 
-# Install Radius CLI
-RUN wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
-
 # Download Radius Bicep extension.
 RUN wget -O /home/rad-vscode-bicep.vsix https://get.radapp.dev/tools/vscode-extensibility/stable/rad-vscode-bicep.vsix
 
@@ -50,6 +47,9 @@ RUN wget -O  ./stern.tar.gz https://github.com/stern/stern/releases/download/v1.
     mv ./stern /usr/local/bin
 
 USER vscode
+
+# Install Radius CLI
+RUN wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
 
 # NOTE: we can't initialize k3d here or install Radius because the docker daemon isn't running. That will only
 # be possible once the devcontainer actually launches.
