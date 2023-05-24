@@ -117,8 +117,14 @@ resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = 
   properties: {
     application: appId
     environment: environment
-    mode: 'resource'
-    resource: sqlServer::catalogDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sqlServer::catalogDb.id
+      }
+    ]
+    database:sqlServer::catalogDb.name
+    server:'${sqlServer.name}.database.windows.net'
   }
 }
 
@@ -127,8 +133,14 @@ resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
   properties: {
     application: appId
     environment: environment
-    mode: 'resource'
-    resource: sqlServer::identityDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sqlServer::identityDb.id
+      }
+    ]
+    database:sqlServer::identityDb.name
+    server:'${sqlServer.name}.database.windows.net'
   }
 }
 
@@ -137,8 +149,14 @@ resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
   properties: {
     application: appId
     environment: environment
-    mode: 'resource'
-    resource: sqlServer::orderingDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sqlServer::orderingDb.id
+      }
+    ]
+    database:sqlServer::orderingDb.name
+    server:'${sqlServer.name}.database.windows.net'
   }
 }
 

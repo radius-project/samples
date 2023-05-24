@@ -255,8 +255,14 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: sql::identityDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sql::identityDb.id
+      }
+    ]
+    database:sql::identityDb.name
+    server:'${sql.name}.database.windows.net'
   }
 }
 
@@ -265,8 +271,14 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: sql::catalogDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sql::catalogDb.id
+      }
+    ]
+    database:sql::catalogDb.name
+    server:'${sql.name}.database.windows.net'
   }
 }
 
@@ -275,8 +287,14 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: sql::orderingDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sql::orderingDb.id
+      }
+    ]
+    database:sql::orderingDb.name
+    server:'${sql.name}.database.windows.net'
   }
 }
 
@@ -285,8 +303,14 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'resource'
-    resource: sql::webhooksDb.id
+    resourceProvisioning: 'manual'
+    resources:[
+      {
+        id:sql::webhooksDb.id
+      }
+    ]
+    database:sql::webhooksDb.name
+    server:'${sql.name}.database.windows.net'
   }
 }
 
