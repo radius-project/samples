@@ -19,7 +19,7 @@ else
     if [[ "$CURRENT_BRANCH" =~ ^v[0-9]+\.[0-9]+$ ]]; then
         RADIUS_VERSION=${CURRENT_BRANCH:1}
     else
-        ## Otherwise, set RADIUS_VERSION to "latest"
+        ## Otherwise, set RADIUS_VERSION to "edge"
         RADIUS_VERSION=edge
     fi
 fi
