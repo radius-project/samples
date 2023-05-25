@@ -26,6 +26,8 @@ fi
 
 if [ "$RADIUS_VERSION" = "edge" ]; then
     wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s edge
+    curl https://get.radapp.dev/tools/vscode-extensibility/edge/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
 else
     wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+    curl https://get.radapp.dev/tools/vscode-extensibility/stable/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
 fi
