@@ -1,7 +1,5 @@
 FROM mcr.microsoft.com/vscode/devcontainers/base:debian
 
-# [Option] Select Radius release channel - either major.minor or 'edge'
-ARG RADIUS_VERSION="edge"
 # [Option] Install zsh
 ARG INSTALL_ZSH="true"
 # [Option] Upgrade OS packages to their latest versions
@@ -31,9 +29,6 @@ RUN apt-get update \
     # Clean up
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/
 
-# Install Radius CLI
-RUN wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
-
 # Download Radius Bicep extension.
 RUN wget -O /home/rad-vscode-bicep.vsix https://radiuspublic.blob.core.windows.net/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix
 
@@ -52,6 +47,9 @@ RUN wget -O  ./stern.tar.gz https://github.com/stern/stern/releases/download/v1.
     mv ./stern /usr/local/bin
 
 USER vscode
+
+# Install Radius CLI
+RUN wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s $RADIUS_VERSION
 
 # NOTE: we can't initialize k3d here or install Radius because the docker daemon isn't running. That will only
 # be possible once the devcontainer actually launches.
