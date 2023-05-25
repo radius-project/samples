@@ -18,13 +18,13 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 
 1. [Install Azure AD Workload Identity](https://azure.github.io/azure-workload-identity/docs/installation.html)
 
-1. Install the Dapr 'edge' version to get Dapr support for Azure AD Workload Identity:
+1. Install the Dapr '1.11.0-rc.4' or later version to get Dapr support for Azure AD Workload Identity:
 
    ```bash
    helm repo add dapr https://dapr.github.io/helm-charts/
    helm repo update
    kubectl create namespace dapr-system
-   helm install dapr dapr/dapr --namespace dapr-system --set global.tag=edge --wait
+   helm install dapr dapr/dapr --namespace dapr-system --version 1.11.0-rc.4
    ```
 
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
