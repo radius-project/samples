@@ -38,13 +38,11 @@ jobs:
           --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
           --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
     - name: Parse release version and set environment variables
-      run: python ./.github/scripts/get_release_version.py
+      run: python ./.github/scripts/get_docs_version.py
     - name: Download rad-bicep
       run: |
-        ./.github/scripts/curl-with-retries.sh https://get.radapp.dev/tools/bicep-extensibility/${{ env.REL_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
+        ./.github/scripts/curl-with-retries.sh https://get.radapp.dev/tools/bicep-extensibility/${{ env.DOCS_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
         chmod +x rad-bicep
         ./rad-bicep --version
     - name: Verify Bicep files
-      run: ./.github/scripts/validate-bicep.sh
-      env: 
-        BICEP_PATH: .
+      run: python ./.github/scripts/validate_bicep.py
