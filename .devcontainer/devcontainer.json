@@ -26,7 +26,8 @@
 	// Initialize a Kubernetes cluster, install Radius, and expose the ingress controller to the user on port 8081.
 	"postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh",
 	"forwardPorts": [
-		"8081:8081"
+		"8081:8081",
+		"3000:3000"
 	],
 
 	// This MUST be 'vscode' as that is the username created by our base image.
