@@ -28,7 +28,6 @@ if [ "$RADIUS_VERSION" = "edge" ]; then
     wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
 else
     wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-    
 fi
 
 ## Download Bicep extension
