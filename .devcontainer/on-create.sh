@@ -3,7 +3,7 @@
 ## Install Dapr
 wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash
 dapr uninstall # clean if needed
-dapr init
+dapr init -k
 
 ## Create a k3d cluster
 k3d cluster delete
@@ -26,8 +26,10 @@ fi
 
 if [ "$RADIUS_VERSION" = "edge" ]; then
     wget -q "https://radiuspublic.blob.core.windows.net/tools/rad/install.sh" -O - | /bin/bash -s edge
-    curl https://get.radapp.dev/tools/vscode-extensibility/edge/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
 else
     wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-    curl https://get.radapp.dev/tools/vscode-extensibility/stable/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
+    
 fi
+
+## Download Bicep extension
+curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
