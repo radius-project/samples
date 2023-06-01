@@ -102,7 +102,7 @@ resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   properties: {
     environment: environment
     application: app.id
-    mode: 'values'
+    resourceProvisioning: 'manual'
     type: 'state.redis'
     version: 'v1'
     metadata: {
