@@ -124,7 +124,7 @@ resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = 
       }
     ]
     database: sqlServer::catalogDb.name
-    server: '${sqlServer.name}.database.windows.net'
+    server: sqlServer.properties.fullyQualifiedDomainName
   }
 }
 
@@ -140,7 +140,7 @@ resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
       }
     ]
     database: sqlServer::identityDb.name
-    server: '${sqlServer.name}.database.windows.net'
+    server: sqlServer.properties.fullyQualifiedDomainName
   }
 }
 
@@ -156,7 +156,7 @@ resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
       }
     ]
     database: sqlServer::orderingDb.name
-    server: '${sqlServer.name}.database.windows.net'
+    server: sqlServer.properties.fullyQualifiedDomainName
   }
 }
 

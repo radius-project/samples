@@ -262,7 +262,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
       }
     ]
     database: sql::identityDb.name
-    server: '${sql.name}.database.windows.net'
+    server: sql.properties.fullyQualifiedDomainName
   }
 }
 
@@ -278,7 +278,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
       }
     ]
     database: sql::catalogDb.name
-    server: '${sql.name}.database.windows.net'
+    server: sql.properties.fullyQualifiedDomainName
   }
 }
 
@@ -294,7 +294,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
       }
     ]
     database: sql::orderingDb.name
-    server: '${sql.name}.database.windows.net'
+    server: sql.properties.fullyQualifiedDomainName
   }
 }
 
@@ -310,7 +310,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
       }
     ]
     database: sql::webhooksDb.name
-    server: '${sql.name}.database.windows.net'
+    server: sql.properties.fullyQualifiedDomainName
   }
 }
 
