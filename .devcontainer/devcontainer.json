@@ -1,34 +1,49 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.162.0/containers/javascript-node
 {
-	"name": "Radius Sample Container",
-    "image": "radius.azurecr.io/devcontainer/samples:edge",
-
-    "settings": {
-		"terminal.integrated.defaultProfile.linux": "bash"
-	},
-
-    // Add the IDs of extensions you want installed when the container is created.
-	"extensions": [
-		"ms-vscode.azurecli",
-
-		// This is included in the base image. You can safely ignore the warning here, it does work.
-		"/home/rad-vscode-bicep.vsix"
-	],
-
-	// These are needed for docker-in-docker
+	"name": "Radius Dev Container",
+	"image": "mcr.microsoft.com/devcontainers/universal:linux",
+	"workspaceFolder": "/workspaces/samples",
+	"onCreateCommand": "bash ./.devcontainer/on-create.sh",
 	"runArgs": [
-		"--privileged",
-		"--init"
+	  "--privileged",
+	  "--init"
 	],
-	"overrideCommand": false,
-
-	// Initialize a Kubernetes cluster, install Radius, and expose the ingress controller to the user on port 8081.
-	"postCreateCommand": "bash ./.devcontainer/postCreateCommand.sh",
-	"forwardPorts": [
-		"8081:8081"
-	],
-
-	// This MUST be 'vscode' as that is the username created by our base image.
-	"remoteUser": "vscode"
-}
+	// Features to add to the dev container. More info: https://containers.dev/features
+	"features": {
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+	  "ghcr.io/devcontainers/features/azure-cli:1": {},
+	  "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
+	  "ghcr.io/rio/features/k3d:1": {}
+	},
+	// Configure tool-specific properties.
+	"customizations": {
+	  // Configure properties specific to VS Code.
+	  "vscode": {
+		"settings": {},
+		"extensions": [
+			"ms-azuretools.vscode-dapr",
+			"ms-dotnettools.csharp",
+			"ms-azuretools.vscode-docker",
+			"ms-python.python",
+			"dunn.redis",
+			"GitHub.copilot",
+			"/tmp/rad-vscode-bicep.vsix"
+		]
+	  }
+	},
+	"remoteEnv": {
+	  "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+	},
+	// Use 'portsAttributes' to set default properties for specific forwarded ports.
+	// More info: https://containers.dev/implementors/json_reference/#port-attributes
+	"portsAttributes": {
+	  "3000": {
+		"label": "demo-app",
+		"onAutoForward": "openBrowser",
+		"protocol": "http"
+	  },
+	  "8081": {
+		"label": "k3s",
+		"onAutoForward": "silent"
+	  }
+	}
+  }

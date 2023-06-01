@@ -267,11 +267,11 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     host: redisBasketRoute.properties.hostname
     port: redisBasketRoute.properties.port
     secrets: {
-      password: ''
+      connectionString: '${redisBasketRoute.properties.hostname}:${redisBasketRoute.properties.port},abortConnect=False'
     }
   }
 }
@@ -281,11 +281,11 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     host: redisKeystoreRoute.properties.hostname
     port: redisKeystoreRoute.properties.port
     secrets: {
-      password: ''
+      connectionString: '${redisKeystoreRoute.properties.hostname}:${redisKeystoreRoute.properties.port},abortConnect=False'
     }
   }
 }

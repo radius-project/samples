@@ -81,6 +81,7 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
+          rad recipe register default -e default -w default --template-kind bicep --template-path radiusdev.azurecr.io/recipes/dev/rediscaches:pr-12 --link-type Applications.Link/redisCaches
       - name: Deploy app
         run:  rad deploy ${{ matrix.path }} ${{ matrix.args }}
       - name: Delete app

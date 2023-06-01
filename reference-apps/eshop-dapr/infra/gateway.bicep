@@ -1,12 +1,26 @@
 import radius as radius
 
+@description('The Radius application ID.')
 param appId string
 
+@description('The name of the Blazor client HTTP route.')
 param blazorClientRouteName string
+
+@description('The name of the Identity API HTTP route.')
 param identityApiRouteName string
+
+@description('The name of the Seq HTTP route.')
 param seqRouteName string
+
+@description('The name of the gateway HTTP route.')
 param webshoppingGwRouteName string
+
+@description('The name of the webstatus API HTTP route.')
 param webstatusRouteName string
+
+//-----------------------------------------------------------------------------
+// Get references to existing resources 
+//-----------------------------------------------------------------------------
 
 resource blazorClientRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: blazorClientRouteName
@@ -27,6 +41,10 @@ resource webshoppingGwRoute 'Applications.Core/httpRoutes@2022-03-15-privateprev
 resource webstatusRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: webstatusRouteName
 }
+
+//-----------------------------------------------------------------------------
+// Create the Radius gateway
+//-----------------------------------------------------------------------------
 
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   name: 'gateway'
@@ -64,4 +82,8 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   }
 }
 
-output url string = gateway.properties.url
+//-----------------------------------------------------------------------------
+// Output
+//-----------------------------------------------------------------------------
+
+output gatewayName string = gateway.name
