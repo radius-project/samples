@@ -73,7 +73,7 @@ jobs:
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      - name: Init local environment
+      - name: Init environment
         run: |
           rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
           rad group create default
@@ -81,7 +81,7 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path radiusdev.azurecr.io/recipes/dev/rediscaches:pr-12 --link-type Applications.Link/redisCaches
+          rad recipe register default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:0.21 --link-type Applications.Link/redisCaches
       - name: Deploy app
         run:  rad deploy ${{ matrix.path }} ${{ matrix.args }}
       - name: Delete app
