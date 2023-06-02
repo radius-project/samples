@@ -119,7 +119,17 @@ resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview
   properties: {
     environment: environment
     application: app.id
-    mode: 'resource'
-    resource: account::tableServices::table.id
+    resourceProvisioning: 'manual'
+    resources: [
+      { id: account.id }
+      { id: account::tableServices::table.id }
+    ]
+    metadata: {
+      accountName: account.name
+      accountKey: account.listKeys().keys[0].value
+      tableName: account::tableServices::table.name
+    }
+    type: 'state.azure.tablestorage'
+    version: 'v1'
   }
 }

@@ -33,8 +33,8 @@ export function createFactory(): RepositoryFactory {
       const connection = { 
         host: process.env.CONNECTION_REDIS_HOST!, 
         port: process.env.CONNECTION_REDIS_PORT!,
-        username: process.env.CONNECTION_REDIS_USERNAME,
-        password: process.env.CONNECTION_REDIS_PASSWORD,
+        username: process.env.CONNECTION_REDIS_USERNAME || '',
+        password: process.env.CONNECTION_REDIS_PASSWORD || '',
       }
   
       let scheme = "redis"
@@ -43,7 +43,7 @@ export function createFactory(): RepositoryFactory {
       }
   
       let usernamePass = "";
-      if (connection.username && connection.username !== "" && connection.password && connection.password !== "") {
+      if (connection.username !== "" || connection.password !== "") {
         usernamePass = `${connection.username}:${connection.password}@`
       }
   
