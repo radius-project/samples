@@ -4,10 +4,10 @@
 k3d cluster delete
 k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'
 
-## Verify cluster was created and exit 1 if not
+## Verify cluster was created
 kubectl get nodes
 if [ $? -ne 0 ]; then
-    echo "Failed to create k3d cluster"
+    echo "Failed to create k3s cluster"
     exit 1
 fi
 
