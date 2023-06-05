@@ -197,7 +197,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'IdentityDb'
     server: identityDb.properties.Endpoint.Address
   }
@@ -208,7 +208,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'CatalogDb'
     server: catalogDb.properties.Endpoint.Address
   }
@@ -219,7 +219,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'OrderingDb'
     server: orderingDb.properties.Endpoint.Address
   }
@@ -230,7 +230,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'WebhooksDb'
     server: webhooksDb.properties.Endpoint.Address
   }
