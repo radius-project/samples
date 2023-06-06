@@ -210,7 +210,7 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname
