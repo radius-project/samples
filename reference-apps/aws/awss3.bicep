@@ -17,7 +17,6 @@ resource s3 'AWS.S3/Bucket@default' = {
   alias: bucket
   properties: {
     BucketName: bucket
-    AccessControl: 'Private'
   }
 }
 
