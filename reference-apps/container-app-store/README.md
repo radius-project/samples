@@ -1,6 +1,6 @@
 # Container Apps Store reference application
 
-Visit the [Project Radius docs](https://radapp.dev/getting-started/reference-apps/container-app-store/) to learn more and try it out.
+Visit the [Radius docs](https://radapp.dev/getting-started/reference-apps/container-app-store/) to learn more and try it out.
 
 ## Source
 

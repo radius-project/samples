@@ -1,6 +1,6 @@
 # eShop on Radius reference application
 
-Visit the [Project Radius docs](https://radapp.dev/getting-started/reference-apps/eshop/) to learn more and try it out.
+Visit the [Radius docs](https://radapp.dev/getting-started/reference-apps/eshop/) to learn more and try it out.
 
 ## Source
 
