@@ -1,6 +1,6 @@
 # Radius Samples
 
-This repository contains the source code for quickstarts, reference apps, and tutorials for Project Radius.
+This repository contains the source code for quickstarts, reference apps, and tutorials for Radius.
 
 To try out one of these samples, visit https://radapp.dev
 
@@ -10,8 +10,8 @@ The samples repo is broken down into three categories:
 
 | Sample category | Description | Docs |
 |-----------------|-------------|------|
-| [First app](demo/) | The main guide to try out and learn the breadth of Project Radius concepts and features | [First-app](https://radapp.dev/getting-started/first-app/) |
-| [Quickstarts](quickstarts/) | Focused how-to guides on specific Project Radius scenarios and features | [Quickstarts](https://radapp.dev/getting-started/quickstarts/) |
+| [First app](demo/) | The main guide to try out and learn the breadth of Radius concepts and features | [First-app](https://radapp.dev/getting-started/first-app/) |
+| [Quickstarts](quickstarts/) | Focused how-to guides on specific Radius scenarios and features | [Quickstarts](https://radapp.dev/getting-started/quickstarts/) |
 | [Reference apps](reference-apps/) | Templates showing "radified" applications that can be used as a starting point for your own apps | [Reference apps](https://radapp.dev/getting-started/reference-apps/) |
 
 ## Codespace

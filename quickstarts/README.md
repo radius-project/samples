@@ -1,6 +1,6 @@
 # Quickstarts
 
-Quickstarts provide a quick way to learn a key concept of Project Radius. Pick a quickstart topic and follow the instructions to learn more and get started.
+Quickstarts provide a quick way to learn a key concept of Radius. Pick a quickstart topic and follow the instructions to learn more and get started.
 
 | Quickstart | Description |
 |------------|-------------|
