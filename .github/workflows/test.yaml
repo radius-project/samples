@@ -7,16 +7,16 @@ on:
       - v*.*
       - edge
     paths:
-      - 'quickstarts/**'
-      - 'reference-apps/**'
-      - '.github/workflows/**'
+      - "quickstarts/**"
+      - "reference-apps/**"
+      - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
       - edge
   schedule: # 7:45 AM Pacific Time
-    - cron: '45 15 * * *'
+    - cron: "45 15 * * *"
 
 jobs:
   test:
@@ -31,6 +31,9 @@ jobs:
             app: demo
             path: ./demo/app.bicep
             args: --application demo
+            uiTestFile: tests/demo.app.spec.ts
+            port: 3000
+            container: demo
           - name: dapr
             app: dapr-quickstart
             path: ./quickstarts/dapr/dapr.bicep
@@ -49,7 +52,11 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: az CLI login
         run: |
           az login --service-principal \
@@ -57,17 +64,17 @@ jobs:
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
       - name: Download k3d
-        run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-           echo "Downloading rad CLI from branch $BRANCH"
-           if [ "$BRANCH" = "edge" ]; then
-             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
-           else
-             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-           fi
+          echo "Downloading rad CLI from branch $BRANCH"
+          if [ "$BRANCH" = "edge" ]; then
+            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+          else
+            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+          fi
       - name: Create k3d cluster
-        run:  k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+        run: k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: ${{ matrix.enableDapr }}
         run: |
@@ -84,9 +91,33 @@ jobs:
           rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Link/redisCaches
           rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Link/mongoDatabases
       - name: Deploy app
-        run:  rad deploy ${{ matrix.path }} ${{ matrix.args }}
+        run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
+      - name: Wait for all pods to be ready
+        run: |
+          namespace="default-${{ matrix.app }}"
+          label="radius.dev/application=${{ matrix.app }}"
+
+          kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
+      - name: Run Playwright Test
+        if: ${{ matrix.uiTestFile != '' }}
+        run: |
+          if [[ "${{ matrix.container }}" != "" ]]; then
+            rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
+          fi
+          cd ui-tests/
+          npm ci
+          npx playwright install --with-deps
+          npx playwright test ${{ matrix.uiTestFile }}
+      - name: Upload Playwright Results
+        uses: actions/upload-artifact@v3
+        if: always() && matrix.uiTestFile != ''
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: ui-tests/playwright-report/
+          retention-days: 30
+          if-no-files-found: error
       - name: Delete app
-        run:  rad app delete ${{ matrix.app }} -y
+        run: rad app delete ${{ matrix.app }} -y
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
