@@ -263,6 +263,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     ]
     database: sql::identityDb.name
     server: sql.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
@@ -279,6 +280,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     ]
     database: sql::catalogDb.name
     server: sql.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
@@ -295,6 +297,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     ]
     database: sql::orderingDb.name
     server: sql.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
@@ -311,6 +314,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     ]
     database: sql::webhooksDb.name
     server: sql.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
