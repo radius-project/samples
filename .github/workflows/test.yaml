@@ -47,6 +47,8 @@ jobs:
           - name: eshop
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
+            args: --application eshop
+            uiTestFile: tests/eshop/container.app.spec.ts
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,7 +76,7 @@ jobs:
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
           fi
       - name: Create k3d cluster
-        run: k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+        run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: ${{ matrix.enableDapr }}
         run: |
@@ -82,7 +84,7 @@ jobs:
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
       - name: Init local environment
         run: |
-          rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
+          rad install kubernetes --set rp.publicEndpointOverride=localhost
           rad group create default
           rad workspace create kubernetes default --group default
           rad group switch default

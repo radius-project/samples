@@ -2,6 +2,13 @@ import { test, expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
 
 test("To-Do App Basic UI Checks", async ({ page }) => {
+  // Listen for all console events and handle errors
+  page.on('console', msg => {
+    if (msg.type() === 'error') {
+      console.log(`Error text: "${msg.text()}"`);
+    }
+  });
+
   // Go to http://localhost:3000/
   await page.goto("http://localhost:3000/");
 
