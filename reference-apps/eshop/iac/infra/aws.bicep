@@ -200,6 +200,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     resourceProvisioning: 'manual'
     database: 'IdentityDb'
     server: identityDb.properties.Endpoint.Address
+    port:  int(identityDb.properties.Endpoint.Port)
   }
 }
 
@@ -211,6 +212,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     resourceProvisioning: 'manual'
     database: 'CatalogDb'
     server: catalogDb.properties.Endpoint.Address
+    port: int(catalogDb.properties.Endpoint.Port)
   }
 }
 
@@ -222,6 +224,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     resourceProvisioning: 'manual'
     database: 'OrderingDb'
     server: orderingDb.properties.Endpoint.Address
+    port: int(orderingDb.properties.Endpoint.Port)
   }
 }
 
@@ -233,6 +236,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     resourceProvisioning: 'manual'
     database: 'WebhooksDb'
     server: webhooksDb.properties.Endpoint.Address
+    port: int(webhooksDb.properties.Endpoint.Port)
   }
 }
 
@@ -269,7 +273,7 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname

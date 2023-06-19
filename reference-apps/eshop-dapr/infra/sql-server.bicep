@@ -125,6 +125,7 @@ resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = 
     ]
     database: sqlServer::catalogDb.name
     server: sqlServer.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
@@ -141,6 +142,7 @@ resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
     ]
     database: sqlServer::identityDb.name
     server: sqlServer.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
@@ -157,6 +159,7 @@ resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' =
     ]
     database: sqlServer::orderingDb.name
     server: sqlServer.properties.fullyQualifiedDomainName
+    port: 1433
   }
 }
 
