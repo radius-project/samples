@@ -21,13 +21,6 @@ param AZURESERVICEBUSENABLED string
 @description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
 
-@description('SQL administrator username')
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Name of the Gateway')
 param gatewayName string
 
