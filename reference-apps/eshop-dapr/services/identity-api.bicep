@@ -113,17 +113,8 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   }
 }
 
-resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'identity-api-dapr-route'
-  properties: {
-    application: appId
-    environment: environment
-    appId: daprAppId
-  }
-}
-
 //-----------------------------------------------------------------------------
 // Output
 //-----------------------------------------------------------------------------
 
-output daprRouteName string = daprRoute.name
+output appId string = daprAppId
