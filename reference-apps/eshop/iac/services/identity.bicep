@@ -74,7 +74,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
-        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlIdentityDb.connectionString()
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
         SpaClient: gateway.properties.url
         BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'

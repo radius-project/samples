@@ -10,6 +10,8 @@ param application string
 @secure()
 param adminPassword string
 
+var adminUsername = 'sa'
+
 // Infrastructure -------------------------------------------------
 
 resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
@@ -227,7 +229,11 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     server: sqlIdentityRoute.properties.hostname
     database: 'IdentityDb'
     port: sqlIdentityRoute.properties.port
-
+    username: adminUsername
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sqlIdentityRoute.properties.hostname},${sqlIdentityRoute.properties.port};Initial Catalog=IdentityDb;User Id=${adminUsername};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -240,6 +246,11 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     server: sqlCatalogRoute.properties.hostname
     database: 'CatalogDb'
     port: sqlCatalogRoute.properties.port
+    username: adminUsername
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sqlCatalogRoute.properties.hostname},${sqlCatalogRoute.properties.port};Initial Catalog=CatalogDb;User Id=${adminUsername};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -252,6 +263,11 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     server: sqlOrderingRoute.properties.hostname
     database: 'OrderingDb'
     port: sqlOrderingRoute.properties.port
+    username: adminUsername
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sqlOrderingRoute.properties.hostname},${sqlOrderingRoute.properties.port};Initial Catalog=OrderingDb;User Id=${adminUsername};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -264,6 +280,11 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     server: sqlWebhooksRoute.properties.hostname
     database: 'WebhooksDb'
     port: sqlWebhooksRoute.properties.port
+    username: adminUsername
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sqlWebhooksRoute.properties.hostname},${sqlWebhooksRoute.properties.port};Initial Catalog=WebhooksDb;User Id=${adminUsername};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
