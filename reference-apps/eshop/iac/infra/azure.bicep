@@ -17,6 +17,8 @@ param adminLogin string
 @secure()
 param adminPassword string
 
+var sqlPort = 1433
+
 // Infrastructure ------------------------------------------------------------
 // TODO: Move the infrastructure into Recipes
 
@@ -256,14 +258,19 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     resourceProvisioning: 'manual'
+    database: sql::identityDb.name
+    server: sql.properties.fullyQualifiedDomainName
+    port: sqlPort
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sql.properties.fullyQualifiedDomainName},${sqlPort};Initial Catalog=${sql::identityDb.name};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
     resources: [
       {
         id: sql::identityDb.id
       }
     ]
-    database: sql::identityDb.name
-    server: sql.properties.fullyQualifiedDomainName
-    port: 1433
   }
 }
 
@@ -273,14 +280,19 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     application: application
     environment: environment
     resourceProvisioning: 'manual'
+    database: sql::catalogDb.name
+    server: sql.properties.fullyQualifiedDomainName
+    port: sqlPort
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sql.properties.fullyQualifiedDomainName},${sqlPort};Initial Catalog=${sql::catalogDb.name};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
     resources: [
       {
         id: sql::catalogDb.id
       }
     ]
-    database: sql::catalogDb.name
-    server: sql.properties.fullyQualifiedDomainName
-    port: 1433
   }
 }
 
@@ -290,14 +302,19 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     resourceProvisioning: 'manual'
+    database: sql::orderingDb.name
+    server: sql.properties.fullyQualifiedDomainName
+    port: sqlPort
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sql.properties.fullyQualifiedDomainName},${sqlPort};Initial Catalog=${sql::orderingDb.name};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
     resources: [
       {
         id: sql::orderingDb.id
       }
     ]
-    database: sql::orderingDb.name
-    server: sql.properties.fullyQualifiedDomainName
-    port: 1433
   }
 }
 
@@ -307,14 +324,19 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     resourceProvisioning: 'manual'
+    database: sql::webhooksDb.name
+    server: sql.properties.fullyQualifiedDomainName
+    port: sqlPort
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${sql.properties.fullyQualifiedDomainName},${sqlPort};Initial Catalog=${sql::webhooksDb.name};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
     resources: [
       {
         id: sql::webhooksDb.id
       }
     ]
-    database: sql::webhooksDb.name
-    server: sql.properties.fullyQualifiedDomainName
-    port: 1433
   }
 }
 
