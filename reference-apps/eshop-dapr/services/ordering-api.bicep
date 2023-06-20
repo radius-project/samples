@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The Radius environment name.')
-param environment string
-
 @description('The name of the Dapr pub/sub component.')
 param daprPubSubBrokerName string
 
@@ -101,7 +98,6 @@ resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: daprRoute.id
       }
     ]
     connections: {
