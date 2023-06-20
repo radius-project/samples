@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The Radius environment name.')
-param environment string
-
 @description('The name of the basket API HTTP route.')
 param basketApiRouteName string
 
