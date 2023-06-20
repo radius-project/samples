@@ -3,9 +3,7 @@ import radius as radius
 param appId string
 
 param catalogApiRouteName string
-param catalogApiDaprRouteName string
 param orderingApiRouteName string
-param orderingApiDaprRouteName string
 param webshoppingGwRouteName string
 
 var daprAppId = 'webshoppingapigw'
@@ -14,16 +12,8 @@ resource catalogApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview
   name: catalogApiRouteName
 }
 
-resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogApiDaprRouteName
-}
-
 resource orderingApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: orderingApiRouteName
-}
-
-resource orderingApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingApiDaprRouteName
 }
 
 resource webshoppingGwRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
@@ -60,14 +50,8 @@ resource webshoppingGw 'Applications.Core/containers@2022-03-15-privatepreview' 
       catalogApi: {
         source: catalogApiRoute.id
       }
-      catalogApiDapr: {
-        source: catalogApiDaprRoute.id
-      }
       orderingApi: {
         source: orderingApiRoute.id
-      }
-      orderingApiDapr: {
-        source: orderingApiDaprRoute.id
       }
     }
   }

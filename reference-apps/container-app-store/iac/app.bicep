@@ -26,18 +26,8 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
         kind: 'daprSidecar'
         appId: 'go-app'
         appPort: 8050
-        provides: go_app_route.id
       }
     ]
-  }
-}
-
-resource go_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'go-app-route'
-  properties: {
-    application: app.id
-    environment: environment
-    appId: 'go-app'
   }
 }
 
@@ -67,22 +57,14 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
     container: {
       image: 'radius.azurecr.io/reference-apps/container-app-node-service:edge'
       env: {
-        ORDER_SERVICE_NAME: python_app_route.properties.appId
-        INVENTORY_SERVICE_NAME: go_app_route.properties.appId
+        ORDER_SERVICE_NAME: 'python-app'
+        INVENTORY_SERVICE_NAME: 'go-app'
       }
       ports: {
         web: {
           containerPort: 3000
           provides: node_app_route.id
         }
-      }
-    }
-    connections: {
-      inventory: {
-        source: go_app_route.id
-      }
-      orders: {
-        source: python_app_route.id
       }
     }
     extensions: [
@@ -116,20 +98,11 @@ resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
         kind: 'daprSidecar'
         appId: 'python-app'
         appPort: 5000
-        provides: python_app_route.id
       }
     ]
   }
 }
 
-resource python_app_route 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'python-app'
-  properties: {
-    application: app.id
-    environment: environment
-    appId: 'python-app'
-  }
-}
 
 module infraFile 'infra-selfhosted.bicep' = {
   name: 'infrastructure'
