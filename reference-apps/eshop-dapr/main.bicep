@@ -147,7 +147,6 @@ module basketApi 'services/basket-api.bicep' = {
   name: '${deployment().name}-basket-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     basketApiRouteName: httpRoutes.outputs.basketApiRouteName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprStateStoreName: stateStore.outputs.daprStateStoreName
@@ -161,7 +160,6 @@ module catalogApi 'services/catalog-api.bicep' = {
   name: '${deployment().name}-catalog-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     catalogDbName: sqlServer.outputs.catalogDbName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
@@ -203,7 +201,6 @@ module paymentApi 'services/payment-api.bicep' = {
   name: '${deployment().name}-payment-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     paymentApiRouteName: httpRoutes.outputs.paymentApiRouteName
     seqRouteName: httpRoutes.outputs.seqRouteName
