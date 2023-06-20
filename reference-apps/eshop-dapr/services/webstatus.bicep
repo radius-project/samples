@@ -3,26 +3,8 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The name of the basket API Dapr route.')
-param basketApiDaprRouteName string
-
 @description('The name of the Blazor Client API HTTP route.')
 param blazorClientApiRouteName string
-
-@description('The name of the Catalog API Dapr route.')
-param catalogApiDaprRouteName string
-
-@description('The name of the Identity API Dapr route.')
-param identityApiDaprRouteName string
-
-@description('The name of the Catalog API Dapr route.')
-param orderingApiDaprRouteName string
-
-@description('The name of the Ordering API Dapr route.')
-param paymentApiDaprRouteName string
-
-@description('The name of the Web Shopping Aggregator API Dapr route.')
-param webshoppingAggDaprRouteName string
 
 @description('The name of the webstatus API HTTP route.')
 param webstatusRouteName string
@@ -34,32 +16,8 @@ var daprAppId = 'webstatus'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource basketApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketApiDaprRouteName
-}
-
 resource blazorClientApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: blazorClientApiRouteName
-}
-
-resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogApiDaprRouteName
-}
-
-resource identityApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityApiDaprRouteName
-}
-
-resource orderingApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: orderingApiDaprRouteName
-}
-
-resource paymentApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: paymentApiDaprRouteName
-}
-
-resource webshoppingAggDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: webshoppingAggDaprRouteName
 }
 
 resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
@@ -112,24 +70,6 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
     connections: {
       blazorClient: {
         source: blazorClientApiRoute.id
-      }
-      basketApiDaprRoute: {
-        source: basketApiDaprRoute.id
-      }
-      catalogApiDaprRoute: {
-        source: catalogApiDaprRoute.id
-      }
-      identityApiDaprRoute: {
-        source: identityApiDaprRoute.id
-      }
-      orderingApiDaprRoute: {
-        source: orderingApiDaprRoute.id
-      }
-      paymentApiDaprRoute: {
-        source: paymentApiDaprRoute.id
-      }
-      webshoppingAggDaprRoute: {
-        source: webshoppingAggDaprRoute.id
       }
     }
   }

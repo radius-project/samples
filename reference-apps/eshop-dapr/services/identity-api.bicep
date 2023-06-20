@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The Radius environment name.')
-param environment string
-
 @secure() // Decorated with @secure() to circumvent the false positive warning to use secure parameters
 @description('The name of the Dapr secret store component.')
 param daprSecretStoreName string
@@ -86,7 +83,6 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: daprRoute.id
       }
     ]
     connections: {
@@ -113,17 +109,8 @@ resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = 
   }
 }
 
-resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'identity-api-dapr-route'
-  properties: {
-    application: appId
-    environment: environment
-    appId: daprAppId
-  }
-}
-
 //-----------------------------------------------------------------------------
 // Output
 //-----------------------------------------------------------------------------
 
-output daprRouteName string = daprRoute.name
+output appId string = daprAppId
