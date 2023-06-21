@@ -201,6 +201,11 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     database: 'IdentityDb'
     server: identityDb.properties.Endpoint.Address
     port:  int(identityDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${identityDb.properties.Endpoint.Address},${identityDb.properties.Endpoint.Port};Initial Catalog=IdentityDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -213,6 +218,11 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     database: 'CatalogDb'
     server: catalogDb.properties.Endpoint.Address
     port: int(catalogDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${catalogDb.properties.Endpoint.Address},${catalogDb.properties.Endpoint.Port};Initial Catalog=CatalogDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -225,6 +235,11 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     database: 'OrderingDb'
     server: orderingDb.properties.Endpoint.Address
     port: int(orderingDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${orderingDb.properties.Endpoint.Address},${orderingDb.properties.Endpoint.Port};Initial Catalog=OrderingDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -237,6 +252,11 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     database: 'WebhooksDb'
     server: webhooksDb.properties.Endpoint.Address
     port: int(webhooksDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${webhooksDb.properties.Endpoint.Address},${webhooksDb.properties.Endpoint.Port};Initial Catalog=WebhooksDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
