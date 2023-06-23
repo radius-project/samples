@@ -1,0 +1,47 @@
+name: Purge test resources
+on:
+  schedule:
+    - cron: "30 0,12 * * *"
+env:
+  AZURE_RG_DELETE_LIST_FILE: "az_rg_list.txt"
+  VALID_RESOURCE_WINDOW: 6*60*60
+jobs:
+  purge_azure_resources:
+    name: Azure resources clean-ups
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    steps:
+      - name: Login to Azure
+        run: |
+          az login --service-principal \
+            --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
+            --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
+            --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+            
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
+
+      - name: List Test Resource Groups
+        run: |
+          echo "## Test resource group list" >> $GITHUB_STEP_SUMMARY
+          az group list --query "[?starts_with(name, 'samplestest-')].{Name:name, creationTime:tags.creationTime}" -o json > resource_groups.json
+
+          current_time=$(date +%s)
+          hours_ago=$((current_time - ${{ env.VALID_RESOURCE_WINDOW }}))
+
+          jq -r '.[] | select(.creationTime == null || .creationTime < '$hours_ago') | .Name' resource_groups.json > ${{ env.AZURE_RG_DELETE_LIST_FILE}}
+          jq -r '.[] | {name: .Name, creationTime: .creationTime // "None"}' resource_groups.json > $GITHUB_STEP_SUMMARY
+
+      - name: Delete Azure Resource Groups
+        run: |
+          echo "## Deleting resource group list" >> $GITHUB_STEP_SUMMARY
+          cat ${{ env.AZURE_RG_DELETE_LIST_FILE}} | while read -r line
+          do
+              echo " * $line" >> $GITHUB_STEP_SUMMARY
+              az group delete --resource-group $line --yes --verbose
+          done
+
+      - name: Create GitHub issue on failure
+        if: ${{ failure() }}
+        run: |
+          gh issue create --title "Samples purge test resources failed \
+            --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." \
+            s--repo ${{ github.repository }}
