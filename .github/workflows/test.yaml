@@ -22,7 +22,7 @@ jobs:
   test:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-m
     strategy:
       fail-fast: false
       matrix:
