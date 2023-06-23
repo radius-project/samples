@@ -63,7 +63,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
   // Check dropdown menu
   expect(page.getByText('My orders'))
     .toBeVisible();
-  expect(page.getByText('Logout'))
+  expect(page.getByText('Log Out'))
     .toBeVisible();
 
   let numberOfItemsAdded = 0;
@@ -93,6 +93,6 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
 
   // Logout
   await page.locator('div').filter({ hasText: 'Log Out' })
-    .nth(2)
+    .nth(0)
     .click();
 });
