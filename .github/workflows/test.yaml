@@ -55,15 +55,19 @@ jobs:
             args: --application eshop -p platform=azure
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: azure
+          - name: eshop-aws
+            app: eshop
+            path: ./reference-apps/eshop/iac/eshop.bicep
+            args: --application eshop -p platform=aws
+            uiTestFile: tests/eshop/container.app.spec.ts
+            credential: aws
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # The Azure Location to store test resources
       AZURE_LOCATION: westus3
+      AWS_REGION: us-east-2
     steps:
-      # TODO: Do we need to set any specific environment variables for pull_request, push,
-      # schedule, and workflow_dispatch steps?
-      - name: Generate output variables
+      - name: Generate Output Variables
         id: gen-id
         run: |
           BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
@@ -72,20 +76,52 @@ jobs:
           # Set output variables to be used in the other jobs
           echo "UNIQUE_ID=${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
-      - name: Checkout code
+          echo "TEST_EKS_CLUSTER_NAME=samplestest-eks-${UNIQUE_ID}" >> $GITHUB_OUTPUT
+          echo "TEST_UNIQUE_APP_NAME=${{ matrix.name }}-${UNIQUE_ID}" >> $GITHUB_OUTPUT
+      - name: Checkout Code
         uses: actions/checkout@v3
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: az CLI login
+      - name: az CLI Login
         run: |
           az login --service-principal \
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
-      - name: Create Azure resource group
-        if: ${{ matrix.credential == 'azure' }}
+      - name: Configure AWS
+        if: matrix.credential == 'aws'
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ env.AWS_REGION }}
+          aws configure set output json
+      - name: Create EKS Cluster
+        id: create-eks
+        env:
+          EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
+        if: ${{ matrix.credential == 'aws' }}
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+
+          eksctl create cluster --name $EKS_CLUSTER_NAME \
+            --nodes-min 1 --nodes-max 2 --node-type t3.micro \
+            --managed \
+            --region ${{ env.AWS_REGION }} \
+            --tags application=$UNIQUE_APP_NAME \
+            --tags environment=functional-test
+
+          while [[ "$(eksctl get cluster $EKS_CLUSTER_NAME -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
+            echo "Waiting for EKS cluster to be created..."
+            sleep 60
+          done
+        timeout-minutes: 60
+        continue-on-error: false
+      - name: Create Azure Resource Group
+        if: matrix.credential == 'azure'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -95,7 +131,8 @@ jobs:
             --location ${{ env.AZURE_LOCATION }} \
             --name $RESOURCE_GROUP \
             --subscription $SUBSCRIPTION_ID \
-            --tags creationTime=$current_time
+            --tags creationTime=$current_time \
+            --tags environment=functional-test
           while [ $(az group exists --name $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID) = false ]; do
             echo "Waiting for resource group $RESOURCE_GROUP to be created..."
             sleep 5
@@ -110,14 +147,14 @@ jobs:
           else
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
           fi
-      - name: Create k3d cluster
+      - name: Create k3d Cluster
         run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
-        if: ${{ matrix.enableDapr }}
+        if: matrix.enableDapr
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      - name: Init local environment
+      - name: Initialize Local Environment
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -130,19 +167,35 @@ jobs:
           rad env switch default
           rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Link/redisCaches
           rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Link/mongoDatabases
+
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id $SUBSCRIPTION_ID --azure-resource-group $RESOURCE_GROUP
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
           fi
-      - name: Deploy app
-        run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
-      - name: Wait for all pods to be ready
+
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
+            rad credential register aws \
+              --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          fi
+      - name: Deploy App
+        env:
+          EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+        run: |
+          args="${{ matrix.path }} ${{ matrix.args }}"
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            args="$args -p eksClusterName=$EKS_CLUSTER_NAME"
+            echo $args
+          fi
+          rad deploy $args
+      - name: Wait For All Pods To Be Ready
         run: |
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
-        if: ${{ matrix.uiTestFile != '' }}
+        id: run-playwright-test
+        if: matrix.uiTestFile != ''
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
@@ -151,6 +204,20 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }}
+      - name: Get Pod Logs For Failed Tests
+        if: failure() && matrix.uiTestFile != ''
+        run: |
+          # Create pod-logs directory
+          mkdir -p ui-tests/pod-logs/${{ matrix.name }}
+
+          # Get pod logs and save to file
+          namespace="default-${{ matrix.app }}"
+          label="radius.dev/application=${{ matrix.app }}"
+          pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
+          for pod_name in "${pod_names[@]}"; do
+            kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
+          done
+          echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
         if: always() && matrix.uiTestFile != ''
@@ -159,9 +226,17 @@ jobs:
           path: ui-tests/playwright-report/
           retention-days: 30
           if-no-files-found: error
-      - name: Delete app
+      - name: Upload Pod Logs
+        uses: actions/upload-artifact@v3
+        if: failure() && matrix.uiTestFile != ''
+        with:
+          name: ${{ matrix.name }}-pod-logs
+          path: ui-tests/pod-logs/${{ matrix.name }}
+          retention-days: 30
+          if-no-files-found: error
+      - name: Delete App
         run: rad app delete ${{ matrix.app }} -y
-      - name: Delete Azure resource group
+      - name: Delete Azure Resource Group
         if: always() && matrix.credential == 'azure'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
@@ -172,6 +247,21 @@ jobs:
             --subscription $SUBSCRIPTION_ID \
             --name $RESOURCE_GROUP \
             --yes
-      - name: Create GitHub issue on failure
+      - name: Delete AWS Resources
+        if: always() && matrix.credential == 'aws'
+        env:
+          EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
+        run: |
+          echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
+          eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
+
+          RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text)
+          for RESOURCE_ID in $RESOURCE_IDS; do
+            RESOURCE_TYPE=$(aws resourcegroupstaggingapi get-resources --resource-arn-list $RESOURCE_ID --output json | jq -r '.ResourceTagMappingList[].ResourceType')
+              echo "Deleting resource: $RESOURCE_ID"
+              aws cloudformation delete-stack --stack-name $RESOURCE_ID --wait
+          done
+      - name: Create GitHub Issue on Failure
         if: failure() && github.event_name != 'pull_request'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
