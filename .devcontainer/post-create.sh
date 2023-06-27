@@ -16,10 +16,16 @@ else
 fi
 
 ## Download Bicep extension
-curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output .devcontainer/rad-vscode-bicep.vsix
+curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
 
-## Race condition workaround for `code --install-extension` command
-at now + 1 minute
-
-## Install Radius Bicep extension
-code --install-extension .devcontainer/rad-vscode-bicep.vsix
+# Check every 10 seconds to see if 'code' is on the PATH.
+while true; do
+    if command -v code >/dev/null 2>&1; then
+        ## Install Radius Bicep extension
+        code --install-extension /tmp/rad-vscode-bicep.vsix
+        break
+    else
+        echo "'code' was not found in PATH. Retrying in 10 seconds..."
+        sleep 10
+    fi
+done
