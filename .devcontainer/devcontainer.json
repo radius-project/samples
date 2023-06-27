@@ -3,7 +3,6 @@
 	"image": "mcr.microsoft.com/devcontainers/universal:linux",
 	"workspaceFolder": "/workspaces/samples",
 	"onCreateCommand": "bash ./.devcontainer/on-create.sh",
-	"postCreateCommand": "bash .devcontainer/post-create.sh",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
