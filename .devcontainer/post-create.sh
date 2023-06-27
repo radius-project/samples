@@ -16,4 +16,7 @@ else
 fi
 
 ## Download Bicep extension
-curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
+curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output .devcontainer/rad-vscode-bicep.vsix
+
+## Install Radius Bicep extension
+code --install-extension .devcontainer/rad-vscode-bicep.vsix
