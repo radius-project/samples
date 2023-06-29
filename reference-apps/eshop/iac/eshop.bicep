@@ -141,8 +141,6 @@ module basket 'services/basket.bicep' = {
 module catalog 'services/catalog.bicep' = {
   name: 'catalog'
   params: {
-    adminLogin: adminLogin
-    adminPassword: adminPassword
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
@@ -161,8 +159,6 @@ module catalog 'services/catalog.bicep' = {
 module identity 'services/identity.bicep' = {
   name: 'identity'
   params: {
-    adminLogin: adminLogin
-    adminPassword: adminPassword
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY
     basketHttpName: networking.outputs.basketHttp
@@ -183,8 +179,6 @@ module identity 'services/identity.bicep' = {
 module ordering 'services/ordering.bicep' = {
   name: 'ordering'
   params: {
-    adminLogin: adminLogin
-    adminPassword: adminPassword
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
@@ -248,8 +242,6 @@ module web 'services/web.bicep' = {
 module webhooks 'services/webhooks.bicep' = {
   name: 'webhooks'
   params: {
-    adminLogin: adminLogin
-    adminPassword: adminPassword
     application: eshop.id
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED 
     gatewayName: networking.outputs.gateway

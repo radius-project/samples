@@ -3,23 +3,11 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The Radius environment name.')
-param environment string
-
-@description('The name of the basket API Dapr route.')
-param basketApiDaprRouteName string
-
-@description('The name of the Catalog API Dapr route.')
-param catalogApiDaprRouteName string
-
 @description('The name of the Radius gateway.')
 param gatewayName string
 
 @description('The name of the Identity API HTTP route.')
 param identityApiRouteName string
-
-@description('The name of the Identity API Dapr route.')
-param identityApiDaprRouteName string
 
 @description('The name of the Seq HTTP route.')
 param seqRouteName string
@@ -34,14 +22,6 @@ var daprAppId = 'webshoppingagg'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource basketApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: basketApiDaprRouteName
-}
-
-resource catalogApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: catalogApiDaprRouteName
-}
-
 resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
 }
@@ -49,11 +29,6 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing
 resource identityApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: identityApiRouteName
 }
-
-resource identityApiDaprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' existing = {
-  name: identityApiDaprRouteName
-}
-
 resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: seqRouteName
 }
@@ -94,21 +69,11 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: daprRoute.id
       }
     ]
     connections: {
-      basketApiDaprRoute: {
-        source: basketApiDaprRoute.id
-      }
-      catalogApiDaprRoute: {
-        source: catalogApiDaprRoute.id
-      }
       identityApi: {
         source: identityApiRoute.id
-      }
-      identityApiDaprRoute: {
-        source: identityApiDaprRoute.id
       }
       seq: {
         source: seqRoute.id
@@ -117,17 +82,8 @@ resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview'
   }
 }
 
-resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'webshopping-agg-dapr-route'
-  properties: {
-    application: appId
-    environment: environment
-    appId: daprAppId
-  }
-}
-
 //-----------------------------------------------------------------------------
 // Output
 //-----------------------------------------------------------------------------
 
-output daprRouteName string = daprRoute.name
+output appId string = daprAppId

@@ -21,13 +21,6 @@ param AZURESERVICEBUSENABLED string
 @description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
 
-@description('SQL administrator username')
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Name of the Gateway')
 param gatewayName string
 
@@ -65,7 +58,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlWebhooksDb.properties.server},1433;Initial Catalog=${sqlWebhooksDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlWebhooksDb.connectionString()
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'

@@ -197,9 +197,15 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'IdentityDb'
     server: identityDb.properties.Endpoint.Address
+    port:  int(identityDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${identityDb.properties.Endpoint.Address},${identityDb.properties.Endpoint.Port};Initial Catalog=IdentityDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -208,9 +214,15 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'CatalogDb'
     server: catalogDb.properties.Endpoint.Address
+    port: int(catalogDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${catalogDb.properties.Endpoint.Address},${catalogDb.properties.Endpoint.Port};Initial Catalog=CatalogDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -219,9 +231,15 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'OrderingDb'
     server: orderingDb.properties.Endpoint.Address
+    port: int(orderingDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${orderingDb.properties.Endpoint.Address},${orderingDb.properties.Endpoint.Port};Initial Catalog=OrderingDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -230,9 +248,15 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     database: 'WebhooksDb'
     server: webhooksDb.properties.Endpoint.Address
+    port: int(webhooksDb.properties.Endpoint.Port)
+    username: adminLogin
+    secrets: {
+      password: adminPassword
+      connectionString: 'Server=tcp:${webhooksDb.properties.Endpoint.Address},${webhooksDb.properties.Endpoint.Port};Initial Catalog=WebhooksDb;User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+    }
   }
 }
 
@@ -269,7 +293,7 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
   properties: {
     application: application
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     queue: 'eshop-event-bus'
     secrets: {
       connectionString: rabbitmqRoute.properties.hostname
