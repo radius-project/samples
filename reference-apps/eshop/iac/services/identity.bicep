@@ -18,13 +18,6 @@ param ENABLEDEVSPACES string
 @description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
 
-@description('SQL administrator username')
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Name of the Gateway')
 param gatewayName string
 
@@ -74,7 +67,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES
-        ConnectionString: 'Server=tcp:${sqlIdentityDb.properties.server},1433;Initial Catalog=${sqlIdentityDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlIdentityDb.connectionString()
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
         SpaClient: gateway.properties.url
         BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'

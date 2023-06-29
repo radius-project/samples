@@ -24,13 +24,6 @@ param AZURESERVICEBUSENABLED string
 @description('Cotnainer image tag to use for eshop images')
 param TAG string
 
-@description('SQL administrator username')
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Name of the Gateway')
 param gatewayName string
 
@@ -91,7 +84,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PATH_BASE: '/ordering-api'
         GRPC_PORT: '81'
         PORT: '80'
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlOrderingDb.connectionString()
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -138,7 +131,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlOrderingDb.properties.server},1433;Initial Catalog=${sqlOrderingDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlOrderingDb.connectionString()
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
       }
       ports: {

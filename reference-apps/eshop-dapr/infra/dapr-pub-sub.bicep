@@ -23,6 +23,17 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
     name: 'Standard'
     tier: 'Standard'
   }
+
+  resource authorizationRule 'AuthorizationRules' = {
+    name: 'eshopondaprpubsub'
+    properties: {
+      rights: [
+        'Listen'
+        'Send'
+        'Manage'
+      ]
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -35,8 +46,17 @@ resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privat
   properties: {
     application: appId
     environment: environment
-    mode: 'resource'
-    resource: serviceBus.id
+    resourceProvisioning: 'manual'
+    resources: [
+      {
+        id: serviceBus.id
+      }
+    ]
+    type: 'pubsub.azure.servicebus.topics'
+    version: 'v1'
+    metadata: {
+      connectionString: serviceBus::authorizationRule.listKeys().primaryConnectionString
+    }
   }
 }
 

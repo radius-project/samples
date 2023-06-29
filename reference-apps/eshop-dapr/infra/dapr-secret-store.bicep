@@ -52,7 +52,7 @@ resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatep
   properties: {
     application: appId
     environment: environment
-    mode: 'values'
+    resourceProvisioning: 'manual'
     type: 'secretstores.azure.keyvault'
     version: 'v1'
     metadata: {

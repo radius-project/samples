@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The Radius environment name.')
-param environment string
-
 @description('The name of the Catalog API HTTP route.')
 param catalogApiRouteName string
 
@@ -84,7 +81,6 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
         kind: 'daprSidecar'
         appId: daprAppId
         appPort: 80
-        provides: daprRoute.id
       }
     ]
     connections: {
@@ -114,17 +110,8 @@ resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource daprRoute 'Applications.Link/daprInvokeHttpRoutes@2022-03-15-privatepreview' = {
-  name: 'catalog-api-dapr-route'
-  properties: {
-    application: appId
-    environment: environment
-    appId: daprAppId
-  }
-}
-
 //-----------------------------------------------------------------------------
 // Output
 //-----------------------------------------------------------------------------
 
-output daprRouteName string = daprRoute.name
+output appId string = daprAppId
