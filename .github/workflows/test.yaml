@@ -7,22 +7,22 @@ on:
       - v*.*
       - edge
     paths:
-      - 'quickstarts/**'
-      - 'reference-apps/**'
-      - '.github/workflows/**'
+      - "quickstarts/**"
+      - "reference-apps/**"
+      - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
       - edge
   schedule: # 7:45 AM Pacific Time
-    - cron: '45 15 * * *'
+    - cron: "45 15 * * *"
 
 jobs:
   test:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +31,9 @@ jobs:
             app: demo
             path: ./demo/app.bicep
             args: --application demo
+            uiTestFile: tests/demo.app.spec.ts
+            port: 3000
+            container: demo
           - name: dapr
             app: dapr-quickstart
             path: ./quickstarts/dapr/dapr.bicep
@@ -44,48 +47,131 @@ jobs:
           - name: eshop
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
+            args: --application eshop
+            uiTestFile: tests/eshop/container.app.spec.ts
+          - name: eshop-azure
+            app: eshop
+            path: ./reference-apps/eshop/iac/eshop.bicep
+            args: --application eshop -p platform=azure
+            uiTestFile: tests/eshop/container.app.spec.ts
+            credential: azure
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The Azure Location to store test resources
+      AZURE_LOCATION: westus3
     steps:
+      # TODO: Do we need to set any specific environment variables for pull_request, push,
+      # schedule, and workflow_dispatch steps?
+      - name: Generate output variables
+        id: gen-id
+        run: |
+          BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
+          UNIQUE_ID=$(echo $BASE_STR | sha1sum | head -c 10)
+
+          # Set output variables to be used in the other jobs
+          echo "UNIQUE_ID=${UNIQUE_ID}" >> $GITHUB_OUTPUT
+          echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - name: az CLI login
         run: |
           az login --service-principal \
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+      - name: Create Azure resource group
+        if: ${{ matrix.credential == 'azure' }}
+        env:
+          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
+          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
+        run: |
+          current_time=$(date +%s)
+          az group create \
+            --location ${{ env.AZURE_LOCATION }} \
+            --name $RESOURCE_GROUP \
+            --subscription $SUBSCRIPTION_ID \
+            --tags creationTime=$current_time
+          while [ $(az group exists --name $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID) = false ]; do
+            echo "Waiting for resource group $RESOURCE_GROUP to be created..."
+            sleep 5
+          done
       - name: Download k3d
-        run:  wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-           echo "Downloading rad CLI from branch $BRANCH"
-           if [ "$BRANCH" = "edge" ]; then
-             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
-           else
-             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-           fi
+          echo "Downloading rad CLI from branch $BRANCH"
+          if [ "$BRANCH" = "edge" ]; then
+            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+          else
+            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+          fi
       - name: Create k3d cluster
-        run:  k3d cluster create -p "8081:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+        run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: ${{ matrix.enableDapr }}
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      - name: Init environment
+      - name: Init local environment
+        env:
+          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
+          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
         run: |
-          rad install kubernetes --set global.rp.publicEndpointOverride=localhost:8081
+          rad install kubernetes --set rp.publicEndpointOverride=localhost
           rad group create default
           rad workspace create kubernetes default --group default
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:0.21 --link-type Applications.Link/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Link/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Link/mongoDatabases
+          if [[ "${{ matrix.credential }}" == "azure" ]]; then
+            rad env update default --azure-subscription-id $SUBSCRIPTION_ID --azure-resource-group $RESOURCE_GROUP
+            rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+          fi
       - name: Deploy app
-        run:  rad deploy ${{ matrix.path }} ${{ matrix.args }}
+        run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
+      - name: Wait for all pods to be ready
+        run: |
+          namespace="default-${{ matrix.app }}"
+          label="radius.dev/application=${{ matrix.app }}"
+          kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
+      - name: Run Playwright Test
+        if: ${{ matrix.uiTestFile != '' }}
+        run: |
+          if [[ "${{ matrix.container }}" != "" ]]; then
+            rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
+          fi
+          cd ui-tests/
+          npm ci
+          npx playwright install --with-deps
+          npx playwright test ${{ matrix.uiTestFile }}
+      - name: Upload Playwright Results
+        uses: actions/upload-artifact@v3
+        if: always() && matrix.uiTestFile != ''
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: ui-tests/playwright-report/
+          retention-days: 30
+          if-no-files-found: error
       - name: Delete app
-        run:  rad app delete ${{ matrix.app }} -y
+        run: rad app delete ${{ matrix.app }} -y
+      - name: Delete Azure resource group
+        if: always() && matrix.credential == 'azure'
+        env:
+          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
+          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
+        run: |
+          # if deletion fails, purge workflow will purge the resource group and its resources later.
+          az group delete \
+            --subscription $SUBSCRIPTION_ID \
+            --name $RESOURCE_GROUP \
+            --yes
       - name: Create GitHub issue on failure
-        if: ${{ failure() }}
+        if: failure() && github.event_name != 'pull_request'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}

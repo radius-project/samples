@@ -147,7 +147,6 @@ module basketApi 'services/basket-api.bicep' = {
   name: '${deployment().name}-basket-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     basketApiRouteName: httpRoutes.outputs.basketApiRouteName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprStateStoreName: stateStore.outputs.daprStateStoreName
@@ -161,7 +160,6 @@ module catalogApi 'services/catalog-api.bicep' = {
   name: '${deployment().name}-catalog-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     catalogDbName: sqlServer.outputs.catalogDbName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
@@ -175,7 +173,6 @@ module identityApi 'services/identity-api.bicep' = {
   name: '${deployment().name}-identity-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     identityDbName: sqlServer.outputs.identityDbName
@@ -189,7 +186,6 @@ module orderingApi 'services/ordering-api.bicep' = {
   name: '${deployment().name}-ordering-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
@@ -205,7 +201,6 @@ module paymentApi 'services/payment-api.bicep' = {
   name: '${deployment().name}-payment-api'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     paymentApiRouteName: httpRoutes.outputs.paymentApiRouteName
     seqRouteName: httpRoutes.outputs.seqRouteName
@@ -216,11 +211,7 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   name: '${deployment().name}-ws-agg'
   params: {
     appId: eShopOnDapr.id
-    environment: environment.id
-    basketApiDaprRouteName: basketApi.outputs.daprRouteName
-    catalogApiDaprRouteName: catalogApi.outputs.daprRouteName
     identityApiRouteName: httpRoutes.outputs.identityApiRouteName
-    identityApiDaprRouteName: identityApi.outputs.daprRouteName
     gatewayName: gateway.outputs.gatewayName
     seqRouteName: httpRoutes.outputs.seqRouteName
     webshoppingAggRouteName: httpRoutes.outputs.webshoppingAggRouteName
@@ -232,9 +223,7 @@ module webshoppingGw 'services/webshopping-gw.bicep' = {
   params: {
     appId: eShopOnDapr.id
     catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
-    catalogApiDaprRouteName: catalogApi.outputs.daprRouteName
     orderingApiRouteName: httpRoutes.outputs.orderingApiRouteName
-    orderingApiDaprRouteName: orderingApi.outputs.daprRouteName
     webshoppingGwRouteName: httpRoutes.outputs.webshoppingGwRouteName
   }
 }
@@ -243,13 +232,7 @@ module webstatus 'services/webstatus.bicep' = {
   name: '${deployment().name}-webstatus'
   params: {
     appId: eShopOnDapr.id
-    basketApiDaprRouteName: basketApi.outputs.daprRouteName
     blazorClientApiRouteName: httpRoutes.outputs.blazorClientRouteName
-    catalogApiDaprRouteName: catalogApi.outputs.daprRouteName
-    identityApiDaprRouteName: identityApi.outputs.daprRouteName
-    orderingApiDaprRouteName: orderingApi.outputs.daprRouteName
-    paymentApiDaprRouteName: paymentApi.outputs.daprRouteName
-    webshoppingAggDaprRouteName: webshoppingAgg.outputs.daprRouteName
     webstatusRouteName: httpRoutes.outputs.webstatusRouteName
   }
 }

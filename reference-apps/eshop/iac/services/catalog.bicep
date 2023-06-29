@@ -31,13 +31,6 @@ param AZURESERVICEBUSENABLED string
 @description('Cotnainer image tag to use for eshop images')
 param TAG string
 
-@description('SQL administrator username')
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Name of the Gateway')
 param gatewayName string
 
@@ -80,7 +73,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         AzureStorageEnabled: AZURESTORAGEENABLED
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: 'Server=tcp:${sqlCatalogDb.properties.server},1433;Initial Catalog=${sqlCatalogDb.properties.database};User Id=${adminLogin};Password=${adminPassword};Encrypt=false'
+        ConnectionString: sqlCatalogDb.connectionString()
         EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
       }
       ports: {
