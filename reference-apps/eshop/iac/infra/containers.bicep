@@ -44,10 +44,9 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
   properties: {
     application: application
     container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
+      image: 'mcr.microsoft.com/azure-sql-edge:1.0.7'
       env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
+        ACCEPT_EULA: '1'
         MSSQL_SA_PASSWORD: adminPassword
       }
       ports: {
@@ -73,10 +72,9 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
   properties: {
     application: application
     container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
+      image: 'mcr.microsoft.com/azure-sql-edge:1.0.7'
       env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
+        ACCEPT_EULA: '1'
         MSSQL_SA_PASSWORD: adminPassword
       }
       ports: {
@@ -102,10 +100,9 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
   properties: {
     application: application
     container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
+      image: 'mcr.microsoft.com/azure-sql-edge:1.0.7'
       env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
+        ACCEPT_EULA: '1'
         MSSQL_SA_PASSWORD: adminPassword
       }
       ports: {
@@ -131,10 +128,9 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
   properties: {
     application: application
     container: {
-      image: 'mcr.microsoft.com/mssql/server:2019-latest'
+      image: 'mcr.microsoft.com/azure-sql-edge:1.0.7'
       env: {
-        ACCEPT_EULA: 'Y'
-        MSSQL_PID: 'Developer'
+        ACCEPT_EULA: '1'
         MSSQL_SA_PASSWORD: adminPassword
       }
       ports: {
