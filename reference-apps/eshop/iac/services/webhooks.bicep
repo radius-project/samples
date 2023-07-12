@@ -59,7 +59,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -143,6 +143,6 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   name: sqlWebhooksDbName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

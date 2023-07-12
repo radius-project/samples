@@ -5,7 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Optional App Insights Key')
@@ -65,8 +65,8 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: redisBasket.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        ConnectionString: '${redisBasket.connectionString()},ssl=true'
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -118,6 +118,6 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' e
   name: redisBasketName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

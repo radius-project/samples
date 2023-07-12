@@ -14,7 +14,7 @@ param ORCHESTRATOR_TYPE string
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Basket Http Route name')

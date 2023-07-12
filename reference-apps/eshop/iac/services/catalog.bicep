@@ -74,7 +74,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
       }
       ports: {
         http: {
@@ -115,6 +115,6 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   name: sqlCatalogDbName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

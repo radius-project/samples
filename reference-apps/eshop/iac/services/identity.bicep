@@ -15,7 +15,7 @@ param APPLICATION_INSIGHTS_KEY string
 ])
 param ENABLEDEVSPACES string
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
 
 @description('Name of the Gateway')
@@ -63,7 +63,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
-        DPConnectionString: redisKeystore.connectionString()
+        DPConnectionString: '${redisKeystore.connectionString()},ssl=true'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES

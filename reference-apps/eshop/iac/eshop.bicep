@@ -279,7 +279,7 @@ module webshopping 'services/webshopping.bicep' = {
 }
 
 module webstatus 'services/webstatus.bicep' = {
-  name: 'websatatus'
+  name: 'webstatus'
   params: {
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 

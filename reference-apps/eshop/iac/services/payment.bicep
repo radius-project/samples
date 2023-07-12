@@ -49,7 +49,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
       }
       ports: {
         http: {
@@ -69,6 +69,6 @@ resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
 
 // LINKS -----------------------------------------------------------
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

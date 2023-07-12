@@ -186,6 +186,6 @@ resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2022-03-15-privatep
 
 // LINKS --------------------------------------------------------
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

@@ -85,7 +85,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         PORT: '80'
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -132,7 +132,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
       }
       ports: {
         http: {
@@ -165,8 +165,8 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
+        SignalrStoreConnectionString: '${redisKeystore.connectionString()},ssl=true'
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -246,6 +246,6 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   name: sqlOrderingDbName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }
