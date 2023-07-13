@@ -1,5 +1,12 @@
-import radius as radius
-import aws as aws
+import radius as rad
+
+@description('What type of infrastructure to use. Options are "containers", "azure", or "aws"')
+@allowed([
+  'containers'
+  'azure'
+  'aws'
+])
+param platform string
 
 @description('Radius environment ID')
 param environment string
@@ -14,13 +21,15 @@ param adminLogin string
 @secure()
 param adminPassword string
 
+// Links ---------------------------------------------------------------
+
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   properties: {
     application: application
     environment: environment
     recipe: {
-      name: 'awsmssql'
+      name: '${platform}mssql'
       parameters: {
         database: 'IdentityDb'
         adminLogin: adminLogin
@@ -36,7 +45,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: 'awsmssql'
+      name: '${platform}mssql'
       parameters: {
         database: 'CatalogDb'
         adminLogin: adminLogin
@@ -52,7 +61,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: 'awsmssql'
+      name: '${platform}mssql'
       parameters: {
         database: 'OrderingDb'
         adminLogin: adminLogin
@@ -68,7 +77,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: 'awsmssql'
+      name: '${platform}mssql'
       parameters: {
         database: 'WebhooksDb'
         adminLogin: adminLogin
@@ -84,7 +93,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: 'awsredis'
+      name: '${platform}redis'
     }
   }
 }
@@ -95,7 +104,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     application: application
     environment: environment
     recipe: {
-      name: 'awsredis'
+      name: '${platform}redis'
     }
   }
 }
@@ -106,10 +115,12 @@ resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = {
     application: application
     environment: environment
     recipe: {
-      name: 'containersrabbitmq'
+      name: '${platform}rabbitmq'
     }
   }
 }
+
+// Outputs ------------------------------------
 
 @description('The name of the SQL Identity Link')
 output sqlIdentityDb string = sqlIdentityDb.name

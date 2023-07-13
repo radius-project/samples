@@ -63,7 +63,7 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
-        DPConnectionString: '${redisKeystore.connectionString()}'
+        DPConnectionString: redisKeystore.connectionString()
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         XamarinCallback: ''
         EnableDevspaces: ENABLEDEVSPACES

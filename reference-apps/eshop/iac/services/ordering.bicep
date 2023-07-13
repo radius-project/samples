@@ -162,7 +162,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: rabbitmq.secrets('connectionString')
-        SignalrStoreConnectionString: '${redisKeystore.connectionString()}'
+        SignalrStoreConnectionString: redisKeystore.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }

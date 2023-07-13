@@ -67,47 +67,15 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
 
 // Infrastructure ------------------------------------------------------
 
-module containers 'infra/containers.bicep' = if (platform == 'containers') {
-  name: 'containers'
+module infra 'infra/infra.bicep' = {
+  name: 'infra'
   params: {
+    platform: platform
     application: eshop.id
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
   }
-}
-
-module azure 'infra/azure.bicep' = if (platform == 'azure') {
-  name: 'azure'
-  // Temporarily disable linter rule until deployment engine returns Azure resource group location instead of UCP resource group location
-  #disable-next-line explicit-values-for-loc-params
-  params: {
-    application: eshop.id
-    environment: environment
-    adminLogin: adminLogin
-    adminPassword: adminPassword
-  }
-}
-
-module aws 'infra/aws.bicep' = if (platform == 'aws') {
-  name: 'aws'
-  params: {
-    application: eshop.id
-    environment: environment
-    adminLogin: adminLogin
-    adminPassword: adminPassword
-  }
-}
-
-// Links -----------------------------------------------------------
-
-module links 'infra/links.bicep' = {
-  name: 'links'
-  dependsOn: [
-    containers
-    azure
-    aws
-  ]
 }
 
 // Networking ----------------------------------------------------------
@@ -132,8 +100,8 @@ module basket 'services/basket.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     basketHttpName: networking.outputs.basketHttp
     basketGrpcName: networking.outputs.basketGrpc
-    rabbitmqName: links.outputs.rabbitmq
-    redisBasketName: links.outputs.redisBasket
+    rabbitmqName: infra.outputs.rabbitmq
+    redisBasketName: infra.outputs.redisBasket
     TAG: TAG
   }
 }
@@ -149,8 +117,8 @@ module catalog 'services/catalog.bicep' = {
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: links.outputs.rabbitmq
-    sqlCatalogDbName: links.outputs.sqlCatalogDb
+    rabbitmqName: infra.outputs.rabbitmq
+    sqlCatalogDbName: infra.outputs.sqlCatalogDb
     TAG: TAG
   }
 }
@@ -165,8 +133,8 @@ module identity 'services/identity.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     orderingHttpName: networking.outputs.orderingHttp
-    redisKeystoreName: links.outputs.redisKeystore
-    sqlIdentityDbName: links.outputs.sqlIdentityDb
+    redisKeystoreName: infra.outputs.redisKeystore
+    sqlIdentityDbName: infra.outputs.sqlIdentityDb
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
@@ -190,9 +158,9 @@ module ordering 'services/ordering.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.orderingHttp
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    rabbitmqName: links.outputs.rabbitmq
-    redisKeystoreName: links.outputs.redisKeystore
-    sqlOrderingDbName: links.outputs.sqlOrderingDb
+    rabbitmqName: infra.outputs.rabbitmq
+    redisKeystoreName: infra.outputs.redisKeystore
+    sqlOrderingDbName: infra.outputs.sqlOrderingDb
     TAG: TAG
   }
 }
@@ -205,7 +173,7 @@ module payment 'services/payment.bicep' = {
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: links.outputs.rabbitmq
+    rabbitmqName: infra.outputs.rabbitmq
     TAG: TAG
   }
 }
@@ -227,7 +195,7 @@ module web 'services/web.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    redisKeystoreName: links.outputs.redisKeystore
+    redisKeystoreName: infra.outputs.redisKeystore
     TAG: TAG
     webmvcHttpName: networking.outputs.webmvcHttp
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
@@ -244,8 +212,8 @@ module webhooks 'services/webhooks.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: links.outputs.rabbitmq
-    sqlWebhooksDbName: links.outputs.sqlWebhooksDb
+    rabbitmqName: infra.outputs.rabbitmq
+    sqlWebhooksDbName: infra.outputs.sqlWebhooksDb
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
@@ -266,7 +234,7 @@ module webshopping 'services/webshopping.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.basketHttp
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: links.outputs.rabbitmq
+    rabbitmqName: infra.outputs.rabbitmq
     TAG: TAG
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webshoppingapigwHttp2Name: networking.outputs.webshoppingapigwHttp2
