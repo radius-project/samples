@@ -14,18 +14,14 @@ param adminLogin string
 @secure()
 param adminPassword string
 
-@description('Name of the EKS cluster where the application will be run. Used to setup subnet groups')
-param eksClusterName string
-
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   properties: {
     application: application
     environment: environment
     recipe: {
-      name: 'aws-mssql'
+      name: 'awsmssql'
       parameters: {
-        eksClusterName: eksClusterName
         database: 'IdentityDb'
         adminLogin: adminLogin
         adminPassword: adminPassword
@@ -40,9 +36,8 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: 'aws-mssql'
+      name: 'awsmssql'
       parameters: {
-        eksClusterName: eksClusterName
         database: 'CatalogDb'
         adminLogin: adminLogin
         adminPassword: adminPassword
@@ -57,9 +52,8 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: 'aws-mssql'
+      name: 'awsmssql'
       parameters: {
-        eksClusterName: eksClusterName
         database: 'OrderingDb'
         adminLogin: adminLogin
         adminPassword: adminPassword
@@ -74,9 +68,8 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: 'aws-mssql'
+      name: 'awsmssql'
       parameters: {
-        eksClusterName: eksClusterName
         database: 'WebhooksDb'
         adminLogin: adminLogin
         adminPassword: adminPassword
@@ -91,10 +84,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: 'aws-memorydb'
-      parameters: {
-        eksClusterName: eksClusterName
-      }
+      name: 'awsredis'
     }
   }
 }
@@ -105,21 +95,18 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     application: application
     environment: environment
     recipe: {
-      name: 'aws-memorydb'
-      parameters: {
-        eksClusterName: eksClusterName
-      }
+      name: 'awsredis'
     }
   }
 }
 
 resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = {
-  name: 'eshop-event-bus'
+  name: 'rabbitmq'
   properties: {
     application: application
     environment: environment
     recipe: {
-      name: 'container-rabbitmq'
+      name: 'containersrabbitmq'
     }
   }
 }

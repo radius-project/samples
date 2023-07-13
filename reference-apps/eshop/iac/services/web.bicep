@@ -14,7 +14,7 @@ param ORCHESTRATOR_TYPE string
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')
@@ -59,7 +59,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: '${redisKeystore.connectionString()},ssl=true'
+        DPConnectionString: '${redisKeystore.connectionString()}'
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: '${identityHttp.properties.url}/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -109,7 +109,7 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: '${redisKeystore.connectionString()},ssl=true'
+        DPConnectionString: '${redisKeystore.connectionString()}'
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         OrchestratorType: ORCHESTRATOR_TYPE

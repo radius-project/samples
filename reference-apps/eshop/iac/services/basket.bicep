@@ -11,18 +11,18 @@ param TAG string
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string
 
-@description('Use Azure Service Bus for messaging.')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESERVICEBUSENABLED string
-
 @description('What container orchestrator to use')
 @allowed([
   'K8S'
 ])
 param ORCHESTRATOR_TYPE string
+
+@description('Use Azure Service Bus for messaging')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string = 'False'
 
 @description('The name of the Radius Gateway')
 param gatewayName string
@@ -41,10 +41,6 @@ param redisBasketName string
 
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
-@secure()
-param serviceBusConnectionString string
 
 // Container -------------------------------------
 
@@ -65,8 +61,8 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: '${redisBasket.connectionString()},ssl=true'
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.secrets('connectionString')
+        ConnectionString: '${redisBasket.connectionString()}'
+        EventBusConnection: rabbitmq.secrets('connectionString')
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }

@@ -266,7 +266,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     host: keystoreCache.properties.ClusterEndpoint.Address
     port: keystoreCache.properties.ClusterEndpoint.Port
     secrets: {
-      connectionString: '${keystoreCache.properties.ClusterEndpoint.Address}:${keystoreCache.properties.ClusterEndpoint.Port},ssl=true'
+      connectionString: '${keystoreCache.properties.ClusterEndpoint.Address}:${keystoreCache.properties.ClusterEndpoint.Port}'
     }
   }
 }
@@ -280,7 +280,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     host: basketCache.properties.ClusterEndpoint.Address
     port: basketCache.properties.ClusterEndpoint.Port
     secrets: {
-      connectionString: '${basketCache.properties.ClusterEndpoint.Address}:${basketCache.properties.ClusterEndpoint.Port},ssl=true'
+      connectionString: '${basketCache.properties.ClusterEndpoint.Address}:${basketCache.properties.ClusterEndpoint.Port}'
     }
   }
 }

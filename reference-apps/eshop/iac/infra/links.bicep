@@ -25,7 +25,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' e
 }
 
 resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: 'eshop-event-bus'
+  name: 'rabbitmq'
 }
 
 // Outputs --------------------------------------------------------------------------

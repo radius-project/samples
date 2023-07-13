@@ -1,6 +1,6 @@
 import radius as rad
 
-// Paramaters -------------------------------------------------------
+// Parameters -------------------------------------------------------
 
 @description('Name of the eshop application. Defaults to "eshop"')
 param appName string = 'eshop'
@@ -39,7 +39,12 @@ param APPLICATION_INSIGHTS_KEY string = ''
 ])
 param AZURESTORAGEENABLED string = 'False'
 
-var AZURESERVICEBUSENABLED = (platform == 'azure') ? 'True' : 'False'
+@description('Use Azure Service Bus for messaging')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string = 'False'
 
 @description('Use dev spaces. Defaults to False')
 @allowed([
@@ -48,11 +53,8 @@ var AZURESERVICEBUSENABLED = (platform == 'azure') ? 'True' : 'False'
 ])
 param ENABLEDEVSPACES string = 'False'
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string = 'linux-dotnet7'
-
-@description('Name of your EKS cluster. Only used if deploying with AWS infrastructure.')
-param eksClusterName string = ''
 
 // Application --------------------------------------------------------
 
@@ -70,6 +72,7 @@ module containers 'infra/containers.bicep' = if (platform == 'containers') {
   params: {
     application: eshop.id
     environment: environment
+    adminLogin: adminLogin
     adminPassword: adminPassword
   }
 }
@@ -90,7 +93,6 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
   name: 'aws'
   params: {
     application: eshop.id
-    eksClusterName: eksClusterName
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
@@ -98,7 +100,6 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
 }
 
 // Links -----------------------------------------------------------
-// TODO: Switch to Recipes once ready
 
 module links 'infra/links.bicep' = {
   name: 'links'
@@ -134,7 +135,6 @@ module basket 'services/basket.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     redisBasketName: links.outputs.redisBasket
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -152,7 +152,6 @@ module catalog 'services/catalog.bicep' = {
     rabbitmqName: links.outputs.rabbitmq
     sqlCatalogDbName: links.outputs.sqlCatalogDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -195,7 +194,6 @@ module ordering 'services/ordering.bicep' = {
     redisKeystoreName: links.outputs.redisKeystore
     sqlOrderingDbName: links.outputs.sqlOrderingDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -209,7 +207,6 @@ module payment 'services/payment.bicep' = {
     paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -252,7 +249,6 @@ module webhooks 'services/webhooks.bicep' = {
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
