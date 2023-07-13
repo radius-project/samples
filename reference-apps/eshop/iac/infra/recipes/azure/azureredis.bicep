@@ -41,6 +41,7 @@ output result object = {
     host: azureCache.properties.hostName
     port: azureCache.properties.sslPort
     username: ''
+    tls: true
   }
   secrets: {
     #disable-next-line outputs-should-not-contain-secrets

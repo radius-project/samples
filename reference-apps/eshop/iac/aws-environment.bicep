@@ -15,7 +15,7 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
     compute: {
       kind: 'kubernetes'
       resourceId: 'self'
-      namespace: 'eshop'
+      namespace: 'aws-eshop'
     }
     providers: {
       aws: {
@@ -42,9 +42,9 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
         }
       }
       'Applications.Link/extenders': {
-        containersrabbitmq: {
+        awsrabbitmq: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/containersrabbitmq:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/awsrabbitmq:edge'
         }
       }
     }

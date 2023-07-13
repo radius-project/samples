@@ -12,7 +12,7 @@ resource azureEShopEnv 'Applications.Core/environments@2022-03-15-privatepreview
     compute: {
       kind: 'kubernetes'
       resourceId: 'self'
-      namespace: 'eshop'
+      namespace: 'azure-eshop'
     }
     providers: {
       azure: {
@@ -33,9 +33,9 @@ resource azureEShopEnv 'Applications.Core/environments@2022-03-15-privatepreview
         }
       }
       'Applications.Link/extenders': {
-        containersmessagequeue: {
+        azurerabbitmq: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/containersrabbitmq:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/azurerabbitmq:edge'
         }
       }
     }
