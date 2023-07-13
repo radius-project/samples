@@ -67,7 +67,7 @@ jobs:
       AZURE_LOCATION: westus3
       AWS_REGION: us-east-2
     steps:
-      - name: Generate Output Variables
+      - name: Generate output variables
         id: gen-id
         run: |
           BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
@@ -209,7 +209,6 @@ jobs:
         run: |
           # Create pod-logs directory
           mkdir -p ui-tests/pod-logs/${{ matrix.name }}
-
           # Get pod logs and save to file
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
