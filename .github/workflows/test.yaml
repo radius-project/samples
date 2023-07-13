@@ -114,7 +114,7 @@ jobs:
             --tags application=$UNIQUE_APP_NAME \
             --tags environment=functional-test
 
-          while [[ "$(eksctl get cluster $EKS_CLUSTER_NAME -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
+          while [[ "$(eksctl get cluster $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
             sleep 60
           done
