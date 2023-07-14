@@ -6,7 +6,7 @@ resource containersEShopEnv 'Applications.Core/environments@2022-03-15-privatepr
     compute: {
       kind: 'kubernetes'
       resourceId: 'self'
-      namespace: 'eshop'
+      namespace: 'containers-eshop'
     }
     recipes: {
       'Applications.Link/sqlDatabases': {
