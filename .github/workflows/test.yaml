@@ -181,10 +181,11 @@ jobs:
       - name: Deploy App
         env:
           EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
           args="${{ matrix.path }} ${{ matrix.args }}"
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            args="$args -p eksClusterName=$EKS_CLUSTER_NAME"
+            args="$args -p eksClusterName=$EKS_CLUSTER_NAME -p appName=$UNIQUE_APP_NAME"
             echo $args
           fi
           rad deploy $args
