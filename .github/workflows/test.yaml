@@ -190,8 +190,10 @@ jobs:
           fi
           rad deploy $args
       - name: Wait For All Pods To Be Ready
+        env:
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
-          namespace="default-${{ matrix.app }}"
+          namespace="default-$UNIQUE_APP_NAME"
           label="radius.dev/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
@@ -206,13 +208,15 @@ jobs:
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }}
       - name: Get Pod Logs For Failed Tests
+        env:
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         if: failure() && matrix.uiTestFile != ''
         run: |
           # Create pod-logs directory
           mkdir -p ui-tests/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
-          namespace="default-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}
+          namespace="default-$UNIQUE_APP_NAME"
+          label="radius.dev/application=$UNIQUE_APP_NAME
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
@@ -235,7 +239,9 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       - name: Delete App
-        run: rad app delete ${{ matrix.app }} -y
+        env:
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
+        run: rad app delete $UNIQUE_APP_NAME -y
       - name: Delete Azure Resource Group
         if: always() && matrix.credential == 'azure'
         env:
