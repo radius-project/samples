@@ -193,8 +193,12 @@ jobs:
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
-          namespace="default-$UNIQUE_APP_NAME"
+          namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            namespace="default-$UNIQUE_APP_NAME"
+            label="radius.dev/application=$UNIQUE_APP_NAME"
+          fi
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
         id: run-playwright-test
@@ -217,6 +221,10 @@ jobs:
           # Get pod logs and save to file
           namespace="default-$UNIQUE_APP_NAME"
           label="radius.dev/application=$UNIQUE_APP_NAME
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            namespace="default-$UNIQUE_APP_NAME"
+            label="radius.dev/application=$UNIQUE_APP_NAME"
+          fi
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
@@ -241,7 +249,12 @@ jobs:
       - name: Delete App
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
-        run: rad app delete $UNIQUE_APP_NAME -y
+        run:
+          app=${{ matrix.app }}
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            app=$UNIQUE_APP_NAME
+          fi
+          rad app delete app -y
       - name: Delete Azure Resource Group
         if: always() && matrix.credential == 'azure'
         env:
