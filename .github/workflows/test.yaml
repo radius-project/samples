@@ -250,11 +250,11 @@ jobs:
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run:
-          app=${{ matrix.app }}
+          app_name="${{ matrix.app }}"
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            app=$UNIQUE_APP_NAME
+            app_name="$UNIQUE_APP_NAME"
           fi
-          rad app delete app -y
+          rad app delete app_name -y
       - name: Delete Azure Resource Group
         if: always() && matrix.credential == 'azure'
         env:
