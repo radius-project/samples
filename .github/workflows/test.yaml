@@ -250,9 +250,9 @@ jobs:
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run:
-          app_name="${{ matrix.app }}"
+          app_name=${{ matrix.app }}
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            app_name="$UNIQUE_APP_NAME"
+            app_name=$UNIQUE_APP_NAME
           fi
           rad app delete app_name -y
       - name: Delete Azure Resource Group
