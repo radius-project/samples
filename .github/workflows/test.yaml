@@ -254,7 +254,7 @@ jobs:
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             app_name=$UNIQUE_APP_NAME
           fi
-          rad app delete app_name -y
+          rad app delete $app_name -y
       - name: Delete Azure Resource Group
         if: always() && matrix.credential == 'azure'
         env:
