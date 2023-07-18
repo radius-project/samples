@@ -28,9 +28,9 @@ export function createFactory(): RepositoryFactory {
       return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
     }
 
-    if (process.env.CONNECTION_REDIS_CONNECTIONSTRING) {
-      console.log("Using Redis: found connection string in environment variable CONNECTION_REDIS_CONNECTIONSTRING");
-      return new RedisFactory(process.env.CONNECTION_REDIS_CONNECTIONSTRING);
+    if (process.env.CONNECTION_REDIS_URL) {
+      console.log("Using Redis: found connection string in environment variable CONNECTION_REDIS_URL");
+      return new RedisFactory(process.env.CONNECTION_REDIS_URL);
     }
 
     if (process.env.CONNECTION_REDIS_HOST) {
