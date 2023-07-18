@@ -14,6 +14,11 @@ resource demo 'Applications.Core/containers@2022-03-15-privatepreview' = {
           containerPort: 3000
         }
       }
+      livenessProbe: {
+        kind: 'httpGet'
+        containerPort: 3000
+        path: '/healthz'
+      }
     }
     connections: {
       redis: {
