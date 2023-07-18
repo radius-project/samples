@@ -29,7 +29,7 @@ export function createFactory(): RepositoryFactory {
     }
 
     if (process.env.CONNECTION_REDIS_URL) {
-      console.log("Using Redis: found connection string in environment variable CONNECTION_REDIS_URL");
+      console.log("Using Redis: found url in environment variable CONNECTION_REDIS_URL");
       return new RedisFactory(process.env.CONNECTION_REDIS_URL);
     }
 
