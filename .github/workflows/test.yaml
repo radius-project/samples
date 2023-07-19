@@ -2,6 +2,12 @@ name: Test Quickstarts
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Radius version number to use (e.g. 0.22, 0.23.0-rc1, edge)'
+        required: false
+        default: ''
+        type: string
   push:
     branches:
       - v*.*
@@ -101,10 +107,14 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          echo "Downloading rad CLI from branch $BRANCH"
-          if [ "$BRANCH" = "edge" ]; then
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "Downloading rad CLI version ${{ inputs.version }}"
+            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
+          else if [ "$BRANCH" = "edge" ]; then
+            echo "Downloading edge rad CLI"
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
           else
+            echo "Downloading latest rad CLI"
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
           fi
       - name: Create k3d cluster
