@@ -101,12 +101,17 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          echo "Downloading rad CLI from branch $BRANCH"
-          if [ "$BRANCH" = "edge" ]; then
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
-          else
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-          fi
+          for attempt in 1 2 3; do
+            echo "Downloading rad CLI from branch $BRANCH"
+            if [ "$BRANCH" = "edge" ]; then
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+            else
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+            fi
+            if [ $? -eq 0 ]; then
+                break
+            fi
+          done
       - name: Create k3d cluster
         run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
