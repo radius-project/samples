@@ -107,7 +107,7 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
+          if [[ -n "${{ inputs.version }}" ]]; then
             echo "Downloading rad CLI version ${{ inputs.version }}"
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
           else if [ "$BRANCH" = "edge" ]; then
