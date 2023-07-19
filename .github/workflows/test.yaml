@@ -110,7 +110,7 @@ jobs:
           if [[ -n "${{ inputs.version }}" ]]; then
             echo "Downloading rad CLI version ${{ inputs.version }}"
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
-          else if [ "$BRANCH" = "edge" ]; then
+          elif [ "$BRANCH" = "edge" ]; then
             echo "Downloading edge rad CLI"
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
           else
