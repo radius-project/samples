@@ -138,6 +138,7 @@ jobs:
             sleep 5
           done
       - name: Download k3d
+        if: matrix.credential != 'aws'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
@@ -148,6 +149,7 @@ jobs:
             wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
           fi
       - name: Create k3d Cluster
+        if: matrix.credential != 'aws'
         run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: matrix.enableDapr
