@@ -161,7 +161,11 @@ jobs:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
         run: |
-          rad install kubernetes --set rp.publicEndpointOverride=localhost
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            rad install kubernetes
+          else
+            rad install kubernetes --set rp.publicEndpointOverride=localhost
+          fi
           rad group create default
           rad workspace create kubernetes default --group default
           rad group switch default
