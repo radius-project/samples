@@ -108,7 +108,7 @@ jobs:
           sudo mv /tmp/eksctl /usr/local/bin
 
           eksctl create cluster --name $EKS_CLUSTER_NAME \
-            --nodes-min 1 --nodes-max 2 --node-type t3.micro \
+            --nodes-min 1 --nodes-max 2 --node-type t3.large \
             --managed \
             --region ${{ env.AWS_REGION }} \
             --tags application=$UNIQUE_APP_NAME \
@@ -163,6 +163,7 @@ jobs:
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
         run: |
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            kubectl config current-context
             rad install kubernetes
           else
             rad install kubernetes --set rp.publicEndpointOverride=localhost
