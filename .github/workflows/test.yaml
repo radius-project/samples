@@ -22,7 +22,7 @@ jobs:
   test:
     name: Deploy quickstarts to local environment
     if: github.event.action != 'closed'
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
     strategy:
       fail-fast: false
       matrix:

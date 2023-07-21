@@ -8,7 +8,7 @@ env:
 jobs:
   purge_azure_resources:
     name: Azure Test Resources Clean-up
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
     steps:
       - name: Login to Azure
         run: |
