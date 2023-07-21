@@ -117,6 +117,7 @@ jobs:
           while [[ "$(eksctl get cluster $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
             sleep 60
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name $EKS_CLUSTER_NAME
           done
         timeout-minutes: 60
         continue-on-error: false
