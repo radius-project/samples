@@ -59,7 +59,7 @@ jobs:
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=aws
-            uiTestFile: tests/eshop/container.app.spec.ts
+            uiTestFile: tests/aws-eshop/container.app.spec.ts
             credential: aws
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
@@ -215,12 +215,12 @@ jobs:
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
           fi
-          endpoint="$(rad app status -a eshop | sed 's/ /\n/g' | grep http)"
-          echo $endpoint
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            endpoint="$(rad app status -a eshop | sed 's/ /\n/g' | grep http)"
+            echo $endpoint
             ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
           else
             npx playwright test ${{ matrix.uiTestFile }}
