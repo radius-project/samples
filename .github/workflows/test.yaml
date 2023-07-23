@@ -215,10 +215,16 @@ jobs:
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
           fi
+          endpoint = $(rad app status -a eshop | sed 's/ /\n/g' | grep http)
+          echo $endpoint
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          npx playwright test ${{ matrix.uiTestFile }}
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
+          else
+            npx playwright test ${{ matrix.uiTestFile }}
+          fi
       - name: Get Pod Logs For Failed Tests
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
