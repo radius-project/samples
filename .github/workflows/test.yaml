@@ -215,7 +215,7 @@ jobs:
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
           fi
-          endpoint = $(rad app status -a eshop | sed 's/ /\n/g' | grep http)
+          endpoint="$(rad app status -a eshop | sed 's/ /\n/g' | grep http)"
           echo $endpoint
           cd ui-tests/
           npm ci
