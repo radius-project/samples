@@ -288,11 +288,7 @@ jobs:
           EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
-          services=($(kubectl get svc --all-namespaces -o jsonpath='{.items[*].metadata.name}'))
-          for service in "${services[@]}"; do
-            echo "Deleting service: $service"
-            kubectl delete svc $service
-          done
+          kubectl delete svc contour-envoy -n radius-system
           echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
           eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
           RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text)
