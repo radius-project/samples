@@ -8,7 +8,7 @@ env:
 jobs:
   purge_aws_resources:
     name: AWS Test Resources Clean-up
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
