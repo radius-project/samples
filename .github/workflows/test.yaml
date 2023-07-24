@@ -209,6 +209,8 @@ jobs:
           fi
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
+        env:
+          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         id: run-playwright-test
         if: matrix.uiTestFile != ''
         run: |
@@ -219,7 +221,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            endpoint="$(rad app status -a eshop | sed 's/ /\n/g' | grep http)"
+            endpoint="$(rad app status -a $UNIQUE_APP_NAME | sed 's/ /\n/g' | grep http)"
             echo $endpoint
             ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
           else
@@ -286,9 +288,13 @@ jobs:
           EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
+          services=($(kubectl get svc --all-namespaces -o jsonpath='{.items[*].metadata.name}'))
+          for service in "${services[@]}"; do
+            echo "Deleting service: $service"
+            kubectl delete svc $service
+          done
           echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
           eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
-
           RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text)
           for RESOURCE_ID in $RESOURCE_IDS; do
             RESOURCE_TYPE=$(aws resourcegroupstaggingapi get-resources --resource-arn-list $RESOURCE_ID --output json | jq -r '.ResourceTagMappingList[].ResourceType')
