@@ -59,7 +59,7 @@ jobs:
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=aws
-            uiTestFile: tests/aws-eshop/container.app.spec.ts
+            uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
