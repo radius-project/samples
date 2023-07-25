@@ -289,14 +289,14 @@ jobs:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
           kubectl delete svc contour-envoy -n radius-system
-          echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
-          eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
           RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text)
           for RESOURCE_ID in $RESOURCE_IDS; do
             RESOURCE_TYPE=$(aws resourcegroupstaggingapi get-resources --resource-arn-list $RESOURCE_ID --output json | jq -r '.ResourceTagMappingList[].ResourceType')
               echo "Deleting resource: $RESOURCE_ID"
               aws cloudformation delete-stack --stack-name $RESOURCE_ID --wait
           done
+          echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
+          eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
       - name: Create GitHub Issue on Failure
         if: failure() && github.event_name != 'pull_request'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
