@@ -294,11 +294,11 @@ jobs:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
           kubectl delete svc contour-envoy -n radius-system
-          RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text)
+          RESOURCE_IDS=($(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text))
           for RESOURCE_ID in $RESOURCE_IDS; do
             RESOURCE_TYPE=$(aws resourcegroupstaggingapi get-resources --resource-arn-list $RESOURCE_ID --output json | jq -r '.ResourceTagMappingList[].ResourceType')
               echo "Deleting resource: $RESOURCE_ID"
-              aws cloudformation delete-stack --stack-name $RESOURCE_ID --wait
+              aws cloudformation wait stack-delete-complete --stack-name $RESOURCE_ID
           done
           echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
           eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
