@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.22, 0.23.0-rc1, edge)'
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
         required: false
         default: ''
         type: string
@@ -77,6 +77,10 @@ jobs:
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Ensure inputs.version is valid semver
+        if: inputs.version != ''
+        run: |
+          ./scripts/validate-version.sh ${{ inputs.version }}
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
