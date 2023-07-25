@@ -111,16 +111,22 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          if [[ -n "${{ inputs.version }}" ]]; then
-            echo "Downloading rad CLI version ${{ inputs.version }}"
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
-          elif [ "$BRANCH" = "edge" ]; then
-            echo "Downloading edge rad CLI"
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
-          else
-            echo "Downloading latest rad CLI"
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-          fi
+          for attempt in 1 2 3; do
+            if [[ -n "${{ inputs.version }}" ]]; then
+              echo "Downloading rad CLI version ${{ inputs.version }}"
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
+            elif [ "$BRANCH" = "edge" ]; then
+              echo "Downloading edge rad CLI"
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+            else
+              echo "Downloading latest rad CLI"
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+            fi
+
+            if [ $? -eq 0 ]; then
+                break
+            fi
+          done
       - name: Create k3d cluster
         run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
