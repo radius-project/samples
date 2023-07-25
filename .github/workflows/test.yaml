@@ -225,8 +225,12 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
+          app_name=${{ matrix.app }}
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            endpoint="$(rad app status -a $UNIQUE_APP_NAME | sed 's/ /\n/g' | grep http)"
+            app_name=$UNIQUE_APP_NAME
+          fi
+          if [[ "${{ matrix.app }}" != "eshop" ]]; then
+            endpoint="$(rad app status -a $app_name | sed 's/ /\n/g' | grep http)"
             echo $endpoint
             ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
           else

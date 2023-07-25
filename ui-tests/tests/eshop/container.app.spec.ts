@@ -8,11 +8,12 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
     }
   });
 
-  // Go to http://localhost
-  await page.goto("http://localhost");
+  const endpoint = process.env.ENDPOINT
+  
+  await page.goto(endpoint);
 
   // Expect page to have proper URL
-  expect(page).toHaveURL("http://localhost/catalog");
+  expect(page).toHaveURL(endpoint+"/catalog");
 
   // Expect page to have proper title
   expect(page).toHaveTitle("eShopOnContainers - SPA");
@@ -48,7 +49,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
 
   // After login, expect to be redirected to the catalog page
   // Expect page to have proper URL
-  expect(page).toHaveURL("http://localhost/catalog");
+  expect(page).toHaveURL(endpoint+"/catalog");
 
   // Expect page to have proper title
   expect(page).toHaveTitle("eShopOnContainers - SPA");
@@ -77,7 +78,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
     .click();
 
   // Expect page to have proper URL
-  expect(page).toHaveURL("http://localhost/basket");
+  expect(page).toHaveURL(endpoint+"/basket");
 
   // Checkout
   await page.getByRole('button', { name: 'Checkout' })
