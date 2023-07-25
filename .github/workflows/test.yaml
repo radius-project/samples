@@ -229,7 +229,7 @@ jobs:
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             app_name=$UNIQUE_APP_NAME
           fi
-          if [[ "${{ matrix.app }}" != "eshop" ]]; then
+          if [[ "${{ matrix.app }}" == "eshop" ]]; then
             endpoint="$(rad app status -a $app_name | sed 's/ /\n/g' | grep http)"
             echo $endpoint
             ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
