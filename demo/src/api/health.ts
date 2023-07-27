@@ -6,6 +6,7 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
         const respository = await factory.create()
         try {
             res.status(200);
+            res.json({status : "OK"});
         } finally {
             await respository.dispose();
         }

@@ -58,11 +58,8 @@ jobs:
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # The Azure Location to store test resources
       AZURE_LOCATION: westus3
     steps:
-      # TODO: Do we need to set any specific environment variables for pull_request, push,
-      # schedule, and workflow_dispatch steps?
       - name: Generate output variables
         id: gen-id
         run: |
@@ -85,7 +82,7 @@ jobs:
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
       - name: Create Azure resource group
-        if: ${{ matrix.credential == 'azure' }}
+        if: matrix.credential == 'azure'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -104,12 +101,17 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          echo "Downloading rad CLI from branch $BRANCH"
-          if [ "$BRANCH" = "edge" ]; then
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
-          else
-            wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
-          fi
+          for attempt in 1 2 3; do
+            echo "Downloading rad CLI from branch $BRANCH"
+            if [ "$BRANCH" = "edge" ]; then
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+            else
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+            fi
+            if [ $? -eq 0 ]; then
+                break
+            fi
+          done
       - name: Create k3d cluster
         run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
@@ -142,7 +144,8 @@ jobs:
           label="radius.dev/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
-        if: ${{ matrix.uiTestFile != '' }}
+        id: run-playwright-test
+        if: matrix.uiTestFile != ''
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
@@ -151,12 +154,33 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }}
+      - name: Get Pod Logs For Failed Tests
+        if: failure() && matrix.uiTestFile != ''
+        run: |
+          # Create pod-logs directory
+          mkdir -p ui-tests/pod-logs/${{ matrix.name }}
+          # Get pod logs and save to file
+          namespace="default-${{ matrix.app }}"
+          label="radius.dev/application=${{ matrix.app }}"
+          pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
+          for pod_name in "${pod_names[@]}"; do
+            kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
+          done
+          echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
         if: always() && matrix.uiTestFile != ''
         with:
           name: playwright-report-${{ matrix.name }}
           path: ui-tests/playwright-report/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload Pod Logs
+        uses: actions/upload-artifact@v3
+        if: failure() && matrix.uiTestFile != ''
+        with:
+          name: ${{ matrix.name }}-pod-logs
+          path: ui-tests/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
       - name: Delete app
