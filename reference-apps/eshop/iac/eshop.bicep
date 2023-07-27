@@ -92,10 +92,9 @@ module basket 'services/basket.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     basketHttpName: networking.outputs.basketHttp
     basketGrpcName: networking.outputs.basketGrpc
-    rabbitmqName: infra.outputs.rabbitmq
     redisBasketName: infra.outputs.redisBasket
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
+    eventbusConnectionString: infra.outputs.eventbusConnectionString
   }
 }
 
@@ -110,10 +109,9 @@ module catalog 'services/catalog.bicep' = {
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: infra.outputs.rabbitmq
     sqlCatalogDbName: infra.outputs.sqlCatalogDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
+    eventbusConnectionString: infra.outputs.eventbusConnectionString
   }
 }
 
@@ -152,11 +150,10 @@ module ordering 'services/ordering.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.orderingHttp
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    rabbitmqName: infra.outputs.rabbitmq
     redisKeystoreName: infra.outputs.redisKeystore
     sqlOrderingDbName: infra.outputs.sqlOrderingDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
+    eventbusConnectionString: infra.outputs.eventbusConnectionString
   }
 }
 
@@ -168,9 +165,8 @@ module payment 'services/payment.bicep' = {
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: infra.outputs.rabbitmq
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
+    eventbusConnectionString: infra.outputs.eventbusConnectionString
   }
 }
 
@@ -208,12 +204,11 @@ module webhooks 'services/webhooks.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: infra.outputs.rabbitmq
     sqlWebhooksDbName: infra.outputs.sqlWebhooksDb
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
+    eventbusConnectionString: infra.outputs.eventbusConnectionString
   }
 }
 

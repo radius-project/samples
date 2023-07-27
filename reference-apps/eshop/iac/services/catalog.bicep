@@ -40,15 +40,12 @@ param catalogHttpName string
 @description('The name of the Catalog gRPC Route')
 param catalogGrpcName string
 
-@description('The name of the RabbitMQ Link')
-param rabbitmqName string
-
 @description('The name of the Catalog SQL Link')
 param sqlCatalogDbName string
 
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventbusConnectionString string
 
 // VARIABLES -----------------------------------------------------------------------------------
 
@@ -75,7 +72,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
       }
       ports: {
         http: {
@@ -114,8 +111,4 @@ resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
 
 resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlCatalogDbName
-}
-
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: rabbitmqName
 }

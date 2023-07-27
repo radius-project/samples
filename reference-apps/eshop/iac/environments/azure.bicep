@@ -37,10 +37,6 @@ resource azureEShopEnv 'Applications.Core/environments@2022-03-15-privatepreview
           templateKind: 'bicep'
           templatePath: 'willsmithradius.azurecr.io/recipes/azure/servicebus:edge'
         }
-        rabbitmqmessagequeue: {
-          templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
-        }
       }
     }
   }

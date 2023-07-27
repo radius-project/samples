@@ -27,12 +27,9 @@ param TAG string
 @description('Name of the Payment HTTP route')
 param paymentHttpName string
 
-@description('The name of the RabbitMQ Link')
-param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventbusConnectionString string
 
 // CONTAINERS ---------------------------------------------------------
 
@@ -49,7 +46,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
       }
       ports: {
         http: {
@@ -65,10 +62,4 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: paymentHttpName
-}
-
-// LINKS -----------------------------------------------------------
-
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: rabbitmqName
 }

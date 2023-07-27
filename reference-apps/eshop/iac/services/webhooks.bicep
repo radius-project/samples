@@ -36,12 +36,9 @@ param webhooksclientHttpName string
 @description('The name of the Webhooks SQL Link')
 param sqlWebhooksDbName string
 
-@description('The name of the RabbitMQ Link')
-param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventbusConnectionString string
 
 // CONTAINERS -----------------------------------------------------------
 
@@ -59,7 +56,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -141,8 +138,4 @@ resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privateprev
 
 resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlWebhooksDbName
-}
-
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: rabbitmqName
 }

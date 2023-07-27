@@ -51,15 +51,12 @@ param orderbgtasksHttpName string
 @description('Name of the Keystore Redis Link')
 param redisKeystoreName string
 
-@description('The name of the RabbitMQ Link')
-param rabbitmqName string
-
 @description('Name of the Ordering SQL Link')
 param sqlOrderingDbName string
 
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventbusConnectionString string
 
 // CONTAINERS -------------------------------------------------------
 
@@ -85,7 +82,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         PORT: '80'
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -132,7 +129,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
       }
       ports: {
         http: {
@@ -165,7 +162,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
+        EventBusConnection: eventbusConnectionString
         SignalrStoreConnectionString: redisKeystore.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
@@ -244,8 +241,4 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
 
 resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlOrderingDbName
-}
-
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: rabbitmqName
 }

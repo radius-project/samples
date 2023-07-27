@@ -108,7 +108,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   }
 }
 
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = {
+resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'False') {
   name: 'rabbitmq'
   properties: {
     application: application
@@ -157,5 +157,8 @@ output redisBasket string = redisBasket.name
 @description('The name of the RabbitMQ Link')
 output rabbitmq string = rabbitmq.name
 
-@description('The service bus connection string')
-output serviceBusAuthConnectionString string = servicebus.secrets('connectionString')
+@description('The name of the Service Bus Link')
+output servicebus string = servicebus.name
+
+@description('Event Bus connection string')
+output eventbusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.secrets('connectionString')
