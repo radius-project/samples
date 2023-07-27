@@ -21,21 +21,25 @@ resource azureEShopEnv 'Applications.Core/environments@2022-03-15-privatepreview
     }
     recipes: {
       'Applications.Link/sqlDatabases': {
-        azuremssql: {
+        sqldatabase: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azuremssql:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/azure/sqldatabases:edge'
         }
       }
       'Applications.Link/redisCaches': {
-        azureredis: {
+        rediscache: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azureredis:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/azure/rediscaches:edge'
         }
       }
       'Applications.Link/extenders': {
-        azurerabbitmq: {
+        servicebus: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azurerabbitmq:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/azure/servicebus:edge'
+        }
+        rabbitmqmessagequeue: {
+          templateKind: 'bicep'
+          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
       }
     }

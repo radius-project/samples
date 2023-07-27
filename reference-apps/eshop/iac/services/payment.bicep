@@ -19,7 +19,7 @@ param APPLICATION_INSIGHTS_KEY string
   'True'
   'False'
 ])
-param AZURESERVICEBUSENABLED string = 'False'
+param AZURESERVICEBUSENABLED string
 
 @description('Container image tag to use for eshop images')
 param TAG string
@@ -29,6 +29,10 @@ param paymentHttpName string
 
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
+
+@description('The connection string of the Azure Service Bus')
+@secure()
+param serviceBusConnectionString string
 
 // CONTAINERS ---------------------------------------------------------
 
@@ -45,7 +49,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
       }
       ports: {
         http: {

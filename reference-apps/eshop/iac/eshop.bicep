@@ -8,22 +8,14 @@ param appName string = 'eshop'
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
-@description('What type of infrastructure to use. Options are "containers", "azure", or "aws". Defaults to containers')
-@allowed([
-  'containers'
-  'azure'
-  'aws'
-])
-param platform string = 'containers'
-
-@description('SQL administrator username')
-param adminLogin string = (platform == 'containers') ? 'SA' : 'sqladmin'
+@description('SQL administrator username. Defaults to "SA"')
+param adminLogin string = 'SA'
 
 @description('SQL administrator password')
 @secure()
 param adminPassword string = newGuid()
 
-@description('What container orchestrator to use. Defaults to K8S')
+@description('Container orchestrator to use. Defaults to "K8S')
 @allowed([
   'K8S'
 ])
@@ -32,28 +24,28 @@ param ORCHESTRATOR_TYPE string = 'K8S'
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string = ''
 
-@description('Use Azure storage for custom resource images. Defaults to False')
+@description('Use Azure storage for custom resource images. Defaults to "False"')
 @allowed([
   'True'
   'False'
 ])
 param AZURESTORAGEENABLED string = 'False'
 
-@description('Use Azure Service Bus for messaging')
+@description('Use Azure Service Bus for messaging. Defaults to "False"')
 @allowed([
   'True'
   'False'
 ])
 param AZURESERVICEBUSENABLED string = 'False'
 
-@description('Use dev spaces. Defaults to False')
+@description('Use dev spaces. Defaults to "False"')
 @allowed([
   'True'
   'False'
 ])
 param ENABLEDEVSPACES string = 'False'
 
-@description('Container image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images. Defaults to "linux-dotnet7"')
 param TAG string = 'linux-dotnet7'
 
 // Application --------------------------------------------------------
@@ -70,17 +62,17 @@ resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
 module infra 'infra/infra.bicep' = {
   name: 'infra'
   params: {
-    platform: platform
     application: eshop.id
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
+    AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
   }
 }
 
 // Networking ----------------------------------------------------------
 
-module networking 'services/networking.bicep' = {
+module networking 'infra/networking.bicep' = {
   name: 'networking'
   params: {
     application: eshop.id
@@ -103,6 +95,7 @@ module basket 'services/basket.bicep' = {
     rabbitmqName: infra.outputs.rabbitmq
     redisBasketName: infra.outputs.redisBasket
     TAG: TAG
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -120,6 +113,7 @@ module catalog 'services/catalog.bicep' = {
     rabbitmqName: infra.outputs.rabbitmq
     sqlCatalogDbName: infra.outputs.sqlCatalogDb
     TAG: TAG
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -162,6 +156,7 @@ module ordering 'services/ordering.bicep' = {
     redisKeystoreName: infra.outputs.redisKeystore
     sqlOrderingDbName: infra.outputs.sqlOrderingDb
     TAG: TAG
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -175,6 +170,7 @@ module payment 'services/payment.bicep' = {
     paymentHttpName: networking.outputs.paymentHttp
     rabbitmqName: infra.outputs.rabbitmq
     TAG: TAG
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -217,6 +213,7 @@ module webhooks 'services/webhooks.bicep' = {
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
+    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? infra.outputs.serviceBusAuthConnectionString : ''
   }
 }
 
@@ -234,7 +231,6 @@ module webshopping 'services/webshopping.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.basketHttp
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: infra.outputs.rabbitmq
     TAG: TAG
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webshoppingapigwHttp2Name: networking.outputs.webshoppingapigwHttp2

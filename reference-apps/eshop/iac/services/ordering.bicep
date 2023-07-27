@@ -19,7 +19,7 @@ param APPLICATION_INSIGHTS_KEY string
   'True'
   'False'
 ])
-param AZURESERVICEBUSENABLED string = 'False'
+param AZURESERVICEBUSENABLED string
 
 @description('Container image tag to use for eshop images')
 param TAG string
@@ -57,6 +57,10 @@ param rabbitmqName string
 @description('Name of the Ordering SQL Link')
 param sqlOrderingDbName string
 
+@description('The connection string of the Azure Service Bus')
+@secure()
+param serviceBusConnectionString string
+
 // CONTAINERS -------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
@@ -81,7 +85,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         PORT: '80'
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -128,7 +132,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
       }
       ports: {
         http: {
@@ -161,7 +165,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
         SignalrStoreConnectionString: redisKeystore.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'

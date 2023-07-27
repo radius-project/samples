@@ -1,13 +1,5 @@
 import radius as rad
 
-@description('What type of infrastructure to use. Options are "containers", "azure", or "aws"')
-@allowed([
-  'containers'
-  'azure'
-  'aws'
-])
-param platform string
-
 @description('Radius environment ID')
 param environment string
 
@@ -21,6 +13,13 @@ param adminLogin string
 @secure()
 param adminPassword string
 
+@description('Use Azure Service Bus for messaging. Defaults to "False"')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string
+
 // Links ---------------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
@@ -29,7 +28,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: '${platform}mssql'
+      name: 'sqldatabase'
       parameters: {
         database: 'IdentityDb'
         adminLogin: adminLogin
@@ -45,7 +44,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: '${platform}mssql'
+      name: 'sqldatabase'
       parameters: {
         database: 'CatalogDb'
         adminLogin: adminLogin
@@ -61,7 +60,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: '${platform}mssql'
+      name: 'sqldatabase'
       parameters: {
         database: 'OrderingDb'
         adminLogin: adminLogin
@@ -77,7 +76,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
     application: application
     environment: environment
     recipe: {
-      name: '${platform}mssql'
+      name: 'sqldatabase'
       parameters: {
         database: 'WebhooksDb'
         adminLogin: adminLogin
@@ -93,7 +92,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
     application: application
     environment: environment
     recipe: {
-      name: '${platform}redis'
+      name: 'rediscache'
     }
   }
 }
@@ -104,7 +103,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
     application: application
     environment: environment
     recipe: {
-      name: '${platform}redis'
+      name: 'rediscache'
     }
   }
 }
@@ -115,7 +114,22 @@ resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = {
     application: application
     environment: environment
     recipe: {
-      name: '${platform}rabbitmq'
+      name: 'rabbitmqmessagequeue'
+    }
+  }
+}
+
+resource servicebus 'Applications.Link/extenders@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'True') {
+  name: 'servicebus'
+  properties: {
+    application: application
+    environment: environment
+    recipe: {
+      name: 'servicebus'
+      parameters: {
+        topicName: 'eshop_event_bus'
+        subscriptions: ['Basket', 'Catalog', 'Ordering', 'GracePeriod', 'Payment', 'backgroundtasks', 'Ordering.signalrhub', 'Webhooks']
+      }
     }
   }
 }
@@ -142,3 +156,6 @@ output redisBasket string = redisBasket.name
 
 @description('The name of the RabbitMQ Link')
 output rabbitmq string = rabbitmq.name
+
+@description('The service bus connection string')
+output serviceBusAuthConnectionString string = servicebus.secrets('connectionString')

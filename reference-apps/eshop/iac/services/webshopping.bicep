@@ -50,9 +50,6 @@ param webshoppingapigwHttp2Name string
 @description('Web Shopping Aggregator Http Route name')
 param webshoppingaggHttpName string
 
-@description('The name of the RabbitMQ Link')
-param rabbitmqName string
-
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webshoppingagg'
@@ -88,10 +85,6 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
       }
     }
     connections: {
-      rabbitmq: {
-        source: rabbitmq.id
-        disableDefaultEnvVars: true
-      }
       identity: {
         source: identityHttp.id
         disableDefaultEnvVars: true
@@ -182,10 +175,4 @@ resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2022-03-15-privatepr
 
 resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: webshoppingapigwHttp2Name
-}
-
-// LINKS --------------------------------------------------------
-
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' existing = {
-  name: rabbitmqName
 }

@@ -26,7 +26,7 @@ param AZURESTORAGEENABLED string
   'True'
   'False'
 ])
-param AZURESERVICEBUSENABLED string = 'False'
+param AZURESERVICEBUSENABLED string
 
 @description('Container image tag to use for eshop images')
 param TAG string
@@ -45,6 +45,10 @@ param rabbitmqName string
 
 @description('The name of the Catalog SQL Link')
 param sqlCatalogDbName string
+
+@description('The connection string of the Azure Service Bus')
+@secure()
+param serviceBusConnectionString string
 
 // VARIABLES -----------------------------------------------------------------------------------
 
@@ -71,7 +75,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
       }
       ports: {
         http: {

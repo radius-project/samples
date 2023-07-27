@@ -16,7 +16,7 @@ param ORCHESTRATOR_TYPE string
   'True'
   'False'
 ])
-param AZURESERVICEBUSENABLED string = 'False'
+param AZURESERVICEBUSENABLED string
 
 @description('Container image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
@@ -39,6 +39,10 @@ param sqlWebhooksDbName string
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
 
+@description('The connection string of the Azure Service Bus')
+@secure()
+param serviceBusConnectionString string
+
 // CONTAINERS -----------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
@@ -55,7 +59,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }

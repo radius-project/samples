@@ -24,7 +24,7 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
     }
     recipes: {
       'Applications.Link/sqlDatabases': {
-        awsmssql: {
+        sqldatabase: {
           templateKind: 'bicep'
           templatePath: 'willsmithradius.azurecr.io/recipes/aws/sqldatabases:edge'
           parameters: {
@@ -33,7 +33,7 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
         }
       }
       'Applications.Link/redisCaches': {
-        awsredis: {
+        rediscache: {
           templateKind: 'bicep'
           templatePath: 'willsmithradius.azurecr.io/recipes/aws/rediscaches:edge'
           parameters: {
@@ -43,9 +43,9 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
       }
       // Temporarily using containerized rabbitmq until we can use SQS
       'Applications.Link/extenders': {
-        awsrabbitmq: {
+        rabbitmqmessagequeue: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/dev/rabbitmqmessagequeues:edge'
+          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
       }
     }

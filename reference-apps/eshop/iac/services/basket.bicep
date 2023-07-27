@@ -22,7 +22,7 @@ param ORCHESTRATOR_TYPE string
   'True'
   'False'
 ])
-param AZURESERVICEBUSENABLED string = 'False'
+param AZURESERVICEBUSENABLED string
 
 @description('The name of the Radius Gateway')
 param gatewayName string
@@ -41,6 +41,10 @@ param redisBasketName string
 
 @description('The name of the RabbitMQ Link')
 param rabbitmqName string
+
+@description('The connection string of the Azure Service Bus')
+@secure()
+param serviceBusConnectionString string
 
 // Container -------------------------------------
 
@@ -62,7 +66,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: rabbitmq.secrets('connectionString')
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'False') ? rabbitmq.secrets('connectionString') : serviceBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
