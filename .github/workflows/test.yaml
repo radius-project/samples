@@ -23,7 +23,8 @@ on:
       - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
-
+env:
+  RAD_CLI_URL: https://radiuspublic.blob.core.windows.net/tools/rad/install.sh
 jobs:
   test:
     name: Deploy quickstarts to local environment
@@ -114,13 +115,13 @@ jobs:
           for attempt in 1 2 3; do
             if [[ -n "${{ inputs.version }}" ]]; then
               echo "Downloading rad CLI version ${{ inputs.version }}"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
             elif [ "$BRANCH" = "edge" ]; then
               echo "Downloading edge rad CLI"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s edge
             else
               echo "Downloading latest rad CLI"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
             fi
 
             if [ $? -eq 0 ]; then
