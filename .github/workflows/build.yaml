@@ -22,6 +22,8 @@ env:
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/project-radius/dev' || 'ghcr.io/project-radius/samples' }}
+  # Set to true to push images to registry.
+  PUSH_IMAGE: true
 
 jobs:
   build:
@@ -41,49 +43,49 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./demo/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}
       - name: webapp
         uses: docker/build-push-action@v4
         with:
           context: ./demo/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}
       - name: dapr-backend
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/dapr/nodeapp/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}
       - name: dapr-frontend
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/dapr/ui/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}
       - name: aws-reference-app
         uses: docker/build-push-action@v4
         with:
           context: ./reference-apps/aws/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}
       - name: environment-variables
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/environment-variables/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}
       - name: volumes
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/volumes/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}
       - name: aws-sqs
         uses: docker/build-push-action@v4
         with:
           context: ./reference-apps/aws-sqs/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}
   build-container:
     name: Build and push sample images to GHCR
@@ -105,49 +107,49 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./demo/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}
       - name: webapp
         uses: docker/build-push-action@v4
         with:
           context: ./demo/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}
       - name: dapr-backend
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/dapr/nodeapp/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}
       - name: dapr-frontend
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/dapr/ui/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}
       - name: aws-reference-app
         uses: docker/build-push-action@v4
         with:
           context: ./reference-apps/aws/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}
       - name: environment-variables
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/environment-variables/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}
       - name: volumes
         uses: docker/build-push-action@v4
         with:
           context: ./quickstarts/volumes/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}
       - name: aws-sqs
         uses: docker/build-push-action@v4
         with:
           context: ./reference-apps/aws-sqs/
-          push: false
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}
   cleanup:
     name: Cleanup ${{ matrix.image }}
