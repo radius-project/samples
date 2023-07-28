@@ -29,6 +29,14 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.2
+      - name: Login to container registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY }}
+          username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
+          password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
       - name: demo
         uses: docker/build-push-action@v4
         with:
