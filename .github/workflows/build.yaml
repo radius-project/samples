@@ -19,6 +19,7 @@ concurrency:
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+  # TODO_LAUNCH: Remove this env var once we opensource the repo - https://github.com/project-radius/samples/issues/439
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/project-radius/dev' || 'ghcr.io/project-radius/samples' }}
@@ -26,6 +27,7 @@ env:
   PUSH_IMAGE: true
 
 jobs:
+  # TODO_LAUNCH: Remove this build job once we opensource the repo - https://github.com/project-radius/samples/issues/439
   build:
     name: Build and push sample images to ACR
     if: github.event.action != 'closed'
@@ -151,6 +153,8 @@ jobs:
           context: ./reference-apps/aws-sqs/
           push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}
+  
+  # TODO_LAUNCH: Remove this job once we opensource the repo because all pkgs will be cleaned up regularly - https://github.com/project-radius/samples/issues/439
   cleanup:
     name: Cleanup ${{ matrix.image }}
     if: github.event.action == 'closed'
