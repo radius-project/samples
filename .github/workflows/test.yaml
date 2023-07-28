@@ -2,6 +2,12 @@ name: Test Quickstarts
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
+        required: false
+        default: ''
+        type: string
   push:
     branches:
       - v*.*
@@ -71,6 +77,10 @@ jobs:
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Ensure inputs.version is valid semver
+        if: inputs.version != ''
+        run: |
+          ./scripts/validate-version.sh ${{ inputs.version }}
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -102,12 +112,17 @@ jobs:
       - name: Download rad CLI
         run: |
           for attempt in 1 2 3; do
-            echo "Downloading rad CLI from branch $BRANCH"
-            if [ "$BRANCH" = "edge" ]; then
+            if [[ -n "${{ inputs.version }}" ]]; then
+              echo "Downloading rad CLI version ${{ inputs.version }}"
+              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
+            elif [ "$BRANCH" = "edge" ]; then
+              echo "Downloading edge rad CLI"
               wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
             else
+              echo "Downloading latest rad CLI"
               wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
             fi
+
             if [ $? -eq 0 ]; then
                 break
             fi
