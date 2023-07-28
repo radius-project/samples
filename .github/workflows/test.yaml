@@ -24,7 +24,7 @@ on:
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
-  RAD_CLI_URL: https://radiuspublic.blob.core.windows.net/tools/rad/install.sh
+  RAD_CLI_URL: https://get.radapp.dev/tools/rad/install.sh
 jobs:
   test:
     name: Deploy quickstarts to local environment
