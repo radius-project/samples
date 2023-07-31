@@ -1,0 +1,4 @@
+# text files use OS defaults on checkout, LF on checkin
+* text eol=auto
+# images are binary
+*.png binary 
