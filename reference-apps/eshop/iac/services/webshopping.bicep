@@ -119,7 +119,7 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop-envoy:0.1.4'
+      image: 'radius.azurecr.io/eshop-envoy:v1.27-latest'
       ports: {
         http: {
           containerPort: 80
