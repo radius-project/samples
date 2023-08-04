@@ -66,7 +66,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }

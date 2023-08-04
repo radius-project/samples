@@ -214,8 +214,11 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
     environment: environment
     resourceProvisioning: 'manual'
     queue: 'eshop-event-bus'
+    host: rabbitmqRoute.properties.hostname
+    port: rabbitmqRoute.properties.port
+    username: 'guest'
     secrets: {
-      connectionString: rabbitmqRoute.properties.hostname
+      password: 'guest'
     }
   }
 }
