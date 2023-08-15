@@ -12,19 +12,19 @@ resource containersEShopEnv 'Applications.Core/environments@2022-03-15-privatepr
       'Applications.Link/sqlDatabases': {
         sqldatabase: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/sqldatabases:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/sqldatabases:edge'
         }
       }
       'Applications.Link/redisCaches': {
         rediscache: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/rediscaches:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/rediscaches:edge'
         }
       }
-      'Applications.Link/extenders': {
+      'Applications.Link/rabbitMQMessageQueues': {
         rabbitmqmessagequeue: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
       }
     }

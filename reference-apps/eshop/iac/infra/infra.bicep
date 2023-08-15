@@ -7,13 +7,14 @@ param environment string
 param application string
 
 @description('SQL administrator username')
+@secure()
 param adminLogin string
 
 @description('SQL administrator password')
 @secure()
 param adminPassword string
 
-@description('Use Azure Service Bus for messaging. Defaults to "False"')
+@description('Use Azure Service Bus for messaging. Allowed values: "True", "False".')
 @allowed([
   'True'
   'False'
@@ -108,7 +109,7 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   }
 }
 
-resource rabbitmq 'Applications.Link/extenders@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'False') {
+resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'False') {
   name: 'rabbitmq'
   properties: {
     application: application
@@ -161,4 +162,4 @@ output rabbitmq string = rabbitmq.name
 output servicebus string = servicebus.name
 
 @description('Event Bus connection string')
-output eventbusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.secrets('connectionString')
+output eventbusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.properties.host

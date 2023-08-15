@@ -8,7 +8,7 @@ param appName string = 'eshop'
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
-@description('SQL administrator username. Defaults to "SA"')
+@description('SQL administrator username')
 param adminLogin string = 'SA'
 
 @description('SQL administrator password')

@@ -23,19 +23,19 @@ resource azureEShopEnv 'Applications.Core/environments@2022-03-15-privatepreview
       'Applications.Link/sqlDatabases': {
         sqldatabase: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azure/sqldatabases:edge'
+          templatePath: 'radius.azurecr.io/recipes/azure/sqldatabases:latest'
         }
       }
       'Applications.Link/redisCaches': {
         rediscache: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azure/rediscaches:edge'
+          templatePath: 'radius.azurecr.io/recipes/azure/rediscaches:latest'
         }
       }
       'Applications.Link/extenders': {
         servicebus: {
           templateKind: 'bicep'
-          templatePath: 'willsmithradius.azurecr.io/recipes/azure/servicebus:edge'
+          templatePath: 'radius.azurecr.io/recipes/azure/extender-servicebus:latest'
         }
       }
     }
