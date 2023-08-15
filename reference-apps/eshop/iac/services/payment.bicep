@@ -29,7 +29,7 @@ param paymentHttpName string
 
 @description('The connection string for the event bus')
 @secure()
-param eventbusConnectionString string
+param eventBusConnectionString string
 
 // CONTAINERS ---------------------------------------------------------
 
@@ -46,7 +46,7 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
       }
       ports: {
         http: {

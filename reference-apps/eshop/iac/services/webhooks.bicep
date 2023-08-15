@@ -38,7 +38,7 @@ param sqlWebhooksDbName string
 
 @description('The connection string for the event bus')
 @secure()
-param eventbusConnectionString string
+param eventBusConnectionString string
 
 // CONTAINERS -----------------------------------------------------------
 
@@ -56,7 +56,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }

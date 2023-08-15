@@ -56,7 +56,7 @@ param sqlOrderingDbName string
 
 @description('The connection string for the event bus')
 @secure()
-param eventbusConnectionString string
+param eventBusConnectionString string
 
 // CONTAINERS -------------------------------------------------------
 
@@ -82,7 +82,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         PORT: '80'
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -129,7 +129,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlOrderingDb.connectionString()
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
       }
       ports: {
         http: {
@@ -162,7 +162,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
         OrchestratorType: ORCHESTRATOR_TYPE
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
         SignalrStoreConnectionString: redisKeystore.connectionString()
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'

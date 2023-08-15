@@ -162,4 +162,4 @@ output rabbitmq string = rabbitmq.name
 output servicebus string = servicebus.name
 
 @description('Event Bus connection string')
-output eventbusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.properties.host
+output eventBusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.properties.host

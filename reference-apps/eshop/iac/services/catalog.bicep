@@ -45,7 +45,7 @@ param sqlCatalogDbName string
 
 @description('The connection string for the event bus')
 @secure()
-param eventbusConnectionString string
+param eventBusConnectionString string
 
 // VARIABLES -----------------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
       }
       ports: {
         http: {

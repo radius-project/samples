@@ -15,7 +15,7 @@ param adminLogin string = 'SA'
 @secure()
 param adminPassword string = newGuid()
 
-@description('Container orchestrator to use. Defaults to "K8S')
+@description('Container orchestrator to use. Defaults to "K8S"')
 @allowed([
   'K8S'
 ])
@@ -94,7 +94,7 @@ module basket 'services/basket.bicep' = {
     basketGrpcName: networking.outputs.basketGrpc
     redisBasketName: infra.outputs.redisBasket
     TAG: TAG
-    eventbusConnectionString: infra.outputs.eventbusConnectionString
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -111,7 +111,7 @@ module catalog 'services/catalog.bicep' = {
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     sqlCatalogDbName: infra.outputs.sqlCatalogDb
     TAG: TAG
-    eventbusConnectionString: infra.outputs.eventbusConnectionString
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -153,7 +153,7 @@ module ordering 'services/ordering.bicep' = {
     redisKeystoreName: infra.outputs.redisKeystore
     sqlOrderingDbName: infra.outputs.sqlOrderingDb
     TAG: TAG
-    eventbusConnectionString: infra.outputs.eventbusConnectionString
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -166,7 +166,7 @@ module payment 'services/payment.bicep' = {
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     paymentHttpName: networking.outputs.paymentHttp
     TAG: TAG
-    eventbusConnectionString: infra.outputs.eventbusConnectionString
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -208,7 +208,7 @@ module webhooks 'services/webhooks.bicep' = {
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
-    eventbusConnectionString: infra.outputs.eventbusConnectionString
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 

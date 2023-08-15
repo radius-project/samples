@@ -41,7 +41,7 @@ param redisBasketName string
 
 @description('The connection string for the event bus')
 @secure()
-param eventbusConnectionString string
+param eventBusConnectionString string
 
 // Container -------------------------------------
 
@@ -63,7 +63,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: eventbusConnectionString
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
