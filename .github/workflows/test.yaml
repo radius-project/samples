@@ -2,6 +2,12 @@ name: Test Quickstarts
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
+        required: false
+        default: ''
+        type: string
   push:
     branches:
       - v*.*
@@ -17,12 +23,13 @@ on:
       - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
-
+env:
+  RAD_CLI_URL: https://get.radapp.dev/tools/rad/install.sh
 jobs:
   test:
-    name: Deploy quickstarts to local environment
+    name: Sample tests
     if: github.event.action != 'closed'
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
     strategy:
       fail-fast: false
       matrix:
@@ -71,6 +78,10 @@ jobs:
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Ensure inputs.version is valid semver
+        if: inputs.version != ''
+        run: |
+          ./scripts/validate-version.sh ${{ inputs.version }}
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -102,12 +113,17 @@ jobs:
       - name: Download rad CLI
         run: |
           for attempt in 1 2 3; do
-            echo "Downloading rad CLI from branch $BRANCH"
-            if [ "$BRANCH" = "edge" ]; then
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+            if [[ -n "${{ inputs.version }}" ]]; then
+              echo "Downloading rad CLI version ${{ inputs.version }}"
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
+            elif [ "$BRANCH" = "edge" ]; then
+              echo "Downloading edge rad CLI"
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s edge
             else
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+              echo "Downloading latest rad CLI"
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
             fi
+
             if [ $? -eq 0 ]; then
                 break
             fi
