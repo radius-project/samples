@@ -81,7 +81,7 @@ jobs:
       - name: Ensure inputs.version is valid semver
         if: inputs.version != ''
         run: |
-          ./scripts/validate-version.sh ${{ inputs.version }}
+          python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
