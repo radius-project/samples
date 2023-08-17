@@ -246,8 +246,10 @@ resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepre
     environment: environment
     resourceProvisioning: 'manual'
     queue: 'eshop-event-bus'
+    host: 'test'
+    port: 5672
     secrets: {
-      connectionString: 'test'
+      uri: 'test'
     }
   }
 }
