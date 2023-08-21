@@ -17,14 +17,14 @@ jobs:
         with:
           token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
           ref: edge
-          path: docs
+          path: samples
       - name: Configure git
         run: |
           git config --global user.email "radiuscoreteam@service.microsoft.com"
           git config --global user.name "Radius CI Bot"
       - name: Ensure inputs.version is valid semver
         run: |
-          python ./docs/.github/scripts/validate_semver.py ${{ inputs.version }}
+          python ./samples/.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Parse release channel
         id: parse_release_channel
         run: |
