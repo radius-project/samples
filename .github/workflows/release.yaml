@@ -33,7 +33,7 @@ jobs:
           echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
       - name: Release samples
         run: |
-          ./docs/.github/scripts/release-samples.sh ${{ inputs.version }}
+          ./samples/.github/scripts/release-samples.sh ${{ inputs.version }}
       - name: Change the default branch
         run: |
           gh api \
