@@ -24,7 +24,7 @@ jobs:
           git config --global user.name "Radius CI Bot"
       - name: Ensure inputs.version is valid semver
         run: |
-          python ./.github/scripts/validate_semver.py ${{ inputs.version }}
+          python ./docs/.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Parse release channel
         id: parse_release_channel
         run: |
