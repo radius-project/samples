@@ -1,0 +1,44 @@
+name: Release samples
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
+        required: true
+        default: ''
+        type: string
+
+jobs:
+  upmerge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+          ref: edge
+          path: docs
+      - name: Configure git
+        run: |
+          git config --global user.email "radiuscoreteam@service.microsoft.com"
+          git config --global user.name "Radius CI Bot"
+      - name: Ensure inputs.version is valid semver
+        run: |
+          python ./.github/scripts/validate_semver.py ${{ inputs.version }}
+      - name: Parse release channel
+        id: parse_release_channel
+        run: |
+          # CHANNEL is the major and minor version of the VERSION_NUMBER (e.g. 0.1)
+          CHANNEL="$(echo ${{ inputs.version }} | cut -d '.' -f 1,2)"
+          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
+      - name: Release samples
+        run: |
+          ./docs/.github/scripts/release-samples.sh ${{ inputs.version }}
+      - name: Change the default branch
+        run: |
+          gh api \
+          --method PATCH \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /repos/project-radius/radius \
+          -f default_branch='v${{ steps.parse_release_channel.outputs.channel }}'
