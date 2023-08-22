@@ -13,7 +13,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
 
 jobs:
-  upmerge:
+  release-samples:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
