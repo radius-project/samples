@@ -9,6 +9,9 @@ on:
         default: ''
         type: string
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+
 jobs:
   upmerge:
     runs-on: ubuntu-latest
