@@ -40,7 +40,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2021-06-01-preview' = {
 // Create the Dapr pub sub component
 //-----------------------------------------------------------------------------
 
-resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' = {
   name: 'eshopondapr-pubsub'
   location: 'global'
   properties: {

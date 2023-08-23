@@ -97,7 +97,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
   }
 }
 
-// Links -----------------------------------------------------------
+// Portable Resources -----------------------------------------------------------
 // TODO: Switch to Recipes once ready
 
 module links 'infra/links.bicep' = {

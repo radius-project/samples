@@ -28,7 +28,7 @@ resource container 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource mongoLink 'Applications.Link/mongoDatabases@2022-03-15-privatepreview' = {
+resource mongoLink 'Applications.Datastores/mongoDatabases@2022-03-15-privatepreview' = {
   name: 'mongo-link'
   properties: {
     environment: environment

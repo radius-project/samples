@@ -50,7 +50,7 @@ param webshoppingapigwHttp2Name string
 @description('Web Shopping Aggregator Http Route name')
 param webshoppingaggHttpName string
 
-@description('The name of the RabbitMQ Link')
+@description('The name of the RabbitMQ portable resource')
 param rabbitmqName string
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
@@ -184,8 +184,8 @@ resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2022-03-15-privatep
   name: webshoppingapigwHttp2Name
 }
 
-// LINKS --------------------------------------------------------
+// PORTABLE RESOURCES --------------------------------------------------------
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

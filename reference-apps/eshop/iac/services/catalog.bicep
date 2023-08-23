@@ -40,10 +40,10 @@ param catalogHttpName string
 @description('The name of the Catalog gRPC Route')
 param catalogGrpcName string
 
-@description('The name of the RabbitMQ Link')
+@description('The name of the RabbitMQ portable resource')
 param rabbitmqName string
 
-@description('The name of the Catalog SQL Link')
+@description('The name of the Catalog SQL portable resource')
 param sqlCatalogDbName string
 
 @description('The connection string of the Azure Service Bus')
@@ -109,12 +109,12 @@ resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
   name: catalogGrpcName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlCatalogDbName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

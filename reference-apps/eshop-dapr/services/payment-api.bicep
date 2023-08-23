@@ -19,7 +19,7 @@ var daprAppId = 'payment-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 

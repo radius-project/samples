@@ -36,11 +36,11 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing
   name: gatewayName
 }
 
-resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprStateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' existing = {
+resource daprStateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' existing = {
   name: daprStateStoreName
 }
 
