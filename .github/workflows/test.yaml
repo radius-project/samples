@@ -213,5 +213,5 @@ jobs:
             --name $RESOURCE_GROUP \
             --yes
       - name: Create GitHub issue on failure
-        if: failure() && github.event_name != 'pull_request'
+        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
