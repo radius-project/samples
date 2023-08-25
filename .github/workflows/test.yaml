@@ -312,15 +312,19 @@ jobs:
           EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         run: |
-          kubectl delete svc contour-envoy -n radius-system
-          RESOURCE_IDS=($(aws resourcegroupstaggingapi get-resources --tag-filters "Key=application,Values=$UNIQUE_APP_NAME" --query 'ResourceTagMappingList[].ResourceARN' --output text))
-          for RESOURCE_ID in $RESOURCE_IDS; do
-            RESOURCE_TYPE=$(aws resourcegroupstaggingapi get-resources --resource-arn-list $RESOURCE_ID --output json | jq -r '.ResourceTagMappingList[].ResourceType')
-              echo "Deleting resource: $RESOURCE_ID"
-              aws cloudformation wait stack-delete-complete --stack-name $RESOURCE_ID
-          done
+          # Delete EKS cluster
+          rad uninstall kubernetes
           echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
           eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
-      - name: Create GitHub Issue on Failure
+          # Delete AWS resources
+          # get the arn list of all resources tagged by appname: $UNIQUE_APP_NAME
+          arn_list=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=application,Values=$UNIQUE_APP_NAME --query 'ResourceTagMappingList[*].ResourceARN' --output text)
+          # delete all resources tagged by appname: $UNIQUE_APP_NAME
+          # tag the resource
+          for arn in $arn_list; do
+            aws resourcegroupstaggingapi tag-resources --resource-arn-list $arn --tags Key=application,Value=$UNIQUE_APP_NAME
+          done
+          # get the list of all resources in account
+      - name: Create GitHub issue on failure
         if: failure() && github.event_name != 'pull_request'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}

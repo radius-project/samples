@@ -5,6 +5,7 @@ on:
 env:
   VALID_RESOURCE_WINDOW: 6*60*60
   AWS_REGION: us-east-2
+  RESOURCE_TYPES: 'AWS::Kinesis::Stream,AWS::S3::Bucket,AWS::RDS::DBInstance,AWS::RDS::DBSubnetGroup,AWS::MemoryDB::Cluster,AWS::MemoryDB::SubnetGroup'
 jobs:
   purge_aws_resources:
     name: AWS Test Resources Clean-up
@@ -43,13 +44,9 @@ jobs:
           for CLUSTER in ${{ steps.filter-clusters.outputs.old-clusters }}; do
             eksctl delete cluster --name $CLUSTER --region ${{ env.AWS_REGION }} --wait
           done
-      - name: Delete Old Resources
+      - name: Filter and delete old resources
         run: |
-          RESOURCE_IDS=$(aws resourcegroupstaggingapi get-resources --tag-filters "Key=environment,Values=functional-test" --query 'ResourceTagMappingList[?((`date +%s` - (CreationTime | tonumber)) > ${{ env.VALID_RESOURCE_WINDOW }})].ResourceARN' --output text)
-          for RESOURCE_ID in $RESOURCE_IDS; do
-              echo "Deleting resource: $RESOURCE_ID"
-              aws cloudformation delete-stack --stack-name $RESOURCE_ID --wait
-          done
+          
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
         run: |
