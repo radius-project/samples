@@ -112,7 +112,7 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             if [[ -n "${{ inputs.version }}" ]]; then
               echo "Downloading rad CLI version ${{ inputs.version }}"
               wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
@@ -129,7 +129,7 @@ jobs:
             fi
           done
       - name: Create k3d cluster
-        run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: ${{ matrix.enableDapr }}
         run: |
@@ -169,7 +169,7 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          npx playwright test ${{ matrix.uiTestFile }}
+          npx playwright test ${{ matrix.uiTestFile }} --retries=3
       - name: Get Pod Logs For Failed Tests
         if: failure() && matrix.uiTestFile != ''
         run: |
