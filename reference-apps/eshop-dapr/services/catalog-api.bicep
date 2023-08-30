@@ -6,7 +6,7 @@ param appId string
 @description('The name of the Catalog API HTTP route.')
 param catalogApiRouteName string
 
-@description('The name of the Catalog database link.')
+@description('The name of the Catalog database portable resource.')
 param catalogDbName string
 
 @description('The name of the Dapr pub/sub component.')
@@ -33,15 +33,15 @@ resource catalogApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
   name: catalogApiRouteName
 }
 
-resource catalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource catalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: catalogDbName
 }
 
-resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
   name: daprSecretStoreName
 }
 

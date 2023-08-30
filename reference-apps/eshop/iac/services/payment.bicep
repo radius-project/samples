@@ -27,7 +27,7 @@ param TAG string
 @description('Name of the Payment HTTP route')
 param paymentHttpName string
 
-@description('The name of the RabbitMQ Link')
+@description('The name of the RabbitMQ portable resource')
 param rabbitmqName string
 
 @description('The connection string of the Azure Service Bus')
@@ -67,8 +67,8 @@ resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
   name: paymentHttpName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

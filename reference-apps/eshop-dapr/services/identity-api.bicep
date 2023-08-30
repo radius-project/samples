@@ -13,7 +13,7 @@ param gatewayName string
 @description('The name of the Identity API HTTP route.')
 param identityApiRouteName string
 
-@description('The name of the Identity database link.')
+@description('The name of the Identity database portable resource.')
 param identityDbName string
 
 @description('The name of the Key Vault to get secrets from.')
@@ -28,7 +28,7 @@ var daprAppId = 'identity-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
   name: daprSecretStoreName
 }
 
@@ -40,7 +40,7 @@ resource identityApiRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   name: identityApiRouteName
 }
 
-resource identityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource identityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: identityDbName
 }
 

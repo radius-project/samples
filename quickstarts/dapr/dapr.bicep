@@ -85,7 +85,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
   }
 }
 
-resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
+resource stateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
   name: 'statestore'
   properties: {
     environment: environment

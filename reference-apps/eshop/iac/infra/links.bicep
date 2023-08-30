@@ -1,30 +1,30 @@
 import radius as rad
 
-resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: 'identitydb'
 }
 
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: 'catalogdb'
 }
 
-resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: 'orderingdb'
 }
 
-resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: 'webhooksdb'
 }
 
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: 'keystore-data'
 }
 
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: 'basket-data'
 }
 
-resource rabbitmq 'Applications.Link/rabbitmqMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
   name: 'eshop-event-bus'
 }
 
