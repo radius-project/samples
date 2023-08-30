@@ -42,10 +42,10 @@ param webhooksclientHttpName string
 @description('Name of the WebMVC HTTP Route')
 param webmvcHttpName string
 
-@description('Name of the Identity SQL Database Link')
+@description('Name of the Identity SQL Database portable resource')
 param sqlIdentityDbName string
 
-@description('Name of the Keystore Redis Link')
+@description('Name of the Keystore Redis portable resource')
 param redisKeystoreName string
 
 // CONTAINERS -------------------------------------------------------------------
@@ -154,12 +154,12 @@ resource webmvcHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exi
   name: webmvcHttpName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
-resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlIdentityDbName
 }
 
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: redisKeystoreName
 }

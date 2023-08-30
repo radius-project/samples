@@ -28,7 +28,7 @@ resource redisRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource statestore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
+resource statestore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
   name: 'orders'
   properties: {
     resourceProvisioning: 'manual'

@@ -22,7 +22,7 @@ param keyVaultName string
 @description('The name of the Ordering API HTTP route.')
 param orderingApiRouteName string
 
-@description('The name of the Ordering database link.')
+@description('The name of the Ordering database portable resource.')
 param orderingDbName string
 
 @description('The name of the Seq HTTP route.')
@@ -35,11 +35,11 @@ var daprAppId = 'ordering-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprPubSubBroker 'Applications.Link/daprPubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprSecretStore 'Applications.Link/daprSecretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
   name: daprSecretStoreName
 }
 
@@ -55,7 +55,7 @@ resource orderingApiRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   name: orderingApiRouteName
 }
 
-resource orderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource orderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: orderingDbName
 }
 
