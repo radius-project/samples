@@ -34,7 +34,7 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 1. Clone the repository and switch to the app directory:
 
    ```bash
-   git clone https://github.com/project-radius/samples.git
+   git clone https://github.com/radius-project/samples.git
    cd samples/reference-apps/eshop-dapr
    ```
 
