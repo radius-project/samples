@@ -1,0 +1,3 @@
+image:
+  repository: radius.azurecr.io/tutorial/webapp
+  tag: edge
