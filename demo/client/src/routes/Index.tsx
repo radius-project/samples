@@ -40,7 +40,7 @@ export function Index() {
                       <h5>Environment variables</h5>
                       <p>These environment variables are available to the container and are set automatically by Radius</p>
                       <ul>
-                        {connections.filter(([key, value]) => key.startsWith(`CONNECTION_${connection}`)).map(([key, value]) => {
+                        {connections.filter(([key, value]) => key.startsWith(`CONNECTION_${connection}_`)).map(([key, value]) => {
                           return <li><b>{key}</b>: {value}</li>
                         })}
                       </ul>
