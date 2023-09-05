@@ -38,6 +38,8 @@ test("To-Do App Basic UI Checks", async ({ page }) => {
   await page.getByRole("link", { name: "Radius Demo" })
     .click();
 
+  await page.getByRole('button', { name: '📄 Environment variables' }).click();
+
   // Make sure important environment variables are visible
   await expect(page.getByText("CONNECTION_REDIS_CONNECTIONSTRING"))
     .toBeVisible();
