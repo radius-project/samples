@@ -124,7 +124,7 @@ export function Index() {
 
       <div className="row p-4">
         <div className="container">
-          <h2>ToDo List</h2>
+          <h2>Todo List</h2>
           <p>Visit the Todo List page to try interacting with external dependencies</p>
           <button className="btn btn-primary" onClick={() => window.location.href = "/todo"}>🚀 Todo List</button>
         </div>
