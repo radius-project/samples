@@ -38,13 +38,12 @@ test("To-Do App Basic UI Checks", async ({ page }) => {
   await page.getByRole("link", { name: "Radius Demo" })
     .click();
 
+  await page.getByRole('button', { name: '📄 Environment variables' }).click();
+
   // Make sure important environment variables are visible
-  await expect(page.getByText("CONNECTION_REDIS_CONNECTIONSTRING"))
-    .toBeVisible();
-  await expect(page.getByText("CONNECTION_REDIS_HOST"))
-    .toBeVisible();
-  await expect(page.getByText("CONNECTION_REDIS_PORT"))
-    .toBeVisible();
+  await expect(page.getByRole('cell', { name: 'CONNECTION_REDIS_CONNECTIONSTRING' }).getByText('CONNECTION_REDIS_CONNECTIONSTRING')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'CONNECTION_REDIS_HOST' }).getByText('CONNECTION_REDIS_HOST')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'CONNECTION_REDIS_PORT' }).getByText('CONNECTION_REDIS_PORT')).toBeVisible();
 });
 
 test("Add an item and check basic functionality", async ({ page }) => {
