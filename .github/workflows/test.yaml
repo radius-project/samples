@@ -35,6 +35,7 @@ jobs:
       matrix:
         include:
           - name: demo
+            runOnPullRequest: true
             app: demo
             path: ./demo/app.bicep
             args: --application demo
@@ -42,22 +43,26 @@ jobs:
             port: 3000
             container: demo
           - name: dapr
+            runOnPullRequest: true
             app: dapr-quickstart
             path: ./quickstarts/dapr/dapr.bicep
             enableDapr: true
           - name: environment-variables
+            runOnPullRequest: true
             app: myapp
             path: ./quickstarts/environment-variables/app.bicep
           - name: volumes
+            runOnPullRequest: true
             app: myapp
             path: ./quickstarts/volumes/app.bicep
           - name: eshop
+            runOnPullRequest: true
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop
             uiTestFile: tests/eshop/container.app.spec.ts
           - name: eshop-azure
-            if: github.event_name != 'pull_request'
+            runOnPullRequest: false
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=azure
@@ -68,33 +73,45 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AZURE_LOCATION: westus3
     steps:
+      # Setup the test assets and configuration
       - name: Generate output variables
         id: gen-id
         run: |
           BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
           UNIQUE_ID=$(echo $BASE_STR | sha1sum | head -c 10)
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.runOnPullRequest }}" == "false" ]]; then
+            RUN_TEST=false
+          else
+            RUN_TEST=true
+          fi
 
           # Set output variables to be used in the other jobs
           echo "UNIQUE_ID=${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
+          echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
       - name: Checkout code
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v3
       - name: Ensure inputs.version is valid semver
-        if: inputs.version != ''
+        if: inputs.version != '' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: az CLI login
+        if: matrix.credential == 'azure' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           az login --service-principal \
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+      # Create and install test environment
       - name: Create Azure resource group
-        if: matrix.credential == 'azure'
+        id: create-azure-resource-group
+        if: matrix.credential == 'azure' && steps.gen-id.outputs.RUN_TEST == 'true'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -110,8 +127,10 @@ jobs:
             sleep 5
           done
       - name: Download k3d
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           for attempt in 1 2 3 4 5; do
             if [[ -n "${{ inputs.version }}" ]]; then
@@ -127,13 +146,15 @@ jobs:
             fi
           done
       - name: Create k3d cluster
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
-        if: ${{ matrix.enableDapr }}
+        if: ${{ matrix.enableDapr }} && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
       - name: Init local environment
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -150,16 +171,19 @@ jobs:
             rad env update default --azure-subscription-id $SUBSCRIPTION_ID --azure-resource-group $RESOURCE_GROUP
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
           fi
+      # Deploy application and run tests
       - name: Deploy app
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
       - name: Wait for all pods to be ready
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
         id: run-playwright-test
-        if: matrix.uiTestFile != ''
+        if: matrix.uiTestFile != '' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
@@ -168,8 +192,18 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries=3
+      - name: Upload Playwright Results
+        uses: actions/upload-artifact@v3
+        if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: ui-tests/playwright-report/
+          retention-days: 30
+          if-no-files-found: error
+      # Handle failures
       - name: Get Pod Logs For Failed Tests
-        if: failure() && matrix.uiTestFile != ''
+        id: get-pod-logs
+        if: failure() && steps.run-playwright-test.outcome == 'failure'
         run: |
           # Create pod-logs directory
           mkdir -p ui-tests/pod-logs/${{ matrix.name }}
@@ -183,26 +217,23 @@ jobs:
           echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
           # Get kubernetes events and save to file
           kubectl get events -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/events.txt
-      - name: Upload Playwright Results
-        uses: actions/upload-artifact@v3
-        if: always() && matrix.uiTestFile != ''
-        with:
-          name: playwright-report-${{ matrix.name }}
-          path: ui-tests/playwright-report/
-          retention-days: 30
-          if-no-files-found: error
       - name: Upload Pod Logs
         uses: actions/upload-artifact@v3
-        if: failure() && matrix.uiTestFile != ''
+        if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
           name: ${{ matrix.name }}-pod-logs
           path: ui-tests/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
+      - name: Create GitHub issue on failure
+        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
+      # Cleanup
       - name: Delete app
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: rad app delete ${{ matrix.app }} -y
       - name: Delete Azure resource group
-        if: always() && matrix.credential == 'azure'
+        if: always() && steps.create-azure-resource-group.outcome == 'success'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -212,6 +243,3 @@ jobs:
             --subscription $SUBSCRIPTION_ID \
             --name $RESOURCE_GROUP \
             --yes
-      - name: Create GitHub issue on failure
-        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
