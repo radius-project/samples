@@ -1,12 +1,12 @@
-name: Test Quickstarts
+name: Test Samples
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1, edge). Defaults to edge.'
         required: false
-        default: ''
+        default: 'edge'
         type: string
   push:
     branches:
@@ -15,6 +15,7 @@ on:
     paths:
       - "quickstarts/**"
       - "reference-apps/**"
+      - "demo/**"
       - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
@@ -28,7 +29,6 @@ env:
 jobs:
   test:
     name: Sample tests
-    if: github.event.action != 'closed'
     runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
     strategy:
       fail-fast: false
@@ -57,6 +57,7 @@ jobs:
             args: --application eshop
             uiTestFile: tests/eshop/container.app.spec.ts
           - name: eshop-azure
+            if: github.event_name != 'pull_request'
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=azure
@@ -116,9 +117,6 @@ jobs:
             if [[ -n "${{ inputs.version }}" ]]; then
               echo "Downloading rad CLI version ${{ inputs.version }}"
               wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
-            elif [ "$BRANCH" = "edge" ]; then
-              echo "Downloading edge rad CLI"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s edge
             else
               echo "Downloading latest rad CLI"
               wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
@@ -183,6 +181,8 @@ jobs:
             kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
           done
           echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
+          # Get kubernetes events and save to file
+          kubectl get events -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/events.txt
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
         if: always() && matrix.uiTestFile != ''
