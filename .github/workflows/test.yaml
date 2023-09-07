@@ -42,14 +42,17 @@ jobs:
             uiTestFile: tests/demo.app.spec.ts
             port: 3000
             container: demo
+            enableDapr: false
           - name: dapr
             runOnPullRequest: true
             app: dapr-quickstart
             path: ./quickstarts/dapr/dapr.bicep
+            enableDapr: true
           - name: environment-variables
             runOnPullRequest: true
             app: myapp
             path: ./quickstarts/environment-variables/app.bicep
+            enableDapr: false
           - name: volumes
             runOnPullRequest: true
             app: myapp
@@ -61,6 +64,7 @@ jobs:
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop
             uiTestFile: tests/eshop/container.app.spec.ts
+            enableDapr: false
           - name: eshop-azure
             runOnPullRequest: false
             app: eshop
@@ -68,6 +72,7 @@ jobs:
             args: --application eshop -p platform=azure
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: azure
+            enableDapr: false
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,16 +84,24 @@ jobs:
         run: |
           BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
           UNIQUE_ID=$(echo $BASE_STR | sha1sum | head -c 10)
+          
           if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.runOnPullRequest }}" == "false" ]]; then
             RUN_TEST=false
           else
             RUN_TEST=true
           fi
 
+          if [[ "${{ matrix.enableDapr }}" == "true" ]]; then
+            ENABLE_DAPR=true
+          else
+            ENABLE_DAPR=false
+          fi
+
           # Set output variables to be used in the other jobs
           echo "UNIQUE_ID=${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
+          echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v3
@@ -149,7 +162,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
