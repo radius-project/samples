@@ -29,12 +29,13 @@ def main():
     SEMVER_REGEX = r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
 
     pattern = re.compile(SEMVER_REGEX)
-
     version = sys.argv[1]
     match = pattern.search(version)
-
-    # If no match, then return an error (provided version is not valid semver)
-    if match is None:
+    
+    if version == "edge":
+        print("Provided version is edge")
+        sys.exit(0)
+    elif match is None:
         print("Provided version is not valid semver")
         sys.exit(1)
     else:
