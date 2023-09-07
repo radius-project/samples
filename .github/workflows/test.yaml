@@ -149,7 +149,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
-        if: ${{ matrix.enableDapr }} && steps.gen-id.outputs.RUN_TEST == 'true'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && ${{ matrix.enableDapr }}
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
@@ -201,7 +201,7 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       # Handle failures
-      - name: Get Pod Logs For Failed Tests
+      - name: Get Pod logs for failed tests
         id: get-pod-logs
         if: failure() && steps.run-playwright-test.outcome == 'failure'
         run: |
@@ -217,7 +217,7 @@ jobs:
           echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
           # Get kubernetes events and save to file
           kubectl get events -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/events.txt
-      - name: Upload Pod Logs
+      - name: Upload Pod logs for failed tests
         uses: actions/upload-artifact@v3
         if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
