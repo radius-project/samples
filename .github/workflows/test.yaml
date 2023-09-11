@@ -176,7 +176,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Create k3d cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
