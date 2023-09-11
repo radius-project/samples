@@ -63,14 +63,14 @@ jobs:
           #   runOnPullRequest: true
           #   app: eshop
           #   path: ./reference-apps/eshop/iac/eshop.bicep
-          #   args: --appName eshop
+          #   args: -p appName eshop
           #   uiTestFile: tests/eshop/container.app.spec.ts
           #   enableDapr: false
           # - name: eshop-azure
           #   runOnPullRequest: false
           #   app: eshop-azure
           #   path: ./reference-apps/eshop/iac/eshop.bicep
-          #   args: -p platform=azure appName=eshop-azure
+          #   args: -p platform=azure -p appName=eshop-azure
           #   uiTestFile: tests/eshop/container.app.spec.ts
           #   credential: azure
           #   enableDapr: false
@@ -78,7 +78,7 @@ jobs:
             runOnPullRequest: false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
             path: ./reference-apps/eshop/iac/eshop.bicep
-            args: -p platform=aws eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws --appName eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
+            args: -p platform=aws eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws --p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
             enableDapr: false
