@@ -21,7 +21,7 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
-      # - edge
+      - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
@@ -75,11 +75,11 @@ jobs:
           #   credential: azure
           #   enableDapr: false
           - name: eshop-aws
-            runOnPullRequest: false
+            runOnPullRequest: true #false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             path: ./reference-apps/eshop/iac/eshop.bicep
-            # args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
-            args: -p platform=aws -p eksClusterName=willsmith-ft-eks -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
+            args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
+            # args: -p platform=aws -p eksClusterName=willsmith-ft-eks -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
             enableDapr: false
@@ -110,8 +110,8 @@ jobs:
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          #echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_EKS_CLUSTER_NAME=willsmith-ft-eks" >> $GITHUB_OUTPUT 
+          echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
+          # echo "TEST_EKS_CLUSTER_NAME=willsmith-ft-eks" >> $GITHUB_OUTPUT 
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
@@ -156,7 +156,7 @@ jobs:
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
       - name: Create EKS Cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && 1 == 2
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
         env:
           EKS_CLUSTER_NAME: 
@@ -305,7 +305,7 @@ jobs:
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
       - name: Delete EKS Cluster
-        if: always() && matrix.credential == 'aws' && 1 == 2
+        if: always() && matrix.credential == 'aws'
         run: |
           # Uninstall Radius from EKS cluster
           rad uninstall kubernetes
