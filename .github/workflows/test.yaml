@@ -249,7 +249,7 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          endpoint="$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+          endpoint=$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)
           echo $endpoint
           export ENDPOINT=$endpoint
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
@@ -293,10 +293,11 @@ jobs:
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad app delete -y
+          rad app delete  ${{ matrix.app }} -y
       - name: Delete Azure resource group
         if: always() && steps.create-azure-resource-group.outcome == 'success'
         run: |
+          # Delete Azure resources created by the test
           # if deletion fails, purge workflow will purge the resource group and its resources later
           az group delete \
             --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
@@ -308,10 +309,12 @@ jobs:
           # Uninstall Radius from EKS cluster
           rad uninstall kubernetes
           # Delete EKS cluster
+          # if deletion fails, purge workflow will purge the resource group and its resources later
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
           eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait
       - name: Delete AWS Resources
         if: always() && matrix.credential == 'aws'
         run: |
+          # Delete all AWS resources created by the test
           # if deletion fails, purge workflow will purge the resource group and its resources later
           ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
