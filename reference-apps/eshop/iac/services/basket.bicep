@@ -36,10 +36,10 @@ param basketHttpName string
 @description('The name of the Basket gRPC Route')
 param basketGrpcName string
 
-@description('The name of the Redis Basket Link')
+@description('The name of the Redis Basket portable resource')
 param redisBasketName string
 
-@description('The name of the RabbitMQ Link')
+@description('The name of the RabbitMQ portable resource')
 param rabbitmqName string
 
 @description('The connection string of the Azure Service Bus')
@@ -66,7 +66,7 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.connectionString()
+        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -112,12 +112,12 @@ resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exi
   name: basketGrpcName
 }
 
-// Links ------------------------------------------
+// Portable Resource ------------------------------------------
 
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: redisBasketName
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
   name: rabbitmqName
 }

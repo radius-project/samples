@@ -1,12 +1,12 @@
-name: Test Quickstarts
+name: Test Samples
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1)'
+        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1, edge). Defaults to edge.'
         required: false
-        default: ''
+        default: 'edge'
         type: string
   push:
     branches:
@@ -15,6 +15,7 @@ on:
     paths:
       - "quickstarts/**"
       - "reference-apps/**"
+      - "demo/**"
       - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
@@ -23,83 +24,131 @@ on:
       - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
-
+env:
+  RAD_CLI_URL: https://get.radapp.dev/tools/rad/install.sh
 jobs:
   test:
-    name: Deploy quickstarts to local environment
-    if: github.event.action != 'closed'
+    name: Sample tests
     runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: demo
+            runOnPullRequest: true
             app: demo
             path: ./demo/app.bicep
             args: --application demo
             uiTestFile: tests/demo.app.spec.ts
             port: 3000
             container: demo
+            enableDapr: false
           - name: dapr
+            runOnPullRequest: true
             app: dapr-quickstart
             path: ./quickstarts/dapr/dapr.bicep
             enableDapr: true
           - name: environment-variables
+            runOnPullRequest: true
             app: myapp
             path: ./quickstarts/environment-variables/app.bicep
+            enableDapr: false
           - name: volumes
+            runOnPullRequest: true
             app: myapp
             path: ./quickstarts/volumes/app.bicep
+            enableDapr: false
           - name: eshop
+            runOnPullRequest: true
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop
             uiTestFile: tests/eshop/container.app.spec.ts
+            enableDapr: false
           - name: eshop-azure
+            runOnPullRequest: false
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=azure
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: azure
+            enableDapr: false
           - name: eshop-aws
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: --application eshop -p platform=aws
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
+            enableDapr: false
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AZURE_LOCATION: westus3
-      AWS_REGION: us-east-2
+      AWS_REGION: us-west-2
     steps:
+      # Setup the test assets and configuration
       - name: Generate output variables
         id: gen-id
         run: |
           BASE_STR="SAMPLES|${GITHUB_SHA}|${GITHUB_SERVER_URL}|${GITHUB_REPOSITORY}|${GITHUB_RUN_ID}|${GITHUB_RUN_ATTEMPT}"
           UNIQUE_ID=$(echo $BASE_STR | sha1sum | head -c 10)
+          
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.runOnPullRequest }}" == "false" ]]; then
+            RUN_TEST=false
+          else
+            RUN_TEST=true
+          fi
+
+          if [[ "${{ matrix.enableDapr }}" == "true" ]]; then
+            ENABLE_DAPR=true
+          else
+            ENABLE_DAPR=false
+          fi
 
           # Set output variables to be used in the other jobs
           echo "UNIQUE_ID=${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_RESOURCE_GROUP_PREFIX=samplestest-${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_EKS_CLUSTER_NAME=samplestest-eks-${UNIQUE_ID}" >> $GITHUB_OUTPUT
           echo "TEST_UNIQUE_APP_NAME=${{ matrix.name }}-${UNIQUE_ID}" >> $GITHUB_OUTPUT
-      - name: Checkout Code
+          echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
+          echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
+      - name: Checkout code
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v3
       - name: Ensure inputs.version is valid semver
-        if: inputs.version != ''
+        if: inputs.version != '' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          ./scripts/validate-version.sh ${{ inputs.version }}
+          python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: az CLI Login
+      - name: az CLI login
+        if: matrix.credential == 'azure' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           az login --service-principal \
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+      # Create and install test environment
+      - name: Create Azure resource group
+        id: create-azure-resource-group
+        if: matrix.credential == 'azure' && steps.gen-id.outputs.RUN_TEST == 'true'
+        env:
+          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
+          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
+        run: |
+          current_time=$(date +%s)
+          az group create \
+            --location ${{ env.AZURE_LOCATION }} \
+            --name $RESOURCE_GROUP \
+            --subscription $SUBSCRIPTION_ID \
+            --tags creationTime=$current_time
+          while [ $(az group exists --name $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID) = false ]; do
+            echo "Waiting for resource group $RESOURCE_GROUP to be created..."
+            sleep 5
+          done
       - name: Configure AWS
         if: matrix.credential == 'aws'
         run: |
@@ -111,19 +160,14 @@ jobs:
         id: create-eks
         env:
           EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
-        if: ${{ matrix.credential == 'aws' }}
+        if: matrix.credential == 'aws'
         run: |
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
-
           eksctl create cluster --name $EKS_CLUSTER_NAME \
             --nodes-min 1 --nodes-max 2 --node-type t3.large \
             --managed \
-            --region ${{ env.AWS_REGION }} \
-            --tags application=$UNIQUE_APP_NAME \
-            --tags environment=functional-test
-
+            --region ${{ env.AWS_REGION }}
           while [[ "$(eksctl get cluster $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
             sleep 60
@@ -131,38 +175,19 @@ jobs:
           done
         timeout-minutes: 60
         continue-on-error: false
-      - name: Create Azure Resource Group
-        if: matrix.credential == 'azure'
-        env:
-          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
-          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
-        run: |
-          current_time=$(date +%s)
-          az group create \
-            --location ${{ env.AZURE_LOCATION }} \
-            --name $RESOURCE_GROUP \
-            --subscription $SUBSCRIPTION_ID \
-            --tags creationTime=$current_time \
-            --tags environment=functional-test
-          while [ $(az group exists --name $RESOURCE_GROUP --subscription $SUBSCRIPTION_ID) = false ]; do
-            echo "Waiting for resource group $RESOURCE_GROUP to be created..."
-            sleep 5
-          done
       - name: Download k3d
-        if: matrix.credential != 'aws'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Download rad CLI
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5; do
             if [[ -n "${{ inputs.version }}" ]]; then
               echo "Downloading rad CLI version ${{ inputs.version }}"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s ${{ inputs.version }}
-            elif [ "$BRANCH" = "edge" ]; then
-              echo "Downloading edge rad CLI"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
             else
               echo "Downloading latest rad CLI"
-              wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
             fi
 
             if [ $? -eq 0 ]; then
@@ -170,18 +195,20 @@ jobs:
             fi
           done
       - name: Create k3d cluster
-        if: matrix.credential != 'aws'
-        run: k3d cluster create -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
-        if: matrix.enableDapr
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      - name: Initialize Local Environment
+      - name: Initialize local environment
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
         run: |
+          rad install kubernetes --set rp.publicEndpointOverride=localhost
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             kubectl config current-context
             rad install kubernetes
@@ -193,46 +220,25 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Link/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Link/mongoDatabases
-
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Datastores/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Datastores/mongoDatabases
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id $SUBSCRIPTION_ID --azure-resource-group $RESOURCE_GROUP
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
           fi
-
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-            rad credential register aws \
-              --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          fi
-      - name: Deploy App
-        env:
-          EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
-        run: |
-          args="${{ matrix.path }} ${{ matrix.args }}"
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            args="$args -p eksClusterName=$EKS_CLUSTER_NAME -p appName=$UNIQUE_APP_NAME"
-            echo $args
-          fi
-          rad deploy $args
-      - name: Wait For All Pods To Be Ready
-        env:
-          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
+      # Deploy application and run tests
+      - name: Deploy app
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
+      - name: Wait for all pods to be ready
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            namespace="default-$UNIQUE_APP_NAME"
-            label="radius.dev/application=$UNIQUE_APP_NAME"
-          fi
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
-        env:
-          UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
         id: run-playwright-test
-        if: matrix.uiTestFile != ''
+        if: matrix.uiTestFile != '' && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
@@ -247,14 +253,24 @@ jobs:
           if [[ "${{ matrix.app }}" == "eshop" ]]; then
             endpoint="$(rad app status -a $app_name | sed 's/ /\n/g' | grep http)"
             echo $endpoint
-            ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }}
+            ENDPOINT=$endpoint npx playwright test ${{ matrix.uiTestFile }} --retries 3
           else
-            npx playwright test ${{ matrix.uiTestFile }}
+            npx playwright test ${{ matrix.uiTestFile }} --retries 3
           fi
-      - name: Get Pod Logs For Failed Tests
+      - name: Upload Playwright Results
+        uses: actions/upload-artifact@v3
+        if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: ui-tests/playwright-report/
+          retention-days: 30
+          if-no-files-found: error
+      # Handle failures
+      - name: Get Pod logs for failed tests
+        id: get-pod-logs
+        if: failure() && steps.run-playwright-test.outcome == 'failure'
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
-        if: failure() && matrix.uiTestFile != ''
         run: |
           # Create pod-logs directory
           mkdir -p ui-tests/pod-logs/${{ matrix.name }}
@@ -270,33 +286,32 @@ jobs:
             kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
           done
           echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
-      - name: Upload Playwright Results
+          # Get kubernetes events and save to file
+          kubectl get events -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/events.txt
+      - name: Upload Pod logs for failed tests
         uses: actions/upload-artifact@v3
-        if: always() && matrix.uiTestFile != ''
-        with:
-          name: playwright-report-${{ matrix.name }}
-          path: ui-tests/playwright-report/
-          retention-days: 30
-          if-no-files-found: error
-      - name: Upload Pod Logs
-        uses: actions/upload-artifact@v3
-        if: failure() && matrix.uiTestFile != ''
+        if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
           name: ${{ matrix.name }}-pod-logs
           path: ui-tests/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
-      - name: Delete App
+      - name: Create GitHub issue on failure
+        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
+      # Cleanup
+      - name: Delete app
         env:
           UNIQUE_APP_NAME: ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           app_name=${{ matrix.app }}
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             app_name=$UNIQUE_APP_NAME
           fi
           rad app delete $app_name -y
-      - name: Delete Azure Resource Group
-        if: always() && matrix.credential == 'azure'
+      - name: Delete Azure resource group
+        if: always() && steps.create-azure-resource-group.outcome == 'success'
         env:
           RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
           SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -317,6 +332,7 @@ jobs:
           echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
           eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
       - name: Delete AWS Resources
+        if: always() && matrix.credential == 'aws'
         run: |
           ./.github/scripts/delete-aws-resources.sh ${{ steps.gen-id.outputs.TEST_UNIQUE_APP_NAME }}
       - name: Create GitHub issue on failure

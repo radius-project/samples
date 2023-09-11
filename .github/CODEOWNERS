@@ -1,4 +1,4 @@
 #  https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
 
 # Default rule: anything that doesn't match a more specific rule goes here
-* @project-radius/radius-pm
+* @radius-project/radius-pm

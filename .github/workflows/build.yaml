@@ -19,41 +19,19 @@ concurrency:
 env:
   VERSION: ${{ github.event.pull_request.number || 'edge' }}
   # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+  # TODO_LAUNCH: Remove this env var once we opensource the repo - https://github.com/radius-project/samples/issues/439
   DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
+  # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+  CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project/samples' }}
+  # Set to true to push images to registry.
+  PUSH_IMAGE: true
 
 jobs:
+  # TODO_LAUNCH: Remove this build job once we opensource the repo - https://github.com/radius-project/samples/issues/439
   build:
-    name: Build and push ${{ matrix.name }}
+    name: Build and push sample images to ACR
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: demo
-            path: ./demo/
-            tag: tutorial/demo
-          - name: webapp
-            path: ./demo/
-            tag: tutorial/webapp
-          - name: dapr-backend
-            path: ./quickstarts/dapr/nodeapp/
-            tag: quickstarts/dapr-backend
-          - name: dapr-frontend
-            path: ./quickstarts/dapr/ui/
-            tag: quickstarts/dapr-frontend
-          - name: aws-reference-app
-            path: ./reference-apps/aws/
-            tag: reference-apps/aws
-          - name: environment-variables
-            path: ./quickstarts/environment-variables/
-            tag: quickstarts/envvars
-          - name: volumes
-            path: ./quickstarts/volumes/
-            tag: quickstarts/volumes
-          - name: aws-sqs
-            path: ./reference-apps/aws-sqs/
-            tag: reference-apps/aws-sqs-sample
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.5.2
@@ -63,10 +41,120 @@ jobs:
           login-server: ${{ env.DOCKER_REGISTRY }}
           username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
           password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-      - name: Build ${{ matrix.name }}
-        run: docker build ${{ matrix.path }} -t "${{ env.DOCKER_REGISTRY }}/${{ matrix.tag }}:${{ env.VERSION }}"
-      - name: Push ${{ matrix.name }}
-        run: docker push "${{ env.DOCKER_REGISTRY }}/${{ matrix.tag }}:${{ env.VERSION }}"
+      - name: demo
+        uses: docker/build-push-action@v4
+        with:
+          context: ./demo/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}
+      - name: webapp
+        uses: docker/build-push-action@v4
+        with:
+          context: ./demo/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}
+      - name: dapr-backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/dapr/nodeapp/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}
+      - name: dapr-frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/dapr/ui/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}
+      - name: aws-reference-app
+        uses: docker/build-push-action@v4
+        with:
+          context: ./reference-apps/aws/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}
+      - name: environment-variables
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/environment-variables/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}
+      - name: volumes
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/volumes/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}
+      - name: aws-sqs
+        uses: docker/build-push-action@v4
+        with:
+          context: ./reference-apps/aws-sqs/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.DOCKER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}
+  build-container:
+    name: Build and push sample images to GHCR
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: demo
+        uses: docker/build-push-action@v4
+        with:
+          context: ./demo/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/tutorial/demo:${{ env.VERSION }}
+      - name: webapp
+        uses: docker/build-push-action@v4
+        with:
+          context: ./demo/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/tutorial/webapp:${{ env.VERSION }}
+      - name: dapr-backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/dapr/nodeapp/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/dapr-backend:${{ env.VERSION }}
+      - name: dapr-frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/dapr/ui/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/dapr-frontend:${{ env.VERSION }}
+      - name: aws-reference-app
+        uses: docker/build-push-action@v4
+        with:
+          context: ./reference-apps/aws/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/reference-apps/aws:${{ env.VERSION }}
+      - name: environment-variables
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/environment-variables/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/envvars:${{ env.VERSION }}
+      - name: volumes
+        uses: docker/build-push-action@v4
+        with:
+          context: ./quickstarts/volumes/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/quickstarts/volumes:${{ env.VERSION }}
+      - name: aws-sqs
+        uses: docker/build-push-action@v4
+        with:
+          context: ./reference-apps/aws-sqs/
+          push: ${{ env.PUSH_IMAGE }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/reference-apps/aws-sqs-sample:${{ env.VERSION }}
+  
+  # TODO_LAUNCH: Remove this job once we opensource the repo because all pkgs will be cleaned up regularly - https://github.com/radius-project/samples/issues/439
   cleanup:
     name: Cleanup ${{ matrix.image }}
     if: github.event.action == 'closed'

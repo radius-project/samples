@@ -98,7 +98,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
   }
 }
 
-// Links -----------------------------------------------------------
+// Portable Resources -----------------------------------------------------------
 // TODO: Switch to Recipes once ready
 
 module links 'infra/links.bicep' = {
@@ -280,7 +280,7 @@ module webshopping 'services/webshopping.bicep' = {
 }
 
 module webstatus 'services/webstatus.bicep' = {
-  name: 'websatatus'
+  name: 'webstatus'
   params: {
     application: eshop.id
     APPLICATION_INSIGHTS_KEY: APPLICATION_INSIGHTS_KEY 

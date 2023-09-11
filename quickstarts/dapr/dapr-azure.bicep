@@ -102,7 +102,7 @@ resource account 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
-resource stateStore 'Applications.Link/daprStateStores@2022-03-15-privatepreview' = {
+resource stateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
   name: 'orders'
   properties: {
     environment: environment
