@@ -76,9 +76,9 @@ jobs:
           #   enableDapr: false
           - name: eshop-aws
             runOnPullRequest: false
-            app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
+            app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             path: ./reference-apps/eshop/iac/eshop.bicep
-            args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
+            args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
             enableDapr: false
@@ -108,8 +108,8 @@ jobs:
 
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_AZURE_RESOURCE_GROUP=rg-samplestest-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_EKS_CLUSTER_NAME=eks-samplestest-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
+          echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
+          echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
