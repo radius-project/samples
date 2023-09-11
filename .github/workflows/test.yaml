@@ -21,7 +21,7 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
-      - edge
+      # - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
@@ -212,8 +212,8 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --link-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --link-type Applications.Datastores/mongoDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
