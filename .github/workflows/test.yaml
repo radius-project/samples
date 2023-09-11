@@ -109,14 +109,15 @@ jobs:
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
+          #echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
+          echo "TEST_EKS_CLUSTER_NAME=willsmith-ft-eks" >> $GITHUB_OUTPUT 
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v3
       - name: Ensure inputs.version is valid semver
-        if: inputs.version != '' && steps.gen-id.outputs.RUN_TEST == 'true'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
@@ -140,7 +141,7 @@ jobs:
           az group create \
             --location ${{ env.AZURE_LOCATION }} \
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
-            --subscription $SUBSCRIPTION_ID \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
             --tags creationTime=$current_time
           while [ $(az group exists --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}) = false ]; do
             echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
@@ -154,7 +155,7 @@ jobs:
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
       - name: Create EKS Cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && 1 == 2
         id: create-eks
         env:
           EKS_CLUSTER_NAME: 
@@ -168,10 +169,13 @@ jobs:
           while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
             sleep 60
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
           done
         timeout-minutes: 60
         continue-on-error: false
+      - name: Install k3d
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -220,7 +224,7 @@ jobs:
           fi
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-            rad credential register aws --access-key-id ${{ secrets.AWS_ACCOUNT_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       # Deploy application and run tests
       - name: Deploy app
@@ -242,10 +246,9 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          if [[ "${{ matrix.app }}" == "eshop" ]]; then
-            endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
-            echo $endpoint
-            ENDPOINT=$endpoint
+          endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+          echo $endpoint
+          ENDPOINT=$endpoint
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
@@ -291,33 +294,25 @@ jobs:
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad app delete  -y
+          rad app delete -y
       - name: Delete Azure resource group
         if: always() && steps.create-azure-resource-group.outcome == 'success'
-        env:
-          RESOURCE_GROUP: ${{ steps.gen-id.outputs.TEST_RESOURCE_GROUP_PREFIX }}-${{ matrix.name }}
-          SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
         run: |
           # if deletion fails, purge workflow will purge the resource group and its resources later
           az group delete \
-            --subscription $SUBSCRIPTION_ID \
-            --name $RESOURCE_GROUP \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
+            --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
       - name: Delete EKS Cluster
         if: always() && matrix.credential == 'aws'
-        env:
-          EKS_CLUSTER_NAME: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         run: |
           # Uninstall Radius from EKS cluster
           rad uninstall kubernetes
           # Delete EKS cluster
-          echo "Deleting EKS cluster: $EKS_CLUSTER_NAME"
-          eksctl delete cluster --name $EKS_CLUSTER_NAME --region ${{ env.AWS_REGION }} --wait
+          echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
+          eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait
       - name: Delete AWS Resources
         if: always() && matrix.credential == 'aws'
         run: |
           # if deletion fails, purge workflow will purge the resource group and its resources later
           ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
-      - name: Create GitHub issue on failure
-        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
