@@ -1,4 +1,4 @@
-name: Purge Azure Test Resources
+name: Purge Azure test resources
 on:
   schedule:
     - cron: "30 0,12 * * *"
@@ -7,7 +7,7 @@ env:
   VALID_RESOURCE_WINDOW: 6*60*60
 jobs:
   purge_azure_resources:
-    name: Azure Test Resources Clean-up
+    name: Azure test resource cleanup
     runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
     steps:
       - name: Login to Azure
