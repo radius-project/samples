@@ -79,7 +79,6 @@ jobs:
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
-            # args: -p platform=aws -p eksClusterName=willsmith-ft-eks -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
             enableDapr: false
@@ -250,9 +249,9 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+          endpoint="$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
           echo $endpoint
-          ENDPOINT=$endpoint
+          export ENDPOINT=$endpoint
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
@@ -272,10 +271,6 @@ jobs:
           # Get pod logs and save to file
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            namespace="default-${{ matrix.app }}""
-            label="radius.dev/application=${{ matrix.app }}"
-          fi
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
