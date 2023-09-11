@@ -78,7 +78,7 @@ jobs:
             runOnPullRequest: false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
             path: ./reference-apps/eshop/iac/eshop.bicep
-            args: -p platform=aws eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
+            args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
             enableDapr: false
