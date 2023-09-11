@@ -8,7 +8,7 @@ param environment string
 param application string
 
 @description('Radius application name')
-param appname string
+param applicationName string
 
 @description('SQL administrator username')
 param adminLogin string
@@ -39,7 +39,7 @@ resource sqlSubnetGroup 'AWS.RDS/DBSubnetGroup@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -68,7 +68,7 @@ resource identityDb 'AWS.RDS/DBInstance@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -97,7 +97,7 @@ resource catalogDb 'AWS.RDS/DBInstance@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -126,7 +126,7 @@ resource orderingDb 'AWS.RDS/DBInstance@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -155,7 +155,7 @@ resource webhooksDb 'AWS.RDS/DBInstance@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -170,7 +170,7 @@ resource redisSubnetGroup 'AWS.MemoryDB/SubnetGroup@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -189,7 +189,7 @@ resource keystoreCache 'AWS.MemoryDB/Cluster@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
@@ -208,7 +208,7 @@ resource basketCache 'AWS.MemoryDB/Cluster@default' = {
     Tags: [
       {
         Key: 'RadiusApplication'
-        Value: application
+        Value: applicationName
       }
     ]
   }
