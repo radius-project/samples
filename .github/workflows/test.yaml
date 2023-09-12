@@ -35,45 +35,45 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # - name: demo
-          #   runOnPullRequest: true
-          #   app: demo
-          #   path: ./demo/app.bicep
-          #   args: --application demo
-          #   uiTestFile: tests/demo/demo.app.spec.ts
-          #   port: 3000
-          #   container: demo
-          #   enableDapr: false
-          # - name: dapr
-          #   runOnPullRequest: true
-          #   app: dapr-quickstart
-          #   path: ./quickstarts/dapr/dapr.bicep
-          #   enableDapr: true
-          # - name: environment-variables
-          #   runOnPullRequest: true
-          #   app: myapp
-          #   path: ./quickstarts/environment-variables/app.bicep
-          #   enableDapr: false
-          # - name: volumes
-          #   runOnPullRequest: true
-          #   app: myapp
-          #   path: ./quickstarts/volumes/app.bicep
-          #   enableDapr: false
-          # - name: eshop
-          #   runOnPullRequest: true
-          #   app: eshop
-          #   path: ./reference-apps/eshop/iac/eshop.bicep
-          #   args: -p appName eshop
-          #   uiTestFile: tests/eshop/container.app.spec.ts
-          #   enableDapr: false
-          # - name: eshop-azure
-          #   runOnPullRequest: false
-          #   app: eshop-azure
-          #   path: ./reference-apps/eshop/iac/eshop.bicep
-          #   args: -p platform=azure -p appName=eshop-azure
-          #   uiTestFile: tests/eshop/container.app.spec.ts
-          #   credential: azure
-          #   enableDapr: false
+          - name: demo
+            runOnPullRequest: true
+            app: demo
+            path: ./demo/app.bicep
+            args: --application demo
+            uiTestFile: tests/demo/demo.app.spec.ts
+            port: 3000
+            container: demo
+            enableDapr: false
+          - name: dapr
+            runOnPullRequest: true
+            app: dapr-quickstart
+            path: ./quickstarts/dapr/dapr.bicep
+            enableDapr: true
+          - name: environment-variables
+            runOnPullRequest: true
+            app: myapp
+            path: ./quickstarts/environment-variables/app.bicep
+            enableDapr: false
+          - name: volumes
+            runOnPullRequest: true
+            app: myapp
+            path: ./quickstarts/volumes/app.bicep
+            enableDapr: false
+          - name: eshop
+            runOnPullRequest: true
+            app: eshop
+            path: ./reference-apps/eshop/iac/eshop.bicep
+            args: -p appName eshop
+            uiTestFile: tests/eshop/container.app.spec.ts
+            enableDapr: false
+          - name: eshop-azure
+            runOnPullRequest: true #false
+            app: eshop-azure
+            path: ./reference-apps/eshop/iac/eshop.bicep
+            args: -p platform=azure -p appName=eshop-azure
+            uiTestFile: tests/eshop/container.app.spec.ts
+            credential: azure
+            enableDapr: false
           - name: eshop-aws
             runOnPullRequest: true #false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
