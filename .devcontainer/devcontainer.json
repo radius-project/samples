@@ -26,6 +26,7 @@
 			"ms-python.python",
 			"dunn.redis",
 			"GitHub.copilot",
+			"ms-kubernetes-tools.vscode-kubernetes-tools",
 			"/tmp/rad-vscode-bicep.vsix"
 		]
 	  }

@@ -23,7 +23,7 @@ resource demo 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource db 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+resource db 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
   name: 'db'
   properties: {
     environment: environment

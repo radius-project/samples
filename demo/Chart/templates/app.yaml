@@ -1,22 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo
+  name: webapp
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
-      app: demo
+      app: webapp
   template:
     metadata:
       labels:
-        app: demo
+        app: webapp
     spec:
       containers:
-      - name: demo
+      - name: webapp
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env: 
-        # Matches the secret we created at the command line.
         - name: CONNECTION_REDIS_URL
           valueFrom:
             secretKeyRef:
