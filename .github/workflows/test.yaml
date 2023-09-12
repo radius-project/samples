@@ -244,15 +244,14 @@ jobs:
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
-          fi
-          cd ui-tests/
-          npm ci
-          npx playwright install --with-deps
-          if [[ "${{ matrix.container }}" != "" ]]; then
+          else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
             echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
+          cd ui-tests/
+          npm ci
+          npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
