@@ -63,11 +63,11 @@ jobs:
             runOnPullRequest: true
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
-            args: -p appName eshop
+            args: -p appName=eshop
             uiTestFile: tests/eshop/container.app.spec.ts
             enableDapr: false
           - name: eshop-azure
-            runOnPullRequest: true #false
+            runOnPullRequest: false
             app: eshop-azure
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: -p platform=azure -p appName=eshop-azure
@@ -75,7 +75,7 @@ jobs:
             credential: azure
             enableDapr: false
           - name: eshop-aws
-            runOnPullRequest: true #false
+            runOnPullRequest: false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             path: ./reference-apps/eshop/iac/eshop.bicep
             args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
@@ -249,9 +249,11 @@ jobs:
           cd ui-tests/
           npm ci
           npx playwright install --with-deps
-          endpoint=$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)
-          echo $endpoint
-          export ENDPOINT=$endpoint
+          if [[ "${{ matrix.container }}" != "" ]]; then
+            endpoint=$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)
+            echo $endpoint
+            export ENDPOINT=$endpoint
+          fi
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
