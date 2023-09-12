@@ -235,10 +235,10 @@ resource orderbgtasksHttp 'Applications.Core/httpRoutes@2022-03-15-privateprevie
 
 // LINKS -----------------------------------------------------------
 
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: redisKeystoreName
 }
 
-resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlOrderingDbName
 }

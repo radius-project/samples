@@ -111,6 +111,6 @@ resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exi
 
 // Links ------------------------------------------
 
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: redisBasketName
 }

@@ -9,22 +9,22 @@ resource containersEShopEnv 'Applications.Core/environments@2022-03-15-privatepr
       namespace: 'containers-eshop'
     }
     recipes: {
-      'Applications.Link/sqlDatabases': {
+      'Applications.Datastores/sqlDatabases': {
         sqldatabase: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/sqldatabases:edge'
         }
       }
-      'Applications.Link/redisCaches': {
+      'Applications.Datastores/redisCaches': {
         rediscache: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/rediscaches:edge'
         }
       }
-      'Applications.Link/rabbitMQMessageQueues': {
+      'Applications.Messaging/rabbitMQQueues': {
         rabbitmqmessagequeue: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqqueues:edge'
         }
       }
     }

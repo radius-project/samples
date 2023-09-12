@@ -109,6 +109,6 @@ resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' ex
 
 // LINKS -----------------------------------------------------------
 
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlCatalogDbName
 }

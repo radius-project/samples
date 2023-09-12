@@ -23,7 +23,7 @@ param AZURESERVICEBUSENABLED string
 
 // Links ---------------------------------------------------------------
 
-resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'identitydb'
   properties: {
     application: application
@@ -39,7 +39,7 @@ resource sqlIdentityDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   }
 }
 
-resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'catalogdb'
   properties: {
     application: application
@@ -55,7 +55,7 @@ resource sqlCatalogDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview'
   }
 }
 
-resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'orderingdb'
   properties: {
     application: application
@@ -71,7 +71,7 @@ resource sqlOrderingDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   }
 }
 
-resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
   name: 'webhooksdb'
   properties: {
     application: application
@@ -87,7 +87,7 @@ resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview
   }
 }
 
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
   name: 'keystore-data'
   properties: {
     application: application
@@ -98,7 +98,7 @@ resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview'
   }
 }
 
-resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
   name: 'basket-data'
   properties: {
     application: application
@@ -109,18 +109,18 @@ resource redisBasket 'Applications.Link/redisCaches@2022-03-15-privatepreview' =
   }
 }
 
-resource rabbitmq 'Applications.Link/rabbitMQMessageQueues@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'False') {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'False') {
   name: 'rabbitmq'
   properties: {
     application: application
     environment: environment
     recipe: {
-      name: 'rabbitmqmessagequeue'
+      name: 'rabbitmqqueue'
     }
   }
 }
 
-resource servicebus 'Applications.Link/extenders@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'True') {
+resource servicebus 'Applications.Core/extenders@2022-03-15-privatepreview' = if (AZURESERVICEBUSENABLED == 'True') {
   name: 'servicebus'
   properties: {
     application: application

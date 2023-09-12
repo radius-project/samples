@@ -136,6 +136,6 @@ resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privateprev
 
 // LINKS -----------------------------------------------------------
 
-resource sqlWebhooksDb 'Applications.Link/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlWebhooksDbName
 }
