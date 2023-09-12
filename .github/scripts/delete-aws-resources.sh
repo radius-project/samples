@@ -21,6 +21,9 @@ APP_NAME=$1
 APP_LABEL='RadiusApplication'
 RESOURCE_TYPES='AWS::RDS::DBInstance,AWS::RDS::DBSubnetGroup,AWS::MemoryDB::Cluster,AWS::MemoryDB::SubnetGroup'
 
+# File to store the list of deleted resources
+DELETED_RESOURCES_FILE='deleted-resources.txt'
+
 # Number of retries
 MAX_RETRIES=5
 
@@ -28,8 +31,8 @@ MAX_RETRIES=5
 RETRY_DELAY=300 # 5 minutes
 
 function delete_aws_resources() {
-  # Variable to track if any resource needs to be deleted
-  resource_to_be_deleted=0
+  # Empty the file
+  truncate -s 0 $DELETED_RESOURCES_FILE
 
   for resource_type in ${RESOURCE_TYPES//,/ }
   do
@@ -44,8 +47,8 @@ function delete_aws_resources() {
           value=$(jq -r '.Value' <<< "$tag")
           if [[ "$key" == "$APP_LABEL" && "$value" == "$APP_NAME" ]]
           then
-            resource_to_be_deleted=1
             echo "Deleting resource of type: $resource_type with identifier: $identifier"
+            echo "$identifier\n" >> $DELETED_RESOURCES_FILE
             aws cloudcontrol delete-resource --type-name "$resource_type" --identifier "$identifier"
           fi
         done
@@ -53,7 +56,11 @@ function delete_aws_resources() {
     done
   done
 
-  return $resource_to_be_deleted
+  if [ -s $DELETED_RESOURCES_FILE ]; then
+    return 1
+  else
+    return 0
+  fi
 }
 
 RETRY_COUNT=0
@@ -61,7 +68,8 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     # Trigger the function to delete the resources
     delete_aws_resources
 
-    # If the function returned 0, then no resources were deleted
+    # If the function returned 0, then no resources needed to be deleted
+    # on this run. This means that all resources have been deleted.
     if [ $? -eq 0 ]; then
         echo "All resources deleted successfully"
         break
