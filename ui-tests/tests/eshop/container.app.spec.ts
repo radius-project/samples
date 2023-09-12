@@ -9,9 +9,10 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
   });
 
   let endpoint = process.env.ENDPOINT
-
-  // Remove quotes from the endpoint
-  endpoint = endpoint.replace(/['"]+/g, '')
+  expect(endpoint).toBeDefined()
+  
+  // Remove quotes from the endpoint if they exist
+  endpoint = (endpoint as string).replace(/['"]+/g, '')
   
   await page.goto(endpoint);
 

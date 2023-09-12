@@ -303,18 +303,16 @@ jobs:
             --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
+      - name: Delete AWS Resources
+        if: always() && matrix.credential == 'aws'
+        run: |
+          # Delete all AWS resources created by the test
+          ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
       - name: Delete EKS Cluster
         if: always() && matrix.credential == 'aws'
         run: |
           # Uninstall Radius from EKS cluster
           rad uninstall kubernetes
           # Delete EKS cluster
-          # if deletion fails, purge workflow will purge the resource group and its resources later
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
           eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait
-      - name: Delete AWS Resources
-        if: always() && matrix.credential == 'aws'
-        run: |
-          # Delete all AWS resources created by the test
-          # if deletion fails, purge workflow will purge the resource group and its resources later
-          ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
