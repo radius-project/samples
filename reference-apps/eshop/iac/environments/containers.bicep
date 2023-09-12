@@ -24,7 +24,7 @@ resource containersEShopEnv 'Applications.Core/environments@2022-03-15-privatepr
       'Applications.Messaging/rabbitMQQueues': {
         rabbitmqmessagequeue: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqqueues:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
       }
     }

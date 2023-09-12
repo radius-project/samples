@@ -45,7 +45,7 @@ resource awsEshopEnv 'Applications.Core/environments@2022-03-15-privatepreview' 
       'Applications.Messaging/rabbitMQQueues': {
         rabbitmqmessagequeue: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqqueues:edge'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
       }
     }

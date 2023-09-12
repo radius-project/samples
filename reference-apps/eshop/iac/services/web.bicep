@@ -185,6 +185,6 @@ resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2022-03-15-privatepr
 
 // LINKS ------------------------------------------------------
 
-resource redisKeystore 'Applications.Link/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
   name: redisKeystoreName
 }

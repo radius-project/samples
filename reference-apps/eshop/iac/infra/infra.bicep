@@ -115,7 +115,7 @@ resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privateprevi
     application: application
     environment: environment
     recipe: {
-      name: 'rabbitmqqueue'
+      name: 'rabbitmqmessagequeue'
     }
   }
 }
