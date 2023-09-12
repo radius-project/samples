@@ -63,7 +63,6 @@ jobs:
             runOnPullRequest: true
             app: eshop
             path: ./reference-apps/eshop/iac/eshop.bicep
-            args: -p appName=eshop
             uiTestFile: tests/eshop/container.app.spec.ts
             enableDapr: false
           - name: eshop-azure
@@ -250,8 +249,8 @@ jobs:
           npm ci
           npx playwright install --with-deps
           if [[ "${{ matrix.container }}" != "" ]]; then
-            endpoint=$(rad app status -o json -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)
-            echo $endpoint
+            endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+            echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
@@ -297,7 +296,7 @@ jobs:
         run: |
           rad app delete  ${{ matrix.app }} -y
       - name: Delete Azure resource group
-        if: always() && steps.create-azure-resource-group.outcome == 'success'
+        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
           # Delete Azure resources created by the test
           # if deletion fails, purge workflow will purge the resource group and its resources later
@@ -306,12 +305,12 @@ jobs:
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
       - name: Delete AWS Resources
-        if: always() && matrix.credential == 'aws'
+        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
           # Delete all AWS resources created by the test
           ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
       - name: Delete EKS Cluster
-        if: always() && matrix.credential == 'aws'
+        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
           # Uninstall Radius from EKS cluster
           rad uninstall kubernetes
