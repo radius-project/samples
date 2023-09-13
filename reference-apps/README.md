@@ -5,5 +5,6 @@ Reference apps are templates that show a complete app. You are able to clone and
 | Reference app | Description |
 |---------------|-------------|
 | [eShop](./eshop) | A full retail microservices application. |
+| [eShop on Recipes](./eshop-recipes) | A full retail microservices application leveraging Radius recipes for infrastructure deployment and management |
 | [eShop on Dapr](./eshop-dapr) | A full retail microservices application leveraging Dapr for full code + infrastructure portability |
 | [Container App Store](./container-app-store) | A microservices application that uses Dapr. |
