@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.22.0, 0.23.0-rc1, edge). Defaults to edge.'
+        description: 'Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge.'
         required: false
         default: 'edge'
         type: string
@@ -193,7 +193,10 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           for attempt in 1 2 3 4 5; do
-            if [[ -n "${{ inputs.version }}" ]]; then
+            if [[ "${{ inputs.version }}" != "edge" && "${{ inputs.version }}" != *"rc"* ]]; then
+                INPUT_CHANNEL=$(echo "${{ inputs.version }}" | cut -d '.' -f 1,2)
+                echo "Downloading rad CLI version $INPUT_CHANNEL"
+            elif [[ -n "${{ inputs.version }}" ]]; then
               echo "Downloading rad CLI version ${{ inputs.version }}"
               wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
             else
