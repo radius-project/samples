@@ -110,7 +110,6 @@ jobs:
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          # echo "TEST_EKS_CLUSTER_NAME=willsmith-ft-eks" >> $GITHUB_OUTPUT 
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
