@@ -44,15 +44,9 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: paymentHttp.id
+          port: 5108
         }
       }
     }
   }
-}
-
-// NETWORKING ------------------------------------------------------
-
-resource paymentHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: paymentHttpName
 }

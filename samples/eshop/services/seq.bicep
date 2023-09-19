@@ -5,9 +5,6 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Name of the SEQ Http Route')
-param seqHttpName string
-
 // CONTAINERS ------------------------------------------------------------
 
 resource seq 'Applications.Core/containers@2023-10-01-preview' = {
@@ -22,15 +19,14 @@ resource seq 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         web: {
           containerPort: 80
-          provides: seqHttp.id
+          port: 5340
         }
       }
     }
   }
 }
 
-// NETWORKING ---------------------------------------------------------------
 
-resource seqHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqHttpName
-}
+// Output
+@description('Name of the SEQ container')
+output container string = seq.name

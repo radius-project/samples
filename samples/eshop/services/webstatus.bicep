@@ -81,7 +81,7 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: webstatusHttp.id
+          port: 8107
         }
       }
     }

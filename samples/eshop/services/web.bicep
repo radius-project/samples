@@ -14,24 +14,6 @@ param imageTag string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Ordering SignalR Hub Http Route name')
-param orderingsignalrhubHttpName string
-
-@description('Identity Http Route name')
-param identityHttpName string
-
-@description('Web MVC Http Route name')
-param webmvcHttpName string
-
-@description('Web SPA Http Route name')
-param webspaHttpName string
-
-@description('Web Shopping Aggregator Http Route name')
-param webshoppingaggHttpName string
-
-@description('Web shopping API GW HTTP Route name')
-param webshoppingapigwHttpName string
-
 @description('Name of the Keystore Redis portable resource')
 param redisKeystoreName string
 
@@ -54,14 +36,14 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
-        IdentityUrlHC: '${identityHttp.properties.url}/hc'
+        IdentityUrlHC: 'http://identity-api:5105/hc'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
-        SignalrHubUrl: orderingsignalrhubHttp.properties.url
+        SignalrHubUrl: 'http://ordering-signalrhub:5112'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webspaHttp.id
+          port: 5104
         }
       }
     }
@@ -71,19 +53,19 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
         disableDefaultEnvVars: true
       }
       webshoppingagg: {
-        source: webshoppingaggHttp.id
+        source: 'http://webshoppingagg:5121'
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'http://identity-api:5105'
         disableDefaultEnvVars: true
       }
       webshoppingapigw: {
-        source: webshoppingapigwHttp.id
+        source: 'http://webshoppingapigw:5202'
         disableDefaultEnvVars: true
       }
       orderingsignalrhub: {
-        source: orderingsignalrhubHttp.id
+        source: 'http://ordering-signalrhub:5112'
         disableDefaultEnvVars: true
       }
     }
@@ -106,17 +88,17 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
         UseLoadTest: 'False'
         ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
-        ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
+        ExternalPurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
         CallBackUrl: '${gateway.properties.url}/webmvc'
         IdentityUrl: '${gateway.properties.url}/identity-api'
-        IdentityUrlHC: '${identityHttp.properties.url}/hc'
-        PurchaseUrl: webshoppingapigwHttp.properties.url
-        SignalrHubUrl: orderingsignalrhubHttp.properties.url
+        IdentityUrlHC: 'http://identity-api:5105/hc'
+        PurchaseUrl: 'http://webshoppingapigw:5202'
+        SignalrHubUrl: 'http://ordering-signalrhub:5112'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webmvcHttp.id
+          port: 5100
         }
       }
     }
@@ -126,19 +108,19 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
         disableDefaultEnvVars: true
       }
       webshoppingagg: {
-        source: webshoppingaggHttp.id
+        source: 'http://webshoppingagg:5121'
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'http://identity-api:5105'
         disableDefaultEnvVars: true
       }
       webshoppingapigw: {
-        source: webshoppingapigwHttp.id
+        source: 'http://webshoppingapigw:5202'
         disableDefaultEnvVars: true
       }
       orderingsignalrhub: {
-        source: orderingsignalrhubHttp.id
+        source: 'http://ordering-signalrhub:5112'
         disableDefaultEnvVars: true
       }
     }
@@ -151,32 +133,16 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: orderingsignalrhubHttpName
-}
-
-resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityHttpName
-}
-
-resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: webmvcHttpName
-}
-
-resource webspaHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: webspaHttpName
-}
-
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: webshoppingaggHttpName
-}
-
-resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: webshoppingapigwHttpName
-}
-
 // PORTABLE RESOURCES ------------------------------------------------------
 
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }
+
+
+// Output
+@description('Name of the Web spa container')
+output spacontainer string = webspa.name
+
+@description('Name of the Web mvc container')
+output mvccontainer string = webmvc.name

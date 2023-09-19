@@ -14,25 +14,22 @@ param imageTag string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('Name of the Basket HTTP Route')
+@description('Name of the Basket Container')
 param basketHttpName string
 
-@description('Name of the Ordering HTTP Route')
+@description('Name of the Ordering Container')
 param orderingHttpName string
 
-@description('Name of the WebShoppingAgg HTTP Route')
+@description('Name of the WebShoppingAgg Container')
 param webshoppingaggHttpName string
 
-@description('Name of the Webhooks HTTP Route')
+@description('Name of the Webhooks Container')
 param webhooksHttpName string
 
-@description('Name of the WebhooksClient HTTP Route')
+@description('Name of the WebhooksClient Container')
 param webhooksclientHttpName string
 
-@description('Name of the WebMVC HTTP Route')
+@description('Name of the WebMVC Container')
 param webmvcHttpName string
 
 @description('Name of the Identity SQL Database portable resource')
@@ -59,18 +56,18 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         DPConnectionString: redisKeystore.connectionString()
         EnableDevspaces: 'False'
         ConnectionString: sqlIdentityDb.connectionString()
-        MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
+        MvcClient: '${gateway.properties.url}/${webmvcHttp.name}'
         SpaClient: gateway.properties.url
-        BasketApiClient: '${gateway.properties.url}/${basketHttp.properties.hostname}'
-        OrderingApiClient: '${gateway.properties.url}/${orderingHttp.properties.hostname}'
-        WebShoppingAggClient: '${gateway.properties.url}/${webshoppingaggHttp.properties.hostname}'
-        WebhooksApiClient: '${gateway.properties.url}/${webhooksHttp.properties.hostname}'
-        WebhooksWebClient: '${gateway.properties.url}/${webhooksclientHttp.properties.hostname}'
+        BasketApiClient: '${gateway.properties.url}/${basketHttp.name}'
+        OrderingApiClient: '${gateway.properties.url}/${orderingHttp.name}'
+        WebShoppingAggClient: '${gateway.properties.url}/${webshoppingaggHttp.name}'
+        WebhooksApiClient: '${gateway.properties.url}/${webhooksHttp.name}'
+        WebhooksWebClient: '${gateway.properties.url}/${webhooksclientHttp.name}'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: identityHttp.id
+          port: 5105
         }
       }
     }
@@ -117,31 +114,27 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource basketHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
   name: basketHttpName
 }
 
-resource orderingHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource orderingHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
   name: orderingHttpName
 }
 
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource webshoppingaggHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
   name: webshoppingaggHttpName
 }
 
-resource webhooksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing =  {
+resource webhooksHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing =  {
   name: webhooksHttpName
 }
 
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource webhooksclientHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
   name: webhooksclientHttpName
 }
 
-resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource webmvcHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
   name: webmvcHttpName
 }
 
@@ -154,3 +147,8 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview'
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }
+
+
+// Output
+@description('Name of the Identity container')
+output container string = identity.name

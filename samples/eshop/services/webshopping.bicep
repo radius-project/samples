@@ -77,7 +77,7 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingaggHttp.id
+          port: 5121
         }
       }
     }
@@ -113,11 +113,11 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingapigwHttp.id
+          port: 5202
         }
         http2: {
           containerPort: 8001
-          provides: webshoppingapigwHttp2.id
+          port: 15202
         }
       }
     }
