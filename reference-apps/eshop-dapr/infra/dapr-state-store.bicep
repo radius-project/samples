@@ -77,7 +77,7 @@ resource cosmosCollection 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
 // Create the Dapr state store component
 //-----------------------------------------------------------------------------
 
-resource daprStateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
+resource daprStateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
   name: 'eshopondapr-statestore'
   location: 'global'
   dependsOn: [

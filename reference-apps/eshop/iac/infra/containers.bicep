@@ -14,7 +14,7 @@ var adminUsername = 'sa'
 
 // Infrastructure -------------------------------------------------
 
-resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource rabbitmqContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'rabbitmq-container-eshop-event-bus'
   properties: {
     application: application
@@ -31,7 +31,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
   }
 }
 
-resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource rabbitmqRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'rabbitmq-route-eshop-event-bus'
   properties: {
     application: application
@@ -39,7 +39,7 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
   }
 }
 
-resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource sqlIdentityContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'sql-server-identitydb'
   properties: {
     application: application
@@ -60,7 +60,7 @@ resource sqlIdentityContainer 'Applications.Core/containers@2022-03-15-privatepr
   }
 }
 
-resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource sqlIdentityRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'sql-route-identitydb'
   properties: {
     application: application
@@ -68,7 +68,7 @@ resource sqlIdentityRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource sqlCatalogContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'sql-server-catalogdb'
   properties: {
     application: application
@@ -89,7 +89,7 @@ resource sqlCatalogContainer 'Applications.Core/containers@2022-03-15-privatepre
   }
 }
 
-resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource sqlCatalogRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'sql-route-catalogdb'
   properties: {
     application: application
@@ -97,7 +97,7 @@ resource sqlCatalogRoute 'Applications.Core/httproutes@2022-03-15-privatepreview
   }
 }
 
-resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource sqlOrderingContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'sql-server-orderingdb'
   properties: {
     application: application
@@ -118,7 +118,7 @@ resource sqlOrderingContainer 'Applications.Core/containers@2022-03-15-privatepr
   }
 }
 
-resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource sqlOrderingRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'sql-route-orderingdb'
   properties: {
     application: application
@@ -126,7 +126,7 @@ resource sqlOrderingRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource sqlWebhooksContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'sql-server-webhooksdb'
   properties: {
     application: application
@@ -147,7 +147,7 @@ resource sqlWebhooksContainer 'Applications.Core/containers@2022-03-15-privatepr
   }
 }
 
-resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource sqlWebhooksRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'sql-route-webhooksdb'
   properties: {
     application: application
@@ -155,7 +155,7 @@ resource sqlWebhooksRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource redisBasketContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'redis-container-basket-data'
   properties: {
     application: application
@@ -172,7 +172,7 @@ resource redisBasketContainer 'Applications.Core/containers@2022-03-15-privatepr
   }
 }
 
-resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource redisBasketRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'redis-route-basket-data'
   properties: {
     application: application
@@ -180,7 +180,7 @@ resource redisBasketRoute 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource redisKeystoreContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'redis-container-keystore-data'
   properties: {
     application: application
@@ -197,7 +197,7 @@ resource redisKeystoreContainer 'Applications.Core/containers@2022-03-15-private
   }
 }
 
-resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource redisKeystoreRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'redis-route-keystore-data'
   properties: {
     application: application
@@ -207,7 +207,7 @@ resource redisKeystoreRoute 'Applications.Core/httproutes@2022-03-15-privateprev
 
 // Portable Resources ---------------------------------------------------------------
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' = {
   name: 'eshop-event-bus'
   properties: {
     application: application
@@ -223,7 +223,7 @@ resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privateprevi
   }
 }
 
-resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identitydb'
   properties: {
     application: application
@@ -240,7 +240,7 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'catalogdb'
   properties: {
     application: application
@@ -257,7 +257,7 @@ resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'orderingdb'
   properties: {
     application: application
@@ -274,7 +274,7 @@ resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'webhooksdb'
   properties: {
     application: application
@@ -291,7 +291,7 @@ resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'basket-data'
   properties: {
     application: application
@@ -305,7 +305,7 @@ resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privateprev
   }
 }
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'keystore-data'
   properties: {
     application: application

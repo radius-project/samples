@@ -54,7 +54,7 @@ param webshoppingaggHttpName string
 param rabbitmqName string
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
-resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingagg'
   properties: {
     application: application
@@ -114,7 +114,7 @@ resource webshoppingagg 'Applications.Core/containers@2022-03-15-privatepreview'
 
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
-resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingapigw'
   properties: {
     application: application
@@ -136,56 +136,56 @@ resource webshoppingapigw 'Applications.Core/containers@2022-03-15-privateprevie
 
 // NETWORKING ----------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketGrpcName
 }
 
-resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogGrpcName
 }
 
-resource orderingGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingGrpcName
 }
 
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogHttpName
 }
 
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketHttpName
 }
 
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingHttpName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource paymentHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: paymentHttpName
 }
 
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingaggHttpName
 }
 
-resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingapigwHttpName
 }
 
-resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingapigwHttp2Name
 }
 
 // PORTABLE RESOURCES --------------------------------------------------------
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }

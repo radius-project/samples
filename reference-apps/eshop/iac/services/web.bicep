@@ -44,7 +44,7 @@ param redisKeystoreName string
 // CONTAINER --------------------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
-resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'web-spa'
   properties: {
     application: application
@@ -98,7 +98,7 @@ resource webspa 'Applications.Core/containers@2022-03-15-privatepreview' = {
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
-resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webmvc'
   properties: {
     application: application
@@ -155,36 +155,36 @@ resource webmvc 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ----------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingsignalrhubHttpName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource webmvcHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webmvcHttpName
 }
 
-resource webspaHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webspaHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webspaHttpName
 }
 
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingaggHttpName
 }
 
-resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingapigwHttpName
 }
 
 // PORTABLE RESOURCES ------------------------------------------------------
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }

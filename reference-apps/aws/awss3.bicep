@@ -21,14 +21,14 @@ resource s3 'AWS.S3/Bucket@default' = {
 }
 
 // get a radius container which uses the s3 bucket
-resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'webapp'
   properties: {
     environment: environment
   }
 }
 
-resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'frontend'
   properties: {
     application: app.id

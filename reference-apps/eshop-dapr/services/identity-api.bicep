@@ -28,19 +28,19 @@ var daprAppId = 'identity-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2023-10-01-preview' existing = {
   name: daprSecretStoreName
 }
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource identityApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: identityApiRouteName
 }
 
-resource identityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource identityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: identityDbName
 }
 
@@ -48,7 +48,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -56,7 +56,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Identity API container
 //-----------------------------------------------------------------------------
 
-resource identityApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource identityApi 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'identity-api'
   properties: {
     application: appId

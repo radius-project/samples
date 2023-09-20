@@ -4,14 +4,14 @@ import radius as radius
 // The environment used by your resources for deployment.
 param environment string
 
-resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'webapp'
   properties: {
     environment: environment
   }
 }
 
-resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'frontend'
   properties: {
     application: app.id
@@ -27,7 +27,7 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
 }
 
 // Redis Cache portable resource
-resource db 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource db 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'db'
   properties: {
     environment: environment

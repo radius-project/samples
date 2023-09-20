@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reference-apps", "reference-apps", "{47FEBBB0-6765-4A9C-9121-7DA4FC324E75}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "aws", "reference-apps\aws\aws.csproj", "{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "quickstarts", "quickstarts", "{CD3065DC-A0AB-429A-98E9-E69BACA532D2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dapr", "dapr", "{49E83F62-CCD0-4FC3-890A-04C485711E7D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ui", "quickstarts\dapr\ui\ui.csproj", "{2BF93A7B-6A94-400C-AABC-CF170600E60D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BF93A7B-6A94-400C-AABC-CF170600E60D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BF93A7B-6A94-400C-AABC-CF170600E60D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BF93A7B-6A94-400C-AABC-CF170600E60D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BF93A7B-6A94-400C-AABC-CF170600E60D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2F4E8FBD-2AE2-4ADC-8015-4552D86ECEC6} = {47FEBBB0-6765-4A9C-9121-7DA4FC324E75}
+		{49E83F62-CCD0-4FC3-890A-04C485711E7D} = {CD3065DC-A0AB-429A-98E9-E69BACA532D2}
+		{2BF93A7B-6A94-400C-AABC-CF170600E60D} = {49E83F62-CCD0-4FC3-890A-04C485711E7D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9CE14E25-6E41-4D1E-A178-9E78297D0E35}
+	EndGlobalSection
+EndGlobal
