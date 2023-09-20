@@ -23,7 +23,7 @@ resource account 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource statestore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
+resource statestore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
   name: 'orders'
   properties: {
     application: applicationId

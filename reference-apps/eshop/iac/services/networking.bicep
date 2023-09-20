@@ -6,7 +6,7 @@ param application string
 
 // GATEWAY ---------------------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
   name: 'gateway'
   properties: {
     application: application
@@ -58,7 +58,7 @@ resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
 
 // ROUTES ----------------------------------------------------------
 
-resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource basketHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'basket-http'
   properties: {
     application: application
@@ -66,7 +66,7 @@ resource basketHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource basketGrpc 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'basket-grpc'
   properties: {
     application: application
@@ -74,7 +74,7 @@ resource basketGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource catalogHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'catalog-http'
   properties: {
     application: application
@@ -82,7 +82,7 @@ resource catalogHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
   }
 }
 
-resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource catalogGrpc 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'catalog-grpc'
   properties: {
     application: application
@@ -90,7 +90,7 @@ resource catalogGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
   }
 }
 
-resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource identityHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'identity-http'
   properties: {
     application: application
@@ -98,7 +98,7 @@ resource identityHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   }
 }
 
-resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource orderingHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'ordering-http'
   properties: {
     application: application
@@ -106,7 +106,7 @@ resource orderingHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   }
 }
 
-resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource orderingGrpc 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'ordering-grpc'
   properties: {
     application: application
@@ -114,7 +114,7 @@ resource orderingGrpc 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   }
 }
 
-resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource orderingsignalrhubHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'orderingsignalrhub-http'
   properties: {
     application: application
@@ -122,7 +122,7 @@ resource orderingsignalrhubHttp 'Applications.Core/httproutes@2022-03-15-private
   }
 }
 
-resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource orderbgtasksHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'orderbgtasks-http'
   properties: {
     application: application
@@ -130,7 +130,7 @@ resource orderbgtasksHttp 'Applications.Core/httproutes@2022-03-15-privateprevie
   }
 }
 
-resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource paymentHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'payment-http'
   properties: {
     application: application
@@ -138,7 +138,7 @@ resource paymentHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = 
   }
 }
 
-resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource seqHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'seq-http'
   properties: {
     application: application
@@ -146,7 +146,7 @@ resource seqHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webspaHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webspa-http'
   properties: {
     application: application
@@ -154,7 +154,7 @@ resource webspaHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webmvcHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webmvc-http'
   properties: {
     application: application
@@ -162,7 +162,7 @@ resource webmvcHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
   }
 }
 
-resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webhooksHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webhooks-http'
   properties: {
     application: application
@@ -170,7 +170,7 @@ resource webhooksHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' =
   }
 }
 
-resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webhooksclientHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webhooksclient-http'
   properties: {
     application: application
@@ -179,7 +179,7 @@ resource webhooksclientHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   }
 }
 
-resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingaggHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webshoppingagg-http'
   properties: {
     application: application
@@ -187,7 +187,7 @@ resource webshoppingaggHttp 'Applications.Core/httproutes@2022-03-15-privateprev
   }
 }
 
-resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingapigwHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webshoppingapigw-http'
   properties: {
     application: application
@@ -195,7 +195,7 @@ resource webshoppingapigwHttp 'Applications.Core/httproutes@2022-03-15-privatepr
   }
 }
 
-resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingapigwHttp2 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webshoppingapigw-http-2'
   properties: {
     application: application
@@ -203,7 +203,7 @@ resource webshoppingapigwHttp2 'Applications.Core/httproutes@2022-03-15-privatep
   }
 }
 
-resource webstatusHttp 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webstatusHttp 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webstatus-http'
   properties: {
     application: application

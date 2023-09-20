@@ -56,7 +56,7 @@ var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/it
 // CONTAINERS -------------------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/catalog-api
-resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'catalog-api'
   properties: {
     application: application
@@ -97,24 +97,24 @@ resource catalog 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ------------------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogHttpName
 }
 
-resource catalogGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogGrpcName
 }
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
-resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlCatalogDbName
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }

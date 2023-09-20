@@ -7,70 +7,70 @@ param appId string
 // Create the HTTP routes for the application
 //-----------------------------------------------------------------------------
 
-resource basketApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
+resource basketApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' = {
   name: 'basket-api-route'
   properties: {
     application: appId
   }
 }
 
-resource blazorClientRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource blazorClientRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'blazor-client-route'
   properties: {
     application: appId
   }
 }
 
-resource catalogApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource catalogApiRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'catalog-api-route'
   properties: {
     application: appId
   }
 }
 
-resource identityApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource identityApiRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'identity-api-route'
   properties: {
     application: appId
   }
 }
 
-resource orderingApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource orderingApiRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'ordering-api-route'
   properties: {
     application: appId
   }
 }
 
-resource paymentApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource paymentApiRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'payment-api-route'
   properties: {
     application: appId
   }
 }
 
-resource seqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource seqRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'seq-route'
   properties: {
     application: appId
   }
 }
 
-resource webshoppingAggRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingAggRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webshopping-agg-route'
   properties: {
     application: appId
   }
 }
 
-resource webshoppingGwRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webshoppingGwRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'route-webshopping-gw'
   properties: {
     application: appId
   }
 }
 
-resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource webstatusRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'webstatus-route'
   properties: {
     application: appId

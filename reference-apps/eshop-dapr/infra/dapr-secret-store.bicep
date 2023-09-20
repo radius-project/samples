@@ -46,7 +46,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' = {
 // Create the Dapr secret store component
 //-----------------------------------------------------------------------------
 
-resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2023-10-01-preview' = {
   name: 'eshopondapr-secretstore'
   location: 'global'
   properties: {

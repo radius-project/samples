@@ -19,15 +19,15 @@ var daprAppId = 'payment-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource paymentApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource paymentApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: paymentApiRouteName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -35,7 +35,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Payment API container
 //-----------------------------------------------------------------------------
 
-resource paymentApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource paymentApi 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'payment-api'
   properties: {
     application: appId

@@ -51,7 +51,7 @@ param redisKeystoreName string
 // CONTAINERS -------------------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/identity-api
-resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource identity 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'identity-api'
   properties: {
     application: application
@@ -122,44 +122,44 @@ resource identity 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ------------------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketHttpName
 }
 
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingHttpName
 }
 
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingaggHttpName
 }
 
-resource webhooksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing =  {
+resource webhooksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing =  {
   name: webhooksHttpName
 }
 
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webhooksclientHttpName
 }
 
-resource webmvcHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webmvcHttpName
 }
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
-resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlIdentityDbName
 }
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }

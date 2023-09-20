@@ -10,7 +10,7 @@ param seqRouteName string
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -18,7 +18,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Seq container
 //-----------------------------------------------------------------------------
 
-resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource seq 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'seq'
   properties: {
     application: appId

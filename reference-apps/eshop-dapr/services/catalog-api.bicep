@@ -29,19 +29,19 @@ var daprAppId = 'catalog-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource catalogApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource catalogApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: catalogApiRouteName
 }
 
-resource catalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource catalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: catalogDbName
 }
 
-resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2023-10-01-preview' existing = {
   name: daprSecretStoreName
 }
 
@@ -49,7 +49,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -57,7 +57,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Catalog API container
 //-----------------------------------------------------------------------------
 
-resource catalogApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource catalogApi 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'catalog-api'
   properties: {
     application: appId

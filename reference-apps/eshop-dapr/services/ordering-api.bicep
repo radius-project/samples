@@ -35,27 +35,27 @@ var daprAppId = 'ordering-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprSecretStore 'Applications.Dapr/secretStores@2022-03-15-privatepreview' existing = {
+resource daprSecretStore 'Applications.Dapr/secretStores@2023-10-01-preview' existing = {
   name: daprSecretStoreName
 }
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityApiRouteName
 }
 
-resource orderingApiRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource orderingApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: orderingApiRouteName
 }
 
-resource orderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource orderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: orderingDbName
 }
 
@@ -63,7 +63,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -71,7 +71,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Ordering API container
 //-----------------------------------------------------------------------------
 
-resource orderingApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource orderingApi 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'ordering-api'
   properties: {
     application: appId
