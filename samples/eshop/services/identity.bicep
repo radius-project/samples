@@ -14,24 +14,6 @@ param imageTag string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('Name of the Basket Container')
-param basketHttpName string
-
-@description('Name of the Ordering Container')
-param orderingHttpName string
-
-@description('Name of the WebShoppingAgg Container')
-param webshoppingaggHttpName string
-
-@description('Name of the Webhooks Container')
-param webhooksHttpName string
-
-@description('Name of the WebhooksClient Container')
-param webhooksclientHttpName string
-
-@description('Name of the WebMVC Container')
-param webmvcHttpName string
-
 @description('Name of the Identity SQL Database portable resource')
 param sqlIdentityDbName string
 
@@ -56,13 +38,13 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         DPConnectionString: redisKeystore.connectionString()
         EnableDevspaces: 'False'
         ConnectionString: sqlIdentityDb.connectionString()
-        MvcClient: '${gateway.properties.url}/${webmvcHttp.name}'
+        MvcClient: '${gateway.properties.url}/webmvc'
         SpaClient: gateway.properties.url
-        BasketApiClient: '${gateway.properties.url}/${basketHttp.name}'
-        OrderingApiClient: '${gateway.properties.url}/${orderingHttp.name}'
-        WebShoppingAggClient: '${gateway.properties.url}/${webshoppingaggHttp.name}'
-        WebhooksApiClient: '${gateway.properties.url}/${webhooksHttp.name}'
-        WebhooksWebClient: '${gateway.properties.url}/${webhooksclientHttp.name}'
+        BasketApiClient: '${gateway.properties.url}/basket-api'
+        OrderingApiClient: '${gateway.properties.url}/ordering-api'
+        WebShoppingAggClient: '${gateway.properties.url}/webshoppingagg'
+        WebhooksApiClient: '${gateway.properties.url}/webhooks-api'
+        WebhooksWebClient: '${gateway.properties.url}/webhooks-client'
       }
       ports: {
         http: {
@@ -81,27 +63,27 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         disableDefaultEnvVars: true
       }
       webmvc: {
-        source: webmvcHttp.id
+        source: 'http://webmvc:5100'
         disableDefaultEnvVars: true
       }
       basket: {
-        source: basketHttp.id
+        source: 'http://basket-api:5103'
         disableDefaultEnvVars: true
       }
       ordering: {
-        source: orderingHttp.id
+        source: 'http://ordering-api:5102'
         disableDefaultEnvVars: true
       }
       webshoppingagg: {
-        source: webshoppingaggHttp.id
+        source: 'http://webshoppingagg:5121'
         disableDefaultEnvVars: true
       }
       webhooks: {
-        source: webhooksHttp.id
+        source: 'http://webhooks-api:5113'
         disableDefaultEnvVars: true
       }
-      webhoolsclient: {
-        source: webhooksclientHttp.id
+      webhooksclient: {
+        source: 'http://webhooks-client:5114'
         disableDefaultEnvVars: true
       }
     }
@@ -114,29 +96,6 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource basketHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
-  name: basketHttpName
-}
-
-resource orderingHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
-  name: orderingHttpName
-}
-
-resource webshoppingaggHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
-  name: webshoppingaggHttpName
-}
-
-resource webhooksHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing =  {
-  name: webhooksHttpName
-}
-
-resource webhooksclientHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
-  name: webhooksclientHttpName
-}
-
-resource webmvcHttp 'Applications.Core/containers@2022-03-15-privatepreview' existing = {
-  name: webmvcHttpName
-}
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
