@@ -16,11 +16,11 @@ var daprAppId = 'webstatus'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource blazorClientApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource blazorClientApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: blazorClientApiRouteName
 }
 
-resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource webstatusRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: webstatusRouteName
 }
 
@@ -28,7 +28,7 @@ resource webstatusRoute 'Applications.Core/httproutes@2022-03-15-privatepreview'
 // Deploy webstatus container
 //-----------------------------------------------------------------------------
 
-resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webstatus'
   properties: {
     application: appId

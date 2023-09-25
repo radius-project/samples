@@ -46,7 +46,7 @@ param serviceBusConnectionString string
 // CONTAINERS -----------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
-resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webhooks-api'
   properties: {
     application: application
@@ -85,7 +85,7 @@ resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
-resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webhooks-client'
   properties: {
     application: application
@@ -121,28 +121,28 @@ resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview'
 
 // NETWORKING ----------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource webhooksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing =  {
+resource webhooksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing =  {
   name: webhooksHttpName
 }
 
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webhooksclientHttpName
 }
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
-resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlWebhooksDbName
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }

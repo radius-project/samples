@@ -112,7 +112,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
 // Create Radius portable resources to the databases
 //-----------------------------------------------------------------------------
 
-resource catalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource catalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'catalog-db-link'
   properties: {
     application: appId
@@ -129,7 +129,7 @@ resource catalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privateprevi
   }
 }
 
-resource identityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource identityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identity-db-link'
   properties: {
     application: appId
@@ -146,7 +146,7 @@ resource identityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privateprev
   }
 }
 
-resource orderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource orderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'ordering-db-link'
   properties: {
     application: appId

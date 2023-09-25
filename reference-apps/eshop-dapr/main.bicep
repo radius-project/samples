@@ -16,7 +16,7 @@ param sqlAdministratorLoginPassword string = 'P@ssw0rd1'
 @description('Specifies the oidc issuer URL for Workload Identity.')
 param oidcIssuer string
 
-resource environment 'Applications.Core/environments@2022-03-15-privatepreview' = {
+resource environment 'Applications.Core/environments@2023-10-01-preview' = {
   name: 'eshopondapr'
   properties: {
     compute: {
@@ -36,7 +36,7 @@ resource environment 'Applications.Core/environments@2022-03-15-privatepreview' 
 }
 
 // The Radius application definition.
-resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource eShopOnDapr 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'eshopondapr'
   properties: {
     environment: environment.id

@@ -53,7 +53,7 @@ param webstatusHttpName string
 // CONTAINAERS ---------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webstatus
-resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webstatus'
   properties: {
     application: application
@@ -97,46 +97,46 @@ resource webstatus 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ----------------------------------------------
 
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogHttpName
 }
 
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketHttpName
 }
 
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingHttpName
 }
 
-resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingsignalrhubHttpName
 }
 
-resource orderbgtasksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderbgtasksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderbgtasksHttpName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource paymentHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: paymentHttpName
 }
 
-resource webmvcHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webmvcHttpName
 }
 
-resource webspaHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webspaHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webspaHttpName
 }
 
-resource webshoppingaggHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webshoppingaggHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingaggHttpName
 }
 
-resource webstatusHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource webstatusHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webstatusHttpName
 }
