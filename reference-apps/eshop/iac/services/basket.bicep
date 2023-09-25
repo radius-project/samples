@@ -49,7 +49,7 @@ param serviceBusConnectionString string
 // Container -------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/basket-api
-resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource basket 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'basket-api'
   properties: {
     application: application
@@ -96,28 +96,28 @@ resource basket 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // Networking -------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketHttpName
 }
 
-resource basketGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketGrpcName
 }
 
 // Portable Resource ------------------------------------------
 
-resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisBasketName
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }

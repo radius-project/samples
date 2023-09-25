@@ -2,14 +2,14 @@ import radius as radius
 
 param environment string
 
-resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'store'
   properties: {
     environment: environment
   }
 }
 
-resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource go_app 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'goapp'
   properties: {
     application: app.id
@@ -31,14 +31,14 @@ resource go_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource node_app_route 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
+resource node_app_route 'Applications.Core/httpRoutes@2023-10-01-preview' = {
   name: 'node-app-route'
   properties: {
     application: app.id
   }
 }
 
-resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+resource node_app_gateway 'Applications.Core/gateways@2023-10-01-preview' = {
   name: 'node-app-gateway'
   properties: {
     application: app.id
@@ -50,7 +50,7 @@ resource node_app_gateway 'Applications.Core/gateways@2022-03-15-privatepreview'
   ]
   }
 }
-resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource node_app 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'nodeapp'
   properties: {
     application: app.id
@@ -76,7 +76,7 @@ resource node_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource python_app 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource python_app 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'pythonapp'
   properties: {
     application: app.id

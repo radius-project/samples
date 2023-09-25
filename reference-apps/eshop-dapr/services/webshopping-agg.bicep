@@ -22,18 +22,18 @@ var daprAppId = 'webshoppingagg'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityApiRouteName
 }
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
-resource webshoppingAggRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource webshoppingAggRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: webshoppingAggRouteName
 }
 
@@ -41,7 +41,7 @@ resource webshoppingAggRoute 'Applications.Core/httproutes@2022-03-15-privatepre
 // Deploy Aggregator container
 //-----------------------------------------------------------------------------
 
-resource webshoppingAgg 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshopping-agg'
   properties: {
     application: appId

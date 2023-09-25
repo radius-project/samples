@@ -64,7 +64,7 @@ param serviceBusConnectionString string
 // CONTAINERS -------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-api
-resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource ordering 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'ordering-api'
   properties: {
     application: application
@@ -114,7 +114,7 @@ resource ordering 'Applications.Core/containers@2022-03-15-privatepreview' = {
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-backgroundtasks
-resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource orderbgtasks 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'ordering-backgroundtasks'
   properties: {
     application: application
@@ -151,7 +151,7 @@ resource orderbgtasks 'Applications.Core/containers@2022-03-15-privatepreview' =
 }
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/ordering-signalrhub
-resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'ordering-signalrhub'
   properties: {
     application: application
@@ -204,48 +204,48 @@ resource orderingsignalrhub 'Applications.Core/containers@2022-03-15-privateprev
 
 // NETWORKING ------------------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityHttpName
 }
 
-resource basketHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketHttpName
 }
 
-resource catalogHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogHttpName
 }
 
-resource orderingHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingHttpName
 }
 
-resource orderingGrpc 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingGrpcName
 }
 
-resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingsignalrhubHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingsignalrhubHttpName
 }
 
-resource orderbgtasksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderbgtasksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderbgtasksHttpName
 }
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' existing = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }
 
-resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlOrderingDbName
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }

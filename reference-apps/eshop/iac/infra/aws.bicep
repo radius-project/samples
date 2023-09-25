@@ -215,7 +215,7 @@ resource basketCache 'AWS.MemoryDB/Cluster@default' = {
 }
 
 // TEMP: Using containerized rabbitMQ instead of AWS SNS until AWS nonidempotency is resolved
-resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource rabbitmqContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'rabbitmq-container-eshop-event-bus'
   properties: {
     application: application
@@ -232,7 +232,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
   }
 }
 
-resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource rabbitmqRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'rabbitmq-route-eshop-event-bus'
   properties: {
     application: application
@@ -243,7 +243,7 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 // Portable Resources ----------------------------------------------------------------------------
 // TODO: Move the portable resource definitions into the application and use Recipes instead
 
-resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identitydb'
   properties: {
     application: application
@@ -260,7 +260,7 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'catalogdb'
   properties: {
     application: application
@@ -277,7 +277,7 @@ resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'orderingdb'
   properties: {
     application: application
@@ -294,7 +294,7 @@ resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'webhooksdb'
   properties: {
     application: application
@@ -311,7 +311,7 @@ resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'keystore-data'
   properties: {
     application: application
@@ -325,7 +325,7 @@ resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepr
   }
 }
 
-resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'basket-data'
   properties: {
     application: application
@@ -339,7 +339,7 @@ resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privateprev
   }
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' = {
   name: 'eshop-event-bus'
   properties: {
     application: application

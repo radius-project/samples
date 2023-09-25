@@ -8,19 +8,19 @@ param webshoppingGwRouteName string
 
 var daprAppId = 'webshoppingapigw'
 
-resource catalogApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource catalogApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: catalogApiRouteName
 }
 
-resource orderingApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource orderingApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: orderingApiRouteName
 }
 
-resource webshoppingGwRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource webshoppingGwRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: webshoppingGwRouteName
 }
 
-resource webshoppingGw 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshopping-gw'
   properties: {
     application: appId

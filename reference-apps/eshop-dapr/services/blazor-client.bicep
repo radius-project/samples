@@ -16,15 +16,15 @@ param seqRouteName string
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource blazorClientRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' existing = {
+resource blazorClientRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
   name: blazorClientRouteName
 }
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -32,7 +32,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Blazor client container
 //-----------------------------------------------------------------------------
 
-resource blazorClient 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource blazorClient 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'blazor-client'
   properties: {
     application: appId

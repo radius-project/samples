@@ -28,27 +28,27 @@ var daprAppId = 'basket-api'
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
 
-resource basketApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource basketApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: basketApiRouteName
 }
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2022-03-15-privatepreview' existing = {
+resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' existing = {
   name: daprPubSubBrokerName
 }
 
-resource daprStateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' existing = {
+resource daprStateStore 'Applications.Dapr/stateStores@2023-10-01-preview' existing = {
   name: daprStateStoreName
 }
 
-resource identityApiRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: identityApiRouteName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqRouteName
 }
 
@@ -56,7 +56,7 @@ resource seqRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' exist
 // Deploy Basket API container
 //-----------------------------------------------------------------------------
 
-resource basketApi 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource basketApi 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'basket-api'
   properties: {
     application: appId

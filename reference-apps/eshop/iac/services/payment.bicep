@@ -37,7 +37,7 @@ param serviceBusConnectionString string
 // CONTAINERS ---------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/payment-api
-resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource payment 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'payment-api'
   properties: {
     application: application
@@ -63,12 +63,12 @@ resource payment 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ------------------------------------------------------
 
-resource paymentHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource paymentHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: paymentHttpName
 }
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' existing = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
   name: rabbitmqName
 }
