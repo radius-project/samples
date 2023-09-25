@@ -156,8 +156,6 @@ jobs:
       - name: Create EKS Cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
-        env:
-          EKS_CLUSTER_NAME: 
         run: |
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
