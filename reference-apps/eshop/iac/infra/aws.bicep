@@ -7,6 +7,9 @@ param environment string
 @description('Radius application ID')
 param application string
 
+@description('Radius application name')
+param applicationName string
+
 @description('SQL administrator username')
 param adminLogin string
 
@@ -33,6 +36,12 @@ resource sqlSubnetGroup 'AWS.RDS/DBSubnetGroup@default' = {
     DBSubnetGroupName: sqlSubnetGroupName
     DBSubnetGroupDescription: sqlSubnetGroupName
     SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -56,6 +65,12 @@ resource identityDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -79,6 +94,12 @@ resource catalogDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -102,6 +123,12 @@ resource orderingDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -125,6 +152,12 @@ resource webhooksDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -134,6 +167,12 @@ resource redisSubnetGroup 'AWS.MemoryDB/SubnetGroup@default' = {
   properties: {
     SubnetGroupName: redisSubnetGroupName
     SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -147,6 +186,12 @@ resource keystoreCache 'AWS.MemoryDB/Cluster@default' = {
     SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
     SubnetGroupName: redisSubnetGroup.properties.SubnetGroupName
     NumReplicasPerShard: 0
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -160,6 +205,12 @@ resource basketCache 'AWS.MemoryDB/Cluster@default' = {
     SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
     SubnetGroupName: redisSubnetGroup.name
     NumReplicasPerShard: 0
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 

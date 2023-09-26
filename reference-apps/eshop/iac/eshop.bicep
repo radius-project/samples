@@ -94,6 +94,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
+    applicationName: appName
   }
 }
 
