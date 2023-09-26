@@ -3,26 +3,8 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The name of the Blazor Client API HTTP route.')
-param blazorClientApiRouteName string
-
-@description('The name of the webstatus API HTTP route.')
-param webstatusRouteName string
-
 @description('The Dapr application ID.')
 var daprAppId = 'webstatus'
-
-//-----------------------------------------------------------------------------
-// Get references to existing resources 
-//-----------------------------------------------------------------------------
-
-resource blazorClientApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: blazorClientApiRouteName
-}
-
-resource webstatusRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: webstatusRouteName
-}
 
 //-----------------------------------------------------------------------------
 // Deploy webstatus container
@@ -39,7 +21,7 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/health'
         HealthChecksUI__HealthChecks__0__Name: 'Blazor UI Host'
-        HealthChecksUI__HealthChecks__0__Uri: '${blazorClientApiRoute.properties.url}/hc'
+        HealthChecksUI__HealthChecks__0__Uri: 'http://blazor-client:80/hc'
         HealthChecksUI__HealthChecks__1__Name: 'Identity API'
         HealthChecksUI__HealthChecks__1__Uri: 'http://localhost:3500/v1.0/invoke/identity-api/method/hc'
         HealthChecksUI__HealthChecks__2__Name: 'Basket API'
@@ -56,7 +38,6 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: webstatusRoute.id
         }
       }
     }
@@ -69,7 +50,7 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       blazorClient: {
-        source: blazorClientApiRoute.id
+        source: 'http://blazor-client:80'
       }
     }
   }

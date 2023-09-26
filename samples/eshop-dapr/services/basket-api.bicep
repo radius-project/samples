@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The name of the basket API HTTP route.')
-param basketApiRouteName string
-
 @description('The name of the Dapr pub/sub component.')
 param daprPubSubBrokerName string
 
@@ -15,22 +12,12 @@ param daprStateStoreName string
 @description('The name of the Radius gateway.')
 param gatewayName string
 
-@description('The name of the Identity API HTTP route.')
-param identityApiRouteName string
-
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
-
 @description('The Dapr application ID.')
 var daprAppId = 'basket-api'
 
 //-----------------------------------------------------------------------------
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
-
-resource basketApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: basketApiRouteName
-}
 
 resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
@@ -42,14 +29,6 @@ resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' e
 
 resource daprStateStore 'Applications.Dapr/stateStores@2023-10-01-preview' existing = {
   name: daprStateStoreName
-}
-
-resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityApiRouteName
-}
-
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
 }
 
 //-----------------------------------------------------------------------------
@@ -65,14 +44,13 @@ resource basketApi 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        IdentityUrl: identityApiRoute.properties.url
+        IdentityUrl: 'http://identity-api:80'
         IdentityUrlExternal: '${gateway.properties.url}/identity/'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: basketApiRoute.id
         }
       }
     }
@@ -91,10 +69,10 @@ resource basketApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: daprStateStore.id
       }
       identityApiRoute: {
-        source: identityApiRoute.id
+        source: 'http://identity-api:80'
       }
       seqRoute: {
-        source: seqRoute.id
+        source: 'http://seq:5340'
       }
     }
   }

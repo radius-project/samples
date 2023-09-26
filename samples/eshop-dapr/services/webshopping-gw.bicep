@@ -2,23 +2,7 @@ import radius as radius
 
 param appId string
 
-param catalogApiRouteName string
-param orderingApiRouteName string
-param webshoppingGwRouteName string
-
 var daprAppId = 'webshoppingapigw'
-
-resource catalogApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: catalogApiRouteName
-}
-
-resource orderingApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: orderingApiRouteName
-}
-
-resource webshoppingGwRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: webshoppingGwRouteName
-}
 
 resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshopping-gw'
@@ -27,15 +11,14 @@ resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/webshoppingapigw:rad-latest'
       env: {
-        ENVOY_CATALOG_API_ADDRESS: catalogApiRoute.properties.hostname
-        ENVOY_CATALOG_API_PORT: '${catalogApiRoute.properties.port}'
-        ENVOY_ORDERING_API_ADDRESS: orderingApiRoute.properties.hostname
-        ENVOY_ORDERING_API_PORT: '${orderingApiRoute.properties.port}'
+        ENVOY_CATALOG_API_ADDRESS: 'catalog-api'
+        ENVOY_CATALOG_API_PORT: '80'
+        ENVOY_ORDERING_API_ADDRESS: 'ordering-api'
+        ENVOY_ORDERING_API_PORT: '80'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingGwRoute.id
         }
       }
     }
@@ -48,10 +31,10 @@ resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       catalogApi: {
-        source: catalogApiRoute.id
+        source: 'http://catalog-api:80'
       }
       orderingApi: {
-        source: orderingApiRoute.id
+        source: 'http://ordering-api:80'
       }
     }
   }

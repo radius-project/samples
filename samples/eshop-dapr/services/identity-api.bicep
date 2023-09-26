@@ -10,17 +10,11 @@ param daprSecretStoreName string
 @description('The name of the Radius gateway.')
 param gatewayName string
 
-@description('The name of the Identity API HTTP route.')
-param identityApiRouteName string
-
 @description('The name of the Identity database portable resource.')
 param identityDbName string
 
 @description('The name of the Key Vault to get secrets from.')
 param keyVaultName string
-
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
 
 var daprAppId = 'identity-api'
 
@@ -36,20 +30,12 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: identityApiRouteName
-}
-
 resource identityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: identityDbName
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
-}
-
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
 }
 
 //-----------------------------------------------------------------------------
@@ -69,12 +55,11 @@ resource identityApi 'Applications.Core/containers@2023-10-01-preview' = {
         BlazorClientUrlExternal: gateway.properties.url
         IssuerUrl: '${gateway.properties.url}/identity/'
         RetryMigrations: 'true'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: identityApiRoute.id
         }
       }
     }
@@ -103,7 +88,7 @@ resource identityApi 'Applications.Core/containers@2023-10-01-preview' = {
         }
       }      
       seqRoute: {
-        source: seqRoute.id
+        source: 'http://seq:5340'
       }
     }
   }

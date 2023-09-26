@@ -13,20 +13,11 @@ param daprSecretStoreName string
 @description('The name of the Radius gateway.')
 param gatewayName string
 
-@description('The name of the Identity API HTTP route.')
-param identityApiRouteName string
-
 @description('The name of the Key Vault to get secrets from.')
 param keyVaultName string
 
-@description('The name of the Ordering API HTTP route.')
-param orderingApiRouteName string
-
 @description('The name of the Ordering database portable resource.')
 param orderingDbName string
-
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
 
 @description('The Dapr application ID.')
 var daprAppId = 'ordering-api'
@@ -47,24 +38,12 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityApiRouteName
-}
-
-resource orderingApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: orderingApiRouteName
-}
-
 resource orderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: orderingDbName
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
-}
-
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
 }
 
 //-----------------------------------------------------------------------------
@@ -80,16 +59,15 @@ resource orderingApi 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        IdentityUrl: identityApiRoute.properties.url
+        IdentityUrl: 'http://identity-api:80'
         IdentityUrlExternal: '${gateway.properties.url}/identity/'
         RetryMigrations: 'true'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
         SendConfirmationEmail: 'false'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: orderingApiRoute.id
         }
       }
     }
@@ -108,7 +86,7 @@ resource orderingApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: daprSecretStore.id
       }
       identityApiRoute: {
-        source: identityApiRoute.id
+        source: 'http://identity-api:80'
       }
       // Temporary workaround to grant required role to workload identity.
       keyVault: {
@@ -124,7 +102,7 @@ resource orderingApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: orderingDb.id
       }
       seqRoute: {
-        source: seqRoute.id
+        source: 'http://seq:5340'
       }
     }
   }

@@ -6,15 +6,6 @@ param appId string
 @description('The name of the Radius gateway.')
 param gatewayName string
 
-@description('The name of the Identity API HTTP route.')
-param identityApiRouteName string
-
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
-
-@description('The name of the aggregator HTTP route.')
-param webshoppingAggRouteName string
-
 @description('The Dapr application ID.')
 var daprAppId = 'webshoppingagg'
 
@@ -24,17 +15,6 @@ var daprAppId = 'webshoppingagg'
 
 resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
-}
-
-resource identityApiRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityApiRouteName
-}
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
-}
-
-resource webshoppingAggRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: webshoppingAggRouteName
 }
 
 //-----------------------------------------------------------------------------
@@ -50,9 +30,9 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        IdentityUrl: identityApiRoute.properties.url
+        IdentityUrl: 'http://identity-api:80'
         IdentityUrlExternal: '${gateway.properties.url}/identity/'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
         BasketUrlHC: 'http://localhost:3500/v1.0/invoke/basket-api/method/hc'
         CatalogUrlHC: 'http://localhost:3500/v1.0/invoke/catalog-api/method/hc'
         IdentityUrlHC: 'http://localhost:3500/v1.0/invoke/identity-api/method/hc'
@@ -60,7 +40,6 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: webshoppingAggRoute.id
         }
       }
     }
@@ -73,10 +52,10 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       identityApi: {
-        source: identityApiRoute.id
+        source: 'http://identity-api:80'
       }
       seq: {
-        source: seqRoute.id
+        source: 'http://seq:80'
       }
     }
   }
