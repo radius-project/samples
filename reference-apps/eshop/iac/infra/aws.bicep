@@ -7,6 +7,9 @@ param environment string
 @description('Radius application ID')
 param application string
 
+@description('Radius application name')
+param applicationName string
+
 @description('SQL administrator username')
 param adminLogin string
 
@@ -33,6 +36,12 @@ resource sqlSubnetGroup 'AWS.RDS/DBSubnetGroup@default' = {
     DBSubnetGroupName: sqlSubnetGroupName
     DBSubnetGroupDescription: sqlSubnetGroupName
     SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -56,6 +65,12 @@ resource identityDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -79,6 +94,12 @@ resource catalogDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -102,6 +123,12 @@ resource orderingDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -125,6 +152,12 @@ resource webhooksDb 'AWS.RDS/DBInstance@default' = {
     LicenseModel: 'license-included'
     Timezone: 'GMT Standard Time'
     CharacterSetName: 'Latin1_General_CI_AS'
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -134,6 +167,12 @@ resource redisSubnetGroup 'AWS.MemoryDB/SubnetGroup@default' = {
   properties: {
     SubnetGroupName: redisSubnetGroupName
     SubnetIds: eksCluster.properties.ResourcesVpcConfig.SubnetIds
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -147,6 +186,12 @@ resource keystoreCache 'AWS.MemoryDB/Cluster@default' = {
     SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
     SubnetGroupName: redisSubnetGroup.properties.SubnetGroupName
     NumReplicasPerShard: 0
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
@@ -160,11 +205,17 @@ resource basketCache 'AWS.MemoryDB/Cluster@default' = {
     SecurityGroupIds: [eksCluster.properties.ClusterSecurityGroupId]
     SubnetGroupName: redisSubnetGroup.name
     NumReplicasPerShard: 0
+    Tags: [
+      {
+        Key: 'RadiusApplication'
+        Value: applicationName
+      }
+    ]
   }
 }
 
 // TEMP: Using containerized rabbitMQ instead of AWS SNS until AWS nonidempotency is resolved
-resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource rabbitmqContainer 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'rabbitmq-container-eshop-event-bus'
   properties: {
     application: application
@@ -181,7 +232,7 @@ resource rabbitmqContainer 'Applications.Core/containers@2022-03-15-privateprevi
   }
 }
 
-resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' = {
+resource rabbitmqRoute 'Applications.Core/httproutes@2023-10-01-preview' = {
   name: 'rabbitmq-route-eshop-event-bus'
   properties: {
     application: application
@@ -192,7 +243,7 @@ resource rabbitmqRoute 'Applications.Core/httproutes@2022-03-15-privatepreview' 
 // Portable Resources ----------------------------------------------------------------------------
 // TODO: Move the portable resource definitions into the application and use Recipes instead
 
-resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identitydb'
   properties: {
     application: application
@@ -209,7 +260,7 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'catalogdb'
   properties: {
     application: application
@@ -226,7 +277,7 @@ resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepr
   }
 }
 
-resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'orderingdb'
   properties: {
     application: application
@@ -243,7 +294,7 @@ resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'webhooksdb'
   properties: {
     application: application
@@ -260,7 +311,7 @@ resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatep
   }
 }
 
-resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'keystore-data'
   properties: {
     application: application
@@ -274,7 +325,7 @@ resource redisKeystore 'Applications.Datastores/redisCaches@2022-03-15-privatepr
   }
 }
 
-resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privatepreview' = {
+resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' = {
   name: 'basket-data'
   properties: {
     application: application
@@ -288,7 +339,7 @@ resource redisBasket 'Applications.Datastores/redisCaches@2022-03-15-privateprev
   }
 }
 
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2022-03-15-privatepreview' = {
+resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' = {
   name: 'eshop-event-bus'
   properties: {
     application: application

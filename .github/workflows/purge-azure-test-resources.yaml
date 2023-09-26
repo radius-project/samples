@@ -1,4 +1,4 @@
-name: Purge test resources
+name: Purge Azure test resources
 on:
   schedule:
     - cron: "30 0,12 * * *"
@@ -7,7 +7,7 @@ env:
   VALID_RESOURCE_WINDOW: 6*60*60
 jobs:
   purge_azure_resources:
-    name: Azure resources clean-ups
+    name: Azure test resource cleanup
     runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
     steps:
       - name: Login to Azure
@@ -18,30 +18,47 @@ jobs:
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
             
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
-
       - name: List Test Resource Groups
         run: |
           echo "## Test resource group list" >> $GITHUB_STEP_SUMMARY
-          az group list --query "[?starts_with(name, 'samplestest-')].{Name:name, creationTime:tags.creationTime}" -o json > resource_groups.json
+
+          # Create the file to store the resource group list
+          touch ${{ env.AZURE_RG_DELETE_LIST_FILE}}
+
+          resource_groups=$(az group list --query "[].{Name:name, creationTime:tags.creationTime}" -o tsv)
 
           current_time=$(date +%s)
           hours_ago=$((current_time - ${{ env.VALID_RESOURCE_WINDOW }}))
+          while IFS=$'\t' read -r name creation_time; do
+            if [[ ! "$name" =~ ^"samplestest-" ]]; then
+              continue
+            fi
 
-          jq -r '.[] | select(.creationTime == null || .creationTime < '$hours_ago') | .Name' resource_groups.json > ${{ env.AZURE_RG_DELETE_LIST_FILE}}
-          jq -r '.[] | {name: .Name, creationTime: .creationTime // "None"}' resource_groups.json > $GITHUB_STEP_SUMMARY
+            if [ "$creation_time" = "None" ]; then
+              echo " * :wastebasket: $name - old resource"  >> $GITHUB_STEP_SUMMARY
+              echo $name >> ${{ env.AZURE_RG_DELETE_LIST_FILE}}
+              continue
+            fi
 
+            # Check if the resource group was created more than 6 hours ago
+            if [ "$creation_time" -lt "$hours_ago" ]; then
+              echo " * :wastebasket: $name - creationTime: $creation_time"  >> $GITHUB_STEP_SUMMARY
+              echo $name >> ${{ env.AZURE_RG_DELETE_LIST_FILE}}
+            else
+              echo " * :white_check_mark: $name - creationTime: $creation_time"  >> $GITHUB_STEP_SUMMARY
+            fi
+          done <<< "$resource_groups"
       - name: Delete Azure Resource Groups
         run: |
           echo "## Deleting resource group list" >> $GITHUB_STEP_SUMMARY
-          cat ${{ env.AZURE_RG_DELETE_LIST_FILE}} | while read -r line
+          cat ${{ env.AZURE_RG_DELETE_LIST_FILE}} | while read line
           do
               echo " * $line" >> $GITHUB_STEP_SUMMARY
               az group delete --resource-group $line --yes --verbose
           done
-
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
         run: |
-          gh issue create --title "Samples purge test resources failed \
+          gh issue create --title "Samples purge Azure test resources failed" \
             --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." \
-            s--repo ${{ github.repository }}
+            --repo ${{ github.repository }}

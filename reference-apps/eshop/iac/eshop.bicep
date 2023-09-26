@@ -56,7 +56,7 @@ param eksClusterName string = ''
 
 // Application --------------------------------------------------------
 
-resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource eshop 'Applications.Core/applications@2023-10-01-preview' = {
   name: appName
   properties: {
     environment: environment
@@ -94,6 +94,7 @@ module aws 'infra/aws.bicep' = if (platform == 'aws') {
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
+    applicationName: appName
   }
 }
 

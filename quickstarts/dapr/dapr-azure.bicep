@@ -3,14 +3,14 @@ import radius as radius
 param location string = resourceGroup().location
 param environment string
 
-resource app 'Applications.Core/applications@2022-03-15-privatepreview' = {
+resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'dapr-quickstart'
   properties: {
     environment: environment
   }
 }
 
-resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource backend 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'backend'
   properties: {
     application: app.id
@@ -37,7 +37,7 @@ resource backend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'frontend'
   properties: {
     application: app.id
@@ -62,14 +62,14 @@ resource frontend 'Applications.Core/containers@2022-03-15-privatepreview' = {
   }
 }
 
-resource frontendRoute 'Applications.Core/httpRoutes@2022-03-15-privatepreview' = {
+resource frontendRoute 'Applications.Core/httpRoutes@2023-10-01-preview' = {
   name: 'frontend-route'
   properties: {
     application: app.id
   }
 }
 
-resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' = {
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
   name: 'gateway'
   properties: {
     application: app.id
@@ -102,7 +102,7 @@ resource account 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
-resource stateStore 'Applications.Dapr/stateStores@2022-03-15-privatepreview' = {
+resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
   name: 'orders'
   properties: {
     environment: environment

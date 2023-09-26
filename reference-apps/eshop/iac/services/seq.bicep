@@ -10,7 +10,7 @@ param seqHttpName string
 
 // CONTAINERS ------------------------------------------------------------
 
-resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
+resource seq 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'seq'
   properties: {
     application: application
@@ -31,6 +31,6 @@ resource seq 'Applications.Core/containers@2022-03-15-privatepreview' = {
 
 // NETWORKING ---------------------------------------------------------------
 
-resource seqHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
+resource seqHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: seqHttpName
 }
