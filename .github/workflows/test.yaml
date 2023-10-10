@@ -230,7 +230,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           namespace="default-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
