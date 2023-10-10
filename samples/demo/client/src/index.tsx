@@ -11,6 +11,7 @@ import ErrorPage from './ErrorPage';
 import reportWebVitals from './reportWebVitals';
 import { Index, loader as indexLoader } from './routes/Index';
 import Todo from './routes/Todo';
+import Request from './routes/Request';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: "/todo",
         element: <Todo />
+      },
+      {
+        path: "/request",
+        element: <Request />
       }
     ]
   },
