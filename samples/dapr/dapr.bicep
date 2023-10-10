@@ -7,7 +7,7 @@ param environment string
 param namespace string = 'default'
 
 resource app 'Applications.Core/applications@2023-10-01-preview' = {
-  name: 'dapr-quickstart'
+  name: 'dapr'
   properties: {
     environment: environment
   }

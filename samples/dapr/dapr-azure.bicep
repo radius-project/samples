@@ -4,7 +4,7 @@ param location string = resourceGroup().location
 param environment string
 
 resource app 'Applications.Core/applications@2023-10-01-preview' = {
-  name: 'dapr-quickstart'
+  name: 'dapr'
   properties: {
     environment: environment
   }
