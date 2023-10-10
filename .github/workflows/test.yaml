@@ -13,9 +13,7 @@ on:
       - v*.*
       - edge
     paths:
-      - "quickstarts/**"
-      - "reference-apps/**"
-      - "demo/**"
+      - "samples/**"
       - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
@@ -38,7 +36,7 @@ jobs:
           - name: demo
             runOnPullRequest: true
             app: demo
-            path: ./demo/app.bicep
+            path: ./samples/demo/app.bicep
             args: --application demo
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
@@ -46,29 +44,24 @@ jobs:
             enableDapr: false
           - name: dapr
             runOnPullRequest: true
-            app: dapr-quickstart
-            path: ./quickstarts/dapr/dapr.bicep
+            app: dapr
+            path: ./samples/dapr/dapr.bicep
             enableDapr: true
-          - name: environment-variables
-            runOnPullRequest: true
-            app: myapp
-            path: ./quickstarts/environment-variables/app.bicep
-            enableDapr: false
           - name: volumes
             runOnPullRequest: true
             app: myapp
-            path: ./quickstarts/volumes/app.bicep
+            path: ./samples/volumes/app.bicep
             enableDapr: false
           - name: eshop
             runOnPullRequest: true
             app: eshop
-            path: ./reference-apps/eshop/iac/eshop.bicep
+            path: ./samples/eshop/iac/eshop.bicep
             uiTestFile: tests/eshop/container.app.spec.ts
             enableDapr: false
           - name: eshop-azure
             runOnPullRequest: false
             app: eshop-azure
-            path: ./reference-apps/eshop/iac/eshop.bicep
+            path: ./samples/eshop/iac/eshop.bicep
             args: -p platform=azure -p appName=eshop-azure
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: azure
@@ -76,7 +69,7 @@ jobs:
           - name: eshop-aws
             runOnPullRequest: false
             app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
-            path: ./reference-apps/eshop/iac/eshop.bicep
+            path: ./samples/eshop/iac/eshop.bicep
             args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
             uiTestFile: tests/eshop/container.app.spec.ts
             credential: aws
@@ -237,7 +230,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           namespace="default-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
@@ -250,7 +243,7 @@ jobs:
             echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
-          cd ui-tests/
+          cd playwright/
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
@@ -259,7 +252,7 @@ jobs:
         if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
         with:
           name: playwright-report-${{ matrix.name }}
-          path: ui-tests/playwright-report/
+          path: playwright/playwright-report/
           retention-days: 30
           if-no-files-found: error
       # Handle failures
@@ -268,23 +261,23 @@ jobs:
         if: failure() && steps.run-playwright-test.outcome == 'failure'
         run: |
           # Create pod-logs directory
-          mkdir -p ui-tests/pod-logs/${{ matrix.name }}
+          mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
           namespace="default-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
-            kubectl logs $pod_name -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/${pod_name}.txt
+            kubectl logs $pod_name -n $namespace > playwright/pod-logs/${{ matrix.name }}/${pod_name}.txt
           done
-          echo "Pod logs saved to ui-tests/pod-logs/${{ matrix.name }}/"
+          echo "Pod logs saved to playwright/pod-logs/${{ matrix.name }}/"
           # Get kubernetes events and save to file
-          kubectl get events -n $namespace > ui-tests/pod-logs/${{ matrix.name }}/events.txt
+          kubectl get events -n $namespace > playwright/pod-logs/${{ matrix.name }}/events.txt
       - name: Upload Pod logs for failed tests
         uses: actions/upload-artifact@v3
         if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
           name: ${{ matrix.name }}-pod-logs
-          path: ui-tests/pod-logs/${{ matrix.name }}
+          path: playwright/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
       - name: Create GitHub issue on failure

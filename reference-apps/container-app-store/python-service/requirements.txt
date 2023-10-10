@@ -1,5 +1,0 @@
-flask 
-flask_cors 
-dapr==1.7.0
-dapr-ext-grpc==1.7.0
-dapr-ext-fastapi==1.7.0
