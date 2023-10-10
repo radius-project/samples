@@ -40,7 +40,7 @@ jobs:
             image: samples/demo
           - directory: samples/dapr/ui/
             image: samples/dapr-frontend
-          - direcotry: samples/dapr/nodeapp/
+          - directory: samples/dapr/nodeapp/
             image: samples/dapr-backend
           - directory: samples/aws/
             image: samples/aws
@@ -78,7 +78,7 @@ jobs:
             image: samples/demo
           - directory: samples/dapr/ui/
             image: samples/dapr-frontend
-          - direcotry: samples/dapr/nodeapp/
+          - directory: samples/dapr/nodeapp/
             image: samples/dapr-backend
           - directory: samples/aws/
             image: samples/aws
