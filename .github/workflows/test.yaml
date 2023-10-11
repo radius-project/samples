@@ -225,7 +225,7 @@ jobs:
             rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       # Deploy application and run tests
-      - name: (eShop) create and use environment
+      - name: Create and use eShop environment
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
