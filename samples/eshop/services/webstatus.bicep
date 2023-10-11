@@ -5,16 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
-
-@description('Optional App Insights Key')
-param APPLICATION_INSIGHTS_KEY string
-
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Basket Http Route name')
@@ -82,8 +73,7 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
         HealthChecksUI__HealthChecks__9__Uri: '${orderingsignalrhubHttp.properties.url}/hc'
         HealthChecksUI__HealthChecks__10__Name: 'Ordering HTTP Background Check'
         HealthChecksUI__HealthChecks__10__Uri: '${orderbgtasksHttp.properties.url}/hc'
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
       }
       ports: {
         http: {

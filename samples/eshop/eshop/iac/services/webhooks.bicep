@@ -18,7 +18,7 @@ param ORCHESTRATOR_TYPE string
 ])
 param AZURESERVICEBUSENABLED string
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images. Defaults to linux-dotnet7')
 param TAG string
 
 @description('Name of the Gateway')
@@ -33,20 +33,17 @@ param webhooksHttpName string
 @description('Name of the WebhooksClient HTTP Route')
 param webhooksclientHttpName string
 
-@description('The name of the Webhooks SQL portable resource')
+@description('The name of the Webhooks SQL Link')
 param sqlWebhooksDbName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventBusConnectionString string
 
 // CONTAINERS -----------------------------------------------------------
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-api
-resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
+resource webhooks 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-api'
   properties: {
     application: application
@@ -59,7 +56,7 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
         OrchestratorType: ORCHESTRATOR_TYPE
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -85,7 +82,7 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
 
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
-resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
+resource webhooksclient 'Applications.Core/containers@2022-03-15-privatepreview' = {
   name: 'webhooks-client'
   properties: {
     application: application
@@ -121,28 +118,24 @@ resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
 
 // NETWORKING ----------------------------------------------
 
-resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
+resource gateway 'Applications.Core/gateways@2022-03-15-privatepreview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource identityHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: identityHttpName
 }
 
-resource webhooksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing =  {
+resource webhooksHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing =  {
   name: webhooksHttpName
 }
 
-resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
+resource webhooksclientHttp 'Applications.Core/httpRoutes@2022-03-15-privatepreview' existing = {
   name: webhooksclientHttpName
 }
 
-// PORTABLE RESOURCES -----------------------------------------------------------
+// LINKS -----------------------------------------------------------
 
-resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
+resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2022-03-15-privatepreview' existing = {
   name: sqlWebhooksDbName
-}
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }

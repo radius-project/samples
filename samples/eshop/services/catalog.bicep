@@ -5,30 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
-
-@description('Optional App Insights Key')
-param APPLICATION_INSIGHTS_KEY string
-
-@description('Use Azure storage for custom resource images')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESTORAGEENABLED string
-
-@description('Use Azure Service Bus for messaging')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESERVICEBUSENABLED string
-
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')
@@ -40,17 +17,22 @@ param catalogHttpName string
 @description('The name of the Catalog gRPC Route')
 param catalogGrpcName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
-@description('The name of the Catalog SQL portable resource')
+@description('The name of the Catalog SQL Link')
 param sqlCatalogDbName string
 
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventBusConnectionString string
+
+@description('Use Azure Service Bus for messaging. Allowed values: "True", "False".')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string
 
 // VARIABLES -----------------------------------------------------------------------------------
+
 var PICBASEURL = '${gateway.properties.url}/webshoppingapigw/c/api/v1/catalog/items/[0]/pic'
 
 // CONTAINERS -------------------------------------------------------------------
@@ -66,15 +48,14 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         PORT: '80'
         GRPC_PORT: '81'
         PicBaseUrl: PICBASEURL
-        AzureStorageEnabled: AZURESTORAGEENABLED
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
+        AzureStorageEnabled: 'False'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
+        EventBusConnection: eventBusConnectionString
       }
       ports: {
         http: {
@@ -109,12 +90,8 @@ resource catalogGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing 
   name: catalogGrpcName
 }
 
-// PORTABLE RESOURCES -----------------------------------------------------------
+// LINKS -----------------------------------------------------------
 
 resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlCatalogDbName
-}
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }

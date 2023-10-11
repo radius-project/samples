@@ -1,6 +1,6 @@
 import radius as rad
 
-// Paramaters -------------------------------------------------------
+// Parameters -------------------------------------------------------
 
 @description('Name of the eshop application. Defaults to "eshop"')
 param appName string = 'eshop'
@@ -8,22 +8,14 @@ param appName string = 'eshop'
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
-@description('What type of infrastructure to use. Options are "containers", "azure", or "aws". Defaults to containers')
-@allowed([
-  'containers'
-  'azure'
-  'aws'
-])
-param platform string = 'containers'
-
 @description('SQL administrator username')
-param adminLogin string = (platform == 'containers') ? 'SA' : 'sqladmin'
+param adminLogin string = 'SA'
 
 @description('SQL administrator password')
 @secure()
 param adminPassword string = newGuid()
 
-@description('What container orchestrator to use. Defaults to K8S')
+@description('Container orchestrator to use. Defaults to "K8S"')
 @allowed([
   'K8S'
 ])
@@ -32,31 +24,33 @@ param ORCHESTRATOR_TYPE string = 'K8S'
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string = ''
 
-@description('Use Azure storage for custom resource images. Defaults to False')
+@description('Use Azure storage for custom resource images. Defaults to "False"')
 @allowed([
   'True'
   'False'
 ])
 param AZURESTORAGEENABLED string = 'False'
 
-var AZURESERVICEBUSENABLED = (platform == 'azure') ? 'True' : 'False'
+@description('Use Azure Service Bus for messaging. Defaults to "False"')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string = 'False'
 
-@description('Use dev spaces. Defaults to False')
+@description('Use dev spaces. Defaults to "False"')
 @allowed([
   'True'
   'False'
 ])
 param ENABLEDEVSPACES string = 'False'
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images. Defaults to "linux-dotnet7"')
 param TAG string = 'linux-dotnet7'
-
-@description('Name of your EKS cluster. Only used if deploying with AWS infrastructure.')
-param eksClusterName string = ''
 
 // Application --------------------------------------------------------
 
-resource eshop 'Applications.Core/applications@2023-10-01-preview' = {
+resource eshop 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: appName
   properties: {
     environment: environment
@@ -65,54 +59,20 @@ resource eshop 'Applications.Core/applications@2023-10-01-preview' = {
 
 // Infrastructure ------------------------------------------------------
 
-module containers 'infra/containers.bicep' = if (platform == 'containers') {
-  name: 'containers'
-  params: {
-    application: eshop.id
-    environment: environment
-    adminPassword: adminPassword
-  }
-}
-
-module azure 'infra/azure.bicep' = if (platform == 'azure') {
-  name: 'azure'
-  // Temporarily disable linter rule until deployment engine returns Azure resource group location instead of UCP resource group location
-  #disable-next-line explicit-values-for-loc-params
+module infra 'infra/infra.bicep' = {
+  name: 'infra'
   params: {
     application: eshop.id
     environment: environment
     adminLogin: adminLogin
     adminPassword: adminPassword
+    AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
   }
-}
-
-module aws 'infra/aws.bicep' = if (platform == 'aws') {
-  name: 'aws'
-  params: {
-    application: eshop.id
-    eksClusterName: eksClusterName
-    environment: environment
-    adminLogin: adminLogin
-    adminPassword: adminPassword
-    applicationName: appName
-  }
-}
-
-// Portable Resources -----------------------------------------------------------
-// TODO: Switch to Recipes once ready
-
-module links 'infra/links.bicep' = {
-  name: 'links'
-  dependsOn: [
-    containers
-    azure
-    aws
-  ]
 }
 
 // Networking ----------------------------------------------------------
 
-module networking 'services/networking.bicep' = {
+module networking 'infra/networking.bicep' = {
   name: 'networking'
   params: {
     application: eshop.id
@@ -132,10 +92,9 @@ module basket 'services/basket.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     basketHttpName: networking.outputs.basketHttp
     basketGrpcName: networking.outputs.basketGrpc
-    rabbitmqName: links.outputs.rabbitmq
-    redisBasketName: links.outputs.redisBasket
+    redisBasketName: infra.outputs.redisBasket
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -150,10 +109,9 @@ module catalog 'services/catalog.bicep' = {
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: links.outputs.rabbitmq
-    sqlCatalogDbName: links.outputs.sqlCatalogDb
+    sqlCatalogDbName: infra.outputs.sqlCatalogDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -167,8 +125,8 @@ module identity 'services/identity.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     orderingHttpName: networking.outputs.orderingHttp
-    redisKeystoreName: links.outputs.redisKeystore
-    sqlIdentityDbName: links.outputs.sqlIdentityDb
+    redisKeystoreName: infra.outputs.redisKeystore
+    sqlIdentityDbName: infra.outputs.sqlIdentityDb
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
@@ -192,11 +150,10 @@ module ordering 'services/ordering.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.orderingHttp
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    rabbitmqName: links.outputs.rabbitmq
-    redisKeystoreName: links.outputs.redisKeystore
-    sqlOrderingDbName: links.outputs.sqlOrderingDb
+    redisKeystoreName: infra.outputs.redisKeystore
+    sqlOrderingDbName: infra.outputs.sqlOrderingDb
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -208,9 +165,8 @@ module payment 'services/payment.bicep' = {
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -231,7 +187,7 @@ module web 'services/web.bicep' = {
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
-    redisKeystoreName: links.outputs.redisKeystore
+    redisKeystoreName: infra.outputs.redisKeystore
     TAG: TAG
     webmvcHttpName: networking.outputs.webmvcHttp
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
@@ -248,12 +204,11 @@ module webhooks 'services/webhooks.bicep' = {
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     ORCHESTRATOR_TYPE: ORCHESTRATOR_TYPE
-    rabbitmqName: links.outputs.rabbitmq
-    sqlWebhooksDbName: links.outputs.sqlWebhooksDb
+    sqlWebhooksDbName: infra.outputs.sqlWebhooksDb
     TAG: TAG
     webhooksclientHttpName: networking.outputs.webhooksclientHttp
     webhooksHttpName: networking.outputs.webhooksHttp
-    serviceBusConnectionString: (AZURESERVICEBUSENABLED == 'True') ? azure.outputs.serviceBusAuthConnectionString : ''
+    eventBusConnectionString: infra.outputs.eventBusConnectionString
   }
 }
 
@@ -271,7 +226,6 @@ module webshopping 'services/webshopping.bicep' = {
     orderingGrpcName: networking.outputs.orderingGrpc
     orderingHttpName: networking.outputs.basketHttp
     paymentHttpName: networking.outputs.paymentHttp
-    rabbitmqName: links.outputs.rabbitmq
     TAG: TAG
     webshoppingaggHttpName: networking.outputs.webshoppingaggHttp
     webshoppingapigwHttp2Name: networking.outputs.webshoppingapigwHttp2

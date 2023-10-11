@@ -1,6 +1,6 @@
 # Envoy for eshop
 
-Eshop uses an internal gateway to route requests between different services. Today in Radius, we don't support private/internal gateways (see https://github.com/radius-project/radius/issues/4789), so we created a custom image of envoy with the routing rules necessary to make eshop work.
+Eshop uses an internal gateway to route requests between different services. Today in Radius, we don't support private/internal gateways (see https://github.com/project-radius/radius/issues/4789), so we created a custom image of envoy with the routing rules necessary to make eshop work.
 
 What this means is that if we need to update the names of routes in eshop, *we likely need to update the envoy image*.
 

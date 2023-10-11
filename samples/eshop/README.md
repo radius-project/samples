@@ -1,6 +1,4 @@
-# eShop on Radius reference application
-
-Visit the [Project Radius docs](https://radapp.dev/getting-started/reference-apps/eshop/) to learn more and try it out.
+# eShop on Recipes reference application
 
 ## Source
 
@@ -14,26 +12,40 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
    ```bash
-   git clone https://github.com/radius-project/samples.git
+   git clone https://github.com/project-radius/samples.git
    cd samples/reference-apps/eshop
    ```
-1. Deploy the app (choose which type of hosting infrastructure you wish to use):
+1. Deploy the environment (choose which type of hosting infrastructure you wish to use):
+   ```bash
+      # Containers
+      rad deploy environments/containers.bicep
 
-   ### Containerized infrastructure
-   
-    ```bash
-    rad deploy iac/eshop.bicep
-    ```
+      # Azure
+      rad deploy environments/azure.bicep
 
-   ### Azure infrastructure
-   
-    ```bash
-    rad deploy iac/eshop.bicep -p platform=azure
-    ```
+      # AWS
+      rad deploy environments/aws.bicep -p awsAccountId=<your-aws-account-id> -p awsRegion=<your-aws-region> -p eksClusterName=<your-eks-cluster-name>
+   ```
+1. Switch to your new environment (choose which type of hosting infrastructure you wish to use):
+   ```bash
+      # Containers
+      rad env switch containers-eshop-env
 
-   ### AWS infrastructure
-   
+      # Azure
+      rad env switch azure-eshop-env
+
+      # AWS
+      rad env switch aws-eshop-env
+   ```
+1. Set credentials:
+   ```bash
+      # AWS
+      rad credential register aws --aws-access-key-id <your-aws-access-key-id> --aws-secret-access-key <your-aws-secret-access-key>
+
+      # Azure
+      rad credential register azure --client-id <your-azure-service-principal-client-id> --client-secret <your-azure-service-principal-client-secret> --tenant-id <your-azure-service-principal-tenant-id>
+   ```
+1. Deploy the application:
     ```bash
-    rad deploy iac/eshop.bicep -p platform=aws -p eksClusterName=<YOUR_EKS_CLUSTER_NAME>
+      rad deploy eshop.bicep -p adminLogin= or SA -p adminPassword=<your-sql-password>
     ```
-    

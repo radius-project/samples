@@ -52,26 +52,27 @@ jobs:
             app: myapp
             path: ./samples/volumes/app.bicep
             enableDapr: false
-          - name: eshop
+          - name: eshop (containers)
             runOnPullRequest: true
             app: eshop
+            env: containers-eshop-env
             path: ./samples/eshop/iac/eshop.bicep
-            uiTestFile: tests/eshop/container.app.spec.ts
+            uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
-          - name: eshop-azure
+          - name: eshop (Azure)
             runOnPullRequest: false
-            app: eshop-azure
+            app: eshop
+            env: azure-eshop-env
             path: ./samples/eshop/iac/eshop.bicep
-            args: -p platform=azure -p appName=eshop-azure
-            uiTestFile: tests/eshop/container.app.spec.ts
+            uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: azure
             enableDapr: false
-          - name: eshop-aws
+          - name: eshop (AWS)
             runOnPullRequest: false
-            app: eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
+            app: eshop
+            env: aws-eshop-env
             path: ./samples/eshop/iac/eshop.bicep
-            args: -p platform=aws -p eksClusterName=eks-samplestest-${{ github.run_id }}-${{ github.run_attempt }}-eshop-aws -p appName=eshop-aws-${{ github.run_id }}-${{ github.run_attempt }}
-            uiTestFile: tests/eshop/container.app.spec.ts
+            uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: aws
             enableDapr: false
     env:
@@ -162,12 +163,9 @@ jobs:
             echo "Waiting for EKS cluster to be created..."
             sleep 60
           done
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
-      - name: Install k3d
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        run: |
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -223,6 +221,16 @@ jobs:
             rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       # Deploy application and run tests
+      - name: Set Radius environment
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.env != ''
+        run: |
+          rad env switch ${{ matrix.env }}
+          if [[ "${{ matrix.credential }}" == "azure" ]]; then
+            rad env update ${{ matrix.env }} --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
+          fi
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            rad env update ${{ matrix.env }} --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
+          fi
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: rad deploy ${{ matrix.path }} ${{ matrix.args }}

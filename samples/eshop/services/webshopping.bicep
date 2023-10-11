@@ -5,13 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
-
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')
@@ -50,9 +44,6 @@ param webshoppingapigwHttp2Name string
 @description('Web Shopping Aggregator Http Route name')
 param webshoppingaggHttpName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingagg'
@@ -64,7 +55,7 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
         urls__basket: basketHttp.properties.url
         urls__catalog: catalogHttp.properties.url
@@ -88,10 +79,6 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
       }
     }
     connections: {
-      rabbitmq: {
-        source: rabbitmq.id
-        disableDefaultEnvVars: true
-      }
       identity: {
         source: identityHttp.id
         disableDefaultEnvVars: true
@@ -182,10 +169,4 @@ resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' 
 
 resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingapigwHttp2Name
-}
-
-// PORTABLE RESOURCES --------------------------------------------------------
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }
