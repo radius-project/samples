@@ -1,9 +1,9 @@
 import radius as rad
 
-@description('Radius environment ID')
+@description('Radius Environment ID')
 param environment string
 
-@description('Radius application ID')
+@description('Radius Application ID')
 param application string
 
 @description('SQL administrator password')

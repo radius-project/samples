@@ -35,7 +35,7 @@ resource environment 'Applications.Core/environments@2022-03-15-privatepreview' 
   }
 }
 
-// The Radius application definition.
+// The Radius Application definition.
 resource eShopOnDapr 'Applications.Core/applications@2022-03-15-privatepreview' = {
   name: 'eshopondapr'
   properties: {

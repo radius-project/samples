@@ -1,6 +1,6 @@
 import radius as radius
 
-@description('The Radius application ID.')
+@description('The Radius Application ID.')
 param appId string
 
 @description('The name of the Blazor Client API HTTP route.')

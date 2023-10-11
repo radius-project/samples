@@ -9,7 +9,7 @@ This reference app is a "radified" version of the [Container Apps Store](https:/
 ## Deploy
 
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
-1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
+1. [Initialize a new Radius Environment](https://radapp.dev/getting-started/)
 1. Clone the repository and switch to the app directory:
    ```bash
    git clone https://github.com/radius-project/samples.git

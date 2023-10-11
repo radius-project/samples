@@ -1,6 +1,6 @@
 import radius as radius
 
-@description('The Radius application ID.')
+@description('The Radius Application ID.')
 param appId string
 
 @secure() // Decorated with @secure() to circumvent the false positive warning to use secure parameters

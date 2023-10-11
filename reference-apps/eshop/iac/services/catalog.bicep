@@ -2,7 +2,7 @@ import radius as rad
 
 // Parameters ---------------------------------------------------------
 
-@description('Radius application ID')
+@description('Radius Application ID')
 param application string
 
 @description('What container orchestrator to use')
