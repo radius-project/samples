@@ -56,17 +56,19 @@ jobs:
             runOnPullRequest: true
             app: eshop
             env: containers-eshop-env
-            path: ./samples/eshop/iac/eshop.bicep
+            path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop (Azure)
             runOnPullRequest: false
             app: eshop
             env: azure-eshop-env
-            path: ./samples/eshop/iac/eshop.bicep
+            path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: azure
             enableDapr: false
+            prerequisities: |
+              rad deploy ./samples/eshop/environments/azure.bicep
           - name: eshop (AWS)
             runOnPullRequest: false
             app: eshop
@@ -75,6 +77,8 @@ jobs:
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: aws
             enableDapr: false
+            prerequisites: |
+              rad deploy ./samples/eshop/environments/aws.bicep
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -221,16 +225,19 @@ jobs:
             rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       # Deploy application and run tests
-      - name: Set Radius environment
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.env != ''
+      - name: (eShop) create and use environment
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
         run: |
-          rad env switch ${{ matrix.env }}
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
+            rad deploy ./samples/eshop/environments/azure.bicep
             rad env update ${{ matrix.env }} --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
-          fi
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+          elif [[ "${{ matrix.credential }}" == "aws" ]]; then
+            rad deploy ./samples/eshop/environments/aws.bicep
             rad env update ${{ matrix.env }} --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
+          else
+            rad deploy ./samples/eshop/environments/containers.bicep
           fi
+          rad env switch ${{ matrix.env }}
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
