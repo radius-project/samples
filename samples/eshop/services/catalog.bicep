@@ -17,7 +17,7 @@ param catalogHttpName string
 @description('The name of the Catalog gRPC Route')
 param catalogGrpcName string
 
-@description('The name of the Catalog SQL Link')
+@description('The name of the Catalog SQL portable resource')
 param sqlCatalogDbName string
 
 @description('The connection string for the event bus')

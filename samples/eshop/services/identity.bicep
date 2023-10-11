@@ -32,10 +32,10 @@ param webhooksclientHttpName string
 @description('Name of the WebMVC HTTP Route')
 param webmvcHttpName string
 
-@description('Name of the Identity SQL Database Link')
+@description('Name of the Identity SQL Database portable resource')
 param sqlIdentityDbName string
 
-@description('Name of the Keystore Redis Link')
+@description('Name of the Keystore Redis portable resource')
 param redisKeystoreName string
 
 // CONTAINERS -------------------------------------------------------------------
@@ -54,8 +54,6 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
         DPConnectionString: redisKeystore.connectionString()
-        ApplicationInsights__InstrumentationKey: ''
-        XamarinCallback: ''
         EnableDevspaces: 'False'
         ConnectionString: sqlIdentityDb.connectionString()
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'

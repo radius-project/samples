@@ -20,7 +20,7 @@ param basketHttpName string
 @description('The name of the Basket gRPC Route')
 param basketGrpcName string
 
-@description('The name of the Redis Basket Link')
+@description('The name of the Redis Basket portable resource')
 param redisBasketName string
 
 @description('The connection string for the event bus')
@@ -99,7 +99,7 @@ resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing =
   name: basketGrpcName
 }
 
-// Portable Resources-----------------------------------------
+// Portable Resource -----------------------------------------
 
 resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisBasketName

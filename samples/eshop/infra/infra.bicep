@@ -21,7 +21,7 @@ param adminPassword string
 ])
 param AZURESERVICEBUSENABLED string
 
-// Portable Resources--------------------------------------------------------------
+// Portable Resource --------------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identitydb'
@@ -137,28 +137,28 @@ resource servicebus 'Applications.Core/extenders@2023-10-01-preview' = if (AZURE
 
 // Outputs ------------------------------------
 
-@description('The name of the SQL Identity Link')
+@description('The name of the SQL Identity portable resource')
 output sqlIdentityDb string = sqlIdentityDb.name
 
-@description('The name of the SQL Catalog Link')
+@description('The name of the SQL Catalog portable resource')
 output sqlCatalogDb string = sqlCatalogDb.name
 
-@description('The name of the SQL Ordering Link')
+@description('The name of the SQL Ordering portable resource')
 output sqlOrderingDb string = sqlOrderingDb.name
 
-@description('The name of the SQL Webhooks Link')
+@description('The name of the SQL Webhooks portable resource')
 output sqlWebhooksDb string = sqlWebhooksDb.name
 
-@description('The name of the Redis Keystore Link')
+@description('The name of the Redis Keystore portable resource')
 output redisKeystore string = redisKeystore.name
 
-@description('The name of the Redis Basket Link')
+@description('The name of the Redis Basket portable resource')
 output redisBasket string = redisBasket.name
 
-@description('The name of the RabbitMQ Link')
+@description('The name of the RabbitMQ portable resource')
 output rabbitmq string = rabbitmq.name
 
-@description('The name of the Service Bus Link')
+@description('The name of the Service Bus portable resource')
 output servicebus string = servicebus.name
 
 @description('Event Bus connection string')

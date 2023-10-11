@@ -20,7 +20,7 @@ param webhooksHttpName string
 @description('Name of the WebhooksClient HTTP Route')
 param webhooksclientHttpName string
 
-@description('The name of the Webhooks SQL Link')
+@description('The name of the Webhooks SQL portable resource')
 param sqlWebhooksDbName string
 
 @description('The connection string for the event bus')

@@ -32,10 +32,10 @@ param orderingsignalrhubHttpName string
 @description('Name of the Ordering background tasks HTTP Route')
 param orderbgtasksHttpName string
 
-@description('Name of the Keystore Redis Link')
+@description('Name of the Keystore Redis portable resource')
 param redisKeystoreName string
 
-@description('Name of the Ordering SQL Link')
+@description('Name of the Ordering SQL portable resource')
 param sqlOrderingDbName string
 
 @description('The connection string for the event bus')
