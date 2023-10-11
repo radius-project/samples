@@ -29,7 +29,7 @@ param webshoppingaggHttpName string
 @description('Web shopping API GW HTTP Route name')
 param webshoppingapigwHttpName string
 
-@description('Name of the Keystore Redis Link name')
+@description('Name of the Keystore Redis portable resource')
 param redisKeystoreName string
 
 // CONTAINER --------------------------------------------------------------------
@@ -172,7 +172,7 @@ resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' 
   name: webshoppingapigwHttpName
 }
 
-// LINKS ------------------------------------------------------
+// PORTABLE RESOURCES ------------------------------------------------------
 
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName

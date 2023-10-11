@@ -12,7 +12,7 @@ resource containersEShopEnv 'Applications.Core/environments@2023-10-01-preview' 
       'Applications.Datastores/sqlDatabases': {
         sqldatabase: {
           templateKind: 'bicep'
-          templatePath: 'radiusdev.azurecr.io/recipes/local-dev/sqldatabases:pr-29'
+          templatePath: 'radius.azurecr.io/recipes/local-dev/sqldatabases:edge'
         }
       }
       'Applications.Datastores/redisCaches': {

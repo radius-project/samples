@@ -144,7 +144,7 @@ resource webmvcHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing =
   name: webmvcHttpName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlIdentityDbName

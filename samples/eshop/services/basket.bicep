@@ -99,7 +99,7 @@ resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing =
   name: basketGrpcName
 }
 
-// Links ------------------------------------------
+// Portable Resources-----------------------------------------
 
 resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisBasketName

@@ -90,7 +90,7 @@ resource catalogGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing 
   name: catalogGrpcName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
 resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlCatalogDbName

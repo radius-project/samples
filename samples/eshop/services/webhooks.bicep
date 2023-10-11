@@ -128,7 +128,7 @@ resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' ex
   name: webhooksclientHttpName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
 resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlWebhooksDbName

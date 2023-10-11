@@ -21,7 +21,7 @@ param adminPassword string
 ])
 param AZURESERVICEBUSENABLED string
 
-// Links ---------------------------------------------------------------
+// Portable Resources--------------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' = {
   name: 'identitydb'

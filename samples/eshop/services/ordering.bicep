@@ -221,7 +221,7 @@ resource orderbgtasksHttp 'Applications.Core/httpRoutes@2023-10-01-preview' exis
   name: orderbgtasksHttpName
 }
 
-// LINKS -----------------------------------------------------------
+// PORTABLE RESOURCES -----------------------------------------------------------
 
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
