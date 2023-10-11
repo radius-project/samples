@@ -1,9 +1,9 @@
 import radius as radius
 
-@description('The Radius application ID.')
+@description('The Radius Application ID.')
 param appId string
 
-@description('The Radius environment name.')
+@description('The Radius Environment name.')
 param environment string
 
 @description('The Azure region where the resources will be deployed.')

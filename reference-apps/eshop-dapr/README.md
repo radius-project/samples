@@ -29,7 +29,7 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 
 1. [Install the rad CLI](https://radapp.dev/getting-started/)
 
-1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
+1. [Initialize a new Radius Environment](https://radapp.dev/getting-started/)
 
 1. Clone the repository and switch to the app directory:
 

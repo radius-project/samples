@@ -5,7 +5,7 @@ import radius as rad
 @description('Name of the eshop application. Defaults to "eshop"')
 param appName string = 'eshop'
 
-@description('Radius environment ID. Set automatically by Radius')
+@description('Radius Environment ID. Set automatically by Radius')
 param environment string
 
 @description('What type of infrastructure to use. Options are "containers", "azure", or "aws". Defaults to containers')

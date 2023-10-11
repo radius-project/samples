@@ -1,7 +1,7 @@
 import radius as rad
 
 // PARAMETERS ------------------------------------------------------------
-@description('Radius application ID')
+@description('Radius Application ID')
 param application string
 
 // GATEWAY ---------------------------------------------------------
