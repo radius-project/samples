@@ -1,7 +1,7 @@
 import radius as rad
 
 resource containersEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
-  name: 'containers-eshop-env'
+  name: 'containers-eshop'
   properties: {
     compute: {
       kind: 'kubernetes'

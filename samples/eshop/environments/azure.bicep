@@ -7,7 +7,7 @@ param azureResourceGroup string = resourceGroup().name
 param azureSubscription string = subscription().subscriptionId
 
 resource azureEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
-  name: 'azure-eshop-env'
+  name: 'azure-eshop'
   properties: {
     compute: {
       kind: 'kubernetes'

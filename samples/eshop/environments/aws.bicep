@@ -10,7 +10,7 @@ param awsRegion string
 param eksClusterName string
 
 resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
-  name: 'aws-eshop-env'
+  name: 'aws-eshop'
   properties: {
     compute: {
       kind: 'kubernetes'

@@ -36,6 +36,7 @@ jobs:
           - name: demo
             runOnPullRequest: true
             app: demo
+            env: default
             path: ./samples/demo/app.bicep
             args: --application demo
             uiTestFile: tests/demo/demo.app.spec.ts
@@ -45,24 +46,26 @@ jobs:
           - name: dapr
             runOnPullRequest: true
             app: dapr
+            env: default
             path: ./samples/dapr/dapr.bicep
             enableDapr: true
           - name: volumes
             runOnPullRequest: true
             app: myapp
+            env: default
             path: ./samples/volumes/app.bicep
             enableDapr: false
           - name: eshop-containers
             runOnPullRequest: true
             app: eshop
-            env: containers-eshop-env
+            env: containers-eshop
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure
             runOnPullRequest: false
             app: eshop
-            env: azure-eshop-env
+            env: azure-eshop
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: azure
@@ -72,7 +75,7 @@ jobs:
           - name: eshop-aws
             runOnPullRequest: false
             app: eshop
-            env: aws-eshop-env
+            env: aws-eshop
             path: ./samples/eshop/iac/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: aws
@@ -251,7 +254,7 @@ jobs:
       - name: Wait for all pods to be ready
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          namespace="default-${{ matrix.app }}"
+          namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Run Playwright Test
@@ -285,7 +288,7 @@ jobs:
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
-          namespace="default-${{ matrix.app }}"
+          namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radius.dev/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
@@ -309,7 +312,7 @@ jobs:
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad app delete  ${{ matrix.app }} -y
+          rad app delete ${{ matrix.app }} -y
       - name: Delete Azure resource group
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
