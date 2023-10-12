@@ -76,7 +76,7 @@ jobs:
             env: aws-eshop
             path: ./samples/eshop/iac/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
-            credential: aws=
+            credential: aws
             enableDapr: false
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
