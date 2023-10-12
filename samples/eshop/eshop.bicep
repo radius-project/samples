@@ -9,7 +9,7 @@ param applicationName string = 'eshop'
 param environment string
 
 @description('SQL administrator username')
-param adminLogin string = 'SA'
+param adminLogin string = 'sqladmin'
 
 @description('SQL administrator password')
 @secure()

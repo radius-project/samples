@@ -60,6 +60,7 @@ jobs:
             app: eshop
             env: containers-eshop
             path: ./samples/eshop/eshop.bicep
+            args: -p adminLogin=sa
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure

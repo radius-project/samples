@@ -32,12 +32,6 @@ resource azureEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
           templatePath: 'radius.azurecr.io/recipes/azure/rediscaches:latest'
         }
       }
-      'Applications.Messaging/rabbitMQQueues': {
-        rabbitmqmessagequeue: {
-          templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
-        }
-      }
       'Applications.Core/extenders': {
         servicebus: {
           templateKind: 'bicep'
