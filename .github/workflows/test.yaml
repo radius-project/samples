@@ -235,10 +235,10 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
-            rad deploy ./samples/eshop/environments/azure.bicep
+            rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscription=${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
             rad env update ${{ matrix.env }} --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
           elif [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad deploy ./samples/eshop/environments/aws.bicep
+            rad deploy ./samples/eshop/environments/aws.bicep -p awsAccountId=${{ secrets.AWS_ACCOUNT_ID }} -p awsRegion=${{ env.AWS_REGION }}
             rad env update ${{ matrix.env }} --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
           else
             rad deploy ./samples/eshop/environments/containers.bicep
