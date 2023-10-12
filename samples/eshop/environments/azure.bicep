@@ -21,13 +21,13 @@ resource azureEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
     }
     recipes: {
       'Applications.Datastores/sqlDatabases': {
-        sqldatabase: {
+        default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/azure/sqldatabases:latest'
+          templatePath: 'radiusdev.azurecr.io/recipes/azure/sqldatabases:pr-35'
         }
       }
       'Applications.Datastores/redisCaches': {
-        rediscache: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/azure/rediscaches:latest'
         }

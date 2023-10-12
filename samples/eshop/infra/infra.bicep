@@ -6,14 +6,6 @@ param environment string
 @description('Radius application ID')
 param application string
 
-@description('SQL administrator username')
-@secure()
-param adminLogin string
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string
-
 @description('Use Azure Service Bus for messaging. Allowed values: "True", "False".')
 @allowed([
   'True'
@@ -28,14 +20,6 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview'
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'sqldatabase'
-      parameters: {
-        database: 'IdentityDb'
-        adminLogin: adminLogin
-        adminPassword: adminPassword
-      }
-    }
   }
 }
 
@@ -44,14 +28,6 @@ resource sqlCatalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' 
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'sqldatabase'
-      parameters: {
-        database: 'CatalogDb'
-        adminLogin: adminLogin
-        adminPassword: adminPassword
-      }
-    }
   }
 }
 
@@ -60,14 +36,6 @@ resource sqlOrderingDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview'
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'sqldatabase'
-      parameters: {
-        database: 'OrderingDb'
-        adminLogin: adminLogin
-        adminPassword: adminPassword
-      }
-    }
   }
 }
 
@@ -76,14 +44,6 @@ resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview'
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'sqldatabase'
-      parameters: {
-        database: 'WebhooksDb'
-        adminLogin: adminLogin
-        adminPassword: adminPassword
-      }
-    }
   }
 }
 
@@ -92,9 +52,6 @@ resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' 
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'rediscache'
-    }
   }
 }
 
@@ -103,9 +60,6 @@ resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' = 
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'rediscache'
-    }
   }
 }
 
@@ -114,9 +68,6 @@ resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' = i
   properties: {
     application: application
     environment: environment
-    recipe: {
-      name: 'rabbitmqmessagequeue'
-    }
   }
 }
 

@@ -48,7 +48,4 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Deploy the application:
     ```bash
       rad deploy eshop.bicep
-
-      # Containers (requires SQL admin username to be "SA"
-      rad deploy eshop.bicep -p adminLogin=sa
     ```

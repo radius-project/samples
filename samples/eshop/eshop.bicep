@@ -2,23 +2,15 @@ import radius as rad
 
 // Parameters -------------------------------------------------------
 
-@description('Name of the application. Defaults to "eshop"')
-param applicationName string = 'eshop'
-
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
-@description('SQL administrator username')
-param adminLogin string = 'sqladmin'
-
-@description('SQL administrator password')
-@secure()
-param adminPassword string = newGuid()
+@description('Container image tag to use for eshop images. Defaults to "linux-dotnet7".')
+param TAG string = 'linux-dotnet7'
 
 // Variables ---------------------------------------------------------
 
-@description('Container image tag to use for eshop images')
-var TAG = 'linux-dotnet7'
+var applicationName = 'eshop'
 
 // Get the environment name from the environment ID
 var environmentName = last(split(environment, '/'))
@@ -46,8 +38,6 @@ module infra 'infra/infra.bicep' = {
   params: {
     application: eshopApplication.id
     environment: environment
-    adminLogin: adminLogin
-    adminPassword: adminPassword
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
   }
 }

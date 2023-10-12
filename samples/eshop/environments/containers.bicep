@@ -10,19 +10,19 @@ resource containersEShopEnv 'Applications.Core/environments@2023-10-01-preview' 
     }
     recipes: {
       'Applications.Datastores/sqlDatabases': {
-        sqldatabase: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/sqldatabases:edge'
         }
       }
       'Applications.Datastores/redisCaches': {
-        rediscache: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/rediscaches:edge'
         }
       }
       'Applications.Messaging/rabbitMQQueues': {
-        rabbitmqmessagequeue: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }

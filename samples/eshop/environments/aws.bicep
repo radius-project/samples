@@ -24,16 +24,16 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
     }
     recipes: {
       'Applications.Datastores/sqlDatabases': {
-        sqldatabase: {
+        default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/aws/sqldatabases:edge'
+          templatePath: 'radiusdev.azurecr.io/recipes/aws/sqldatabases:pr-35'
           parameters: {
             eksClusterName: eksClusterName
           }
         }
       }
       'Applications.Datastores/redisCaches': {
-        rediscache: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/aws/rediscaches:edge'
           parameters: {
@@ -44,7 +44,7 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
       // Use containerized RabbitMQ instead of Amazon SQS
       // https://github.com/radius-project/bicep-types-aws/blob/main/docs/reference/limitations.md
       'Applications.Messaging/rabbitMQQueues': {
-        rabbitmqmessagequeue: {
+        default: {
           templateKind: 'bicep'
           templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
         }
