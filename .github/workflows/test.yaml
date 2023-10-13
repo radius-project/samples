@@ -74,7 +74,7 @@ jobs:
             runOnPullRequest: true #false
             app: eshop
             env: aws-eshop
-            path: ./samples/eshop/iac/eshop.bicep
+            path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: aws
             enableDapr: false
