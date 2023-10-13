@@ -26,7 +26,7 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
       'Applications.Datastores/sqlDatabases': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radiusdev.azurecr.io/recipes/aws/sqldatabases:pr-35'
+          templatePath: 'radius.azurecr.io/recipes/aws/sqldatabases:edge'
           parameters: {
             eksClusterName: eksClusterName
           }
