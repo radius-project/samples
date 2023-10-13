@@ -63,7 +63,7 @@ jobs:
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure
-            runOnPullRequest: true #false
+            runOnPullRequest: false
             app: eshop
             env: azure-eshop
             path: ./samples/eshop/eshop.bicep
@@ -71,7 +71,7 @@ jobs:
             credential: azure
             enableDapr: false
           - name: eshop-aws
-            runOnPullRequest: true #false
+            runOnPullRequest: false
             app: eshop
             env: aws-eshop
             path: ./samples/eshop/eshop.bicep
