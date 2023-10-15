@@ -18,7 +18,7 @@ resource backend 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/quickstarts/dapr-backend:edge'
+      image: 'ghcr.io/radius-project/samples/quickstarts/dapr-backend:edge'
       ports: {
         web: {
           containerPort: 3000
@@ -45,7 +45,7 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'radius.azurecr.io/quickstarts/dapr-frontend:edge'
+      image: 'ghcr.io/radius-project/samples/quickstarts/dapr-frontend:edge'
       env: {
         CONNECTION_BACKEND_APPID: backend.name
       }

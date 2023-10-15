@@ -56,7 +56,7 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/identity.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/identity.api:${TAG}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'

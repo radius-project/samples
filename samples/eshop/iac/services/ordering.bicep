@@ -69,7 +69,7 @@ resource ordering 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/ordering.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/ordering.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -119,7 +119,7 @@ resource orderbgtasks 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/ordering.backgroundtasks:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/ordering.backgroundtasks:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -156,7 +156,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = 
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/ordering.signalrhub:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/ordering.signalrhub:${TAG}'
       env: {
         PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'

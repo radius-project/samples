@@ -51,7 +51,7 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webhooks.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webhooks.api:${TAG}'
       env: {
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -90,7 +90,7 @@ resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webhooks.client:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webhooks.client:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
