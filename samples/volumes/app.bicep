@@ -14,7 +14,7 @@ resource container 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'ghcr.io/radius-project/samples/quickstarts/volumes:edge'
+      image: 'ghcr.io/radius-project/samples/volumes:latest'
       volumes: {
         temp: {
           kind: 'ephemeral'
