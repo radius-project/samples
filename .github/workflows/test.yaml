@@ -28,7 +28,7 @@ env:
 jobs:
   test:
     name: Sample tests
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
+    runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
