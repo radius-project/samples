@@ -18,8 +18,8 @@ concurrency:
 
 env:
   VERSION: ${{ github.event.pull_request.number || 'latest' }}
-  # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project/samples.
-  CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project/samples' }}
+  # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project.
+  CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
   # Set to true to push images to registry.
   PUSH_IMAGE: true
 

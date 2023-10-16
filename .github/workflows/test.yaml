@@ -271,7 +271,7 @@ jobs:
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
           namespace="default-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > playwright/pod-logs/${{ matrix.name }}/${pod_name}.txt
