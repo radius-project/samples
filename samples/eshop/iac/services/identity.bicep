@@ -15,7 +15,7 @@ param APPLICATION_INSIGHTS_KEY string
 ])
 param ENABLEDEVSPACES string
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')

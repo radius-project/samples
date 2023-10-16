@@ -5,7 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Optional App Insights Key')
