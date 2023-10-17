@@ -103,6 +103,9 @@ jobs:
           context: ./${{ matrix.directory }}
           push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
+        permissions:
+          contents: read
+          packages: write
   
   # TODO_LAUNCH: Remove this job once we opensource the repo because all pkgs will be cleaned up regularly - https://github.com/radius-project/samples/issues/439
   cleanup:
