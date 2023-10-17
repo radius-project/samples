@@ -12,6 +12,8 @@ on:
       - edge
       - v*.*
 
+permissions: write-all
+
 concurrency:
   group: build-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
@@ -22,6 +24,9 @@ env:
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
   # Set to true to push images to registry.
   PUSH_IMAGE: true
+  GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+  GITHUB_EMAIL: 'radiuscoreteam@service.microsoft.com'
+  GITHUB_USER: 'Radius CI Bot'
 
 jobs:
   build-ghcr:
