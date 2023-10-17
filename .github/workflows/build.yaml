@@ -32,6 +32,9 @@ jobs:
   # TODO_LAUNCH: Remove this build job once we opensource the repo - https://github.com/radius-project/samples/issues/439
   build-acr:
     name: Build and push sample images to ACR
+    permissions:
+      contents: read
+      packages: write
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     strategy:
