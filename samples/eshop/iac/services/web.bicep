@@ -14,7 +14,7 @@ param ORCHESTRATOR_TYPE string
 @description('Optional App Insights Key')
 param APPLICATION_INSIGHTS_KEY string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')
@@ -49,7 +49,7 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webspa:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webspa:${TAG}'
       env: {
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
@@ -103,7 +103,7 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webmvc:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webmvc:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

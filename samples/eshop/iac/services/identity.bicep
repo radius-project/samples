@@ -15,7 +15,7 @@ param APPLICATION_INSIGHTS_KEY string
 ])
 param ENABLEDEVSPACES string
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Gateway')
@@ -56,7 +56,7 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/identity.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/identity.api:${TAG}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'

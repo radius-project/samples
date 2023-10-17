@@ -25,7 +25,7 @@ resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: appId
     container: {
-      image: 'radius.azurecr.io/eshopdapr/webshoppingapigw:rad-latest'
+      image: 'ghcr.io/radius-project/samples/eshopdapr/webshoppingapigw:rad-latest'
       env: {
         ENVOY_CATALOG_API_ADDRESS: catalogApiRoute.properties.hostname
         ENVOY_CATALOG_API_PORT: '${catalogApiRoute.properties.port}'

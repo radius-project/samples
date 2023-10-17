@@ -48,8 +48,8 @@ var AZURESERVICEBUSENABLED = (platform == 'azure') ? 'True' : 'False'
 ])
 param ENABLEDEVSPACES string = 'False'
 
-@description('Cotnainer image tag to use for eshop images. Defaults to linux-dotnet7')
-param TAG string = 'linux-dotnet7'
+@description('Container image tag to use for eshop images')
+param TAG string = 'latest'
 
 @description('Name of your EKS cluster. Only used if deploying with AWS infrastructure.')
 param eksClusterName string = ''
