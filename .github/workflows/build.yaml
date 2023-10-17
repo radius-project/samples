@@ -12,6 +12,10 @@ on:
       - edge
       - v*.*
 
+permissions:
+  contents: read
+  packages: write
+
 concurrency:
   group: build-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
