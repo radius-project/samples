@@ -1,4 +1,4 @@
-# Reference applicatins
+# Reference applications
 
 Reference apps are templates that show a complete app. You are able to clone and deploy any of these apps to try out various Project Radius functionality.
 
