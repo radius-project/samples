@@ -40,7 +40,7 @@ resource paymentApi 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: appId
     container: {
-      image: 'radius.azurecr.io/eshopdapr/payment.api:rad-latest'
+      image: 'ghcr.io/radius-project/samples/eshopdapr/payment.api:rad-latest'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
