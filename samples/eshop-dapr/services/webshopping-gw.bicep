@@ -31,10 +31,10 @@ resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       catalogApi: {
-        source: 'http://catalog-api:80'
+        source: 'http://catalog-api'
       }
       orderingApi: {
-        source: 'http://ordering-api:80'
+        source: 'http://ordering-api'
       }
     }
   }

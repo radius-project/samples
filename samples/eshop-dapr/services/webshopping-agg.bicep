@@ -52,10 +52,10 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       identityApi: {
-        source: 'http://identity-api:80'
+        source: 'http://identity-api'
       }
       seq: {
-        source: 'http://seq:80'
+        source: 'http://seq'
       }
     }
   }

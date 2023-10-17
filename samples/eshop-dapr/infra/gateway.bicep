@@ -15,7 +15,7 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
       // Identity API
       {
         path: '/identity/'
-        destination: 'http://identity-api:80'
+        destination: 'http://identity-api'
       }
       // Seq
       {
@@ -26,18 +26,18 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
       // Health
       {
         path: '/health'
-        destination: 'http://webstatus:80'
+        destination: 'http://webstatus'
       }
       // Webshopping API Gateway
       {
         path: '/api/'
-        destination: 'http://webshopping-gw:80'
+        destination: 'http://webshopping-gw'
         replacePrefix: '/'
       }
       // Blazor Client
       {
         path: '/'
-        destination: 'http://blazor-client:80'
+        destination: 'http://blazor-client'
       }
     ]
   }

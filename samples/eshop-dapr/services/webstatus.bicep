@@ -50,7 +50,7 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
     ]
     connections: {
       blazorClient: {
-        source: 'http://blazor-client:80'
+        source: 'http://blazor-client'
       }
     }
   }

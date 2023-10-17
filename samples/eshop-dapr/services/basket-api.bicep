@@ -69,7 +69,7 @@ resource basketApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: daprStateStore.id
       }
       identityApiRoute: {
-        source: 'http://identity-api:80'
+        source: 'http://identity-api'
       }
       seqRoute: {
         source: 'http://seq:5340'

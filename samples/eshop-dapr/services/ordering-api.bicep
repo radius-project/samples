@@ -86,7 +86,7 @@ resource orderingApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: daprSecretStore.id
       }
       identityApiRoute: {
-        source: 'http://identity-api:80'
+        source: 'http://identity-api'
       }
       // Temporary workaround to grant required role to workload identity.
       keyVault: {
