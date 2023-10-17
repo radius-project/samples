@@ -28,9 +28,6 @@ jobs:
     name: Build and push sample images to GHCR
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     strategy:
       fail-fast: false
       matrix:
