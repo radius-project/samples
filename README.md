@@ -1,4 +1,4 @@
-# Project Radius Samples
+# Radius Project Samples
 
 This repository contains the source code for quickstarts, reference apps, and tutorials for Project Radius.
 
@@ -21,3 +21,4 @@ The current repository offers a codespace setup with Radius and its dependencies
 | **eshop** | A Rad-ified version of eShop on Containers, the .NET reference app
 | **eshop-dapr** | A Rad-ified version of eShop on Dapr
 | **volumes** | An app to interact with mounted volumes
+|**test-entry**| test
