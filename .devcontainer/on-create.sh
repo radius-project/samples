@@ -16,10 +16,10 @@ else
 fi
 
 if [ "$RADIUS_VERSION" = "edge" ]; then
-    wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash -s edge
+    wget -q "https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh" -O - | /bin/bash -s edge
 else
-    wget -q "https://get.radapp.dev/tools/rad/install.sh" -O - | /bin/bash
+    wget -q "https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh" -O - | /bin/bash
 fi
 
 ## Download Bicep extension
-curl https://get.radapp.dev/tools/vscode-extensibility/$RADIUS_VERSION/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
+curl https://github.com/radius-project/bicep/releases/download/$RADIUS_VERSION/rad-vscode-bicep.vsix --output /tmp/rad-vscode-bicep.vsix
