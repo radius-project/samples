@@ -5,7 +5,7 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Optional App Insights Key')
@@ -54,7 +54,7 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/basket.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/basket.api:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
