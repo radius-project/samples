@@ -119,7 +119,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop-envoy:0.1.4'
+      image: 'ghcr.io/radius-project/samples/eshop/envoy:latest'
       ports: {
         http: {
           containerPort: 80
