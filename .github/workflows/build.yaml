@@ -57,7 +57,9 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          push: true
+          permissions: write
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
-
+          
+          
 
