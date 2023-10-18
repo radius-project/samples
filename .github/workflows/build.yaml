@@ -31,6 +31,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -61,8 +62,7 @@ jobs:
         with:
           context: ./${{ matrix.directory }}
           push: ${{ env.PUSH_IMAGE }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }} 
           
           
 
