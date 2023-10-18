@@ -61,6 +61,7 @@ jobs:
         with:
           context: ./${{ matrix.directory }}
           push: ${{ env.PUSH_IMAGE }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
           
           
