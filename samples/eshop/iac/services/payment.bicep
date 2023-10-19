@@ -21,7 +21,7 @@ param APPLICATION_INSIGHTS_KEY string
 ])
 param AZURESERVICEBUSENABLED string
 
-@description('Cotnainer image tag to use for eshop images')
+@description('Container image tag to use for eshop images')
 param TAG string
 
 @description('Name of the Payment HTTP route')
@@ -42,7 +42,7 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/payment.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/payment.api:${TAG}'
       env: {
         ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'

@@ -8,7 +8,7 @@ env:
 jobs:
   purge_azure_resources:
     name: Azure test resource cleanup
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    runs-on: [ubuntu-latest]
     steps:
       - name: Login to Azure
         run: |

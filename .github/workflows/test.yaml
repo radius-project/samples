@@ -28,7 +28,7 @@ env:
 jobs:
   test:
     name: Sample tests
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
+    runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
@@ -179,13 +179,6 @@ jobs:
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      # TODO: Remove authentication once GHCR is public
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: rad-ci-bot
-          password: ${{ secrets.GH_RAD_CI_BOT_PAT }}
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -219,8 +212,8 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
@@ -271,7 +264,7 @@ jobs:
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
           namespace="default-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > playwright/pod-logs/${{ matrix.name }}/${pod_name}.txt
