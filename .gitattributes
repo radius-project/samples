@@ -2,3 +2,4 @@
 * text eol=auto
 # images are binary
 *.png binary 
+*.ico binary
