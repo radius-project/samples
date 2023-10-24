@@ -1,5 +1,9 @@
 #!/bin/sh
 
+## Create a k3d cluster
+k3d cluster delete
+k3d cluster create -p '8081:80@loadbalancer' --k3s-arg '--disable=traefik@server:0'
+
 ## Install rad CLI
 CURRENT_BRANCH=$(git branch --show-current)
 
