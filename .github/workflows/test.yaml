@@ -191,8 +191,8 @@ jobs:
               echo "Downloading rad CLI version ${{ inputs.version }}"
               wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
             else
-              echo "Downloading latest rad CLI"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
+              echo "Downloading edge rad CLI"
+              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s edge
             fi
 
             if [ $? -eq 0 ]; then
