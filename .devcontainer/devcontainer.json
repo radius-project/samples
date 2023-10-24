@@ -27,7 +27,7 @@
 			"ms-python.python",
 			"dunn.redis",
 			"GitHub.copilot",
-			"/tmp/rad-vscode-bicep.vsix"
+			"ms-azuretools.rad-vscode-bicep"
 		]
 	  }
 	},
