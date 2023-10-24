@@ -1,0 +1,3 @@
+image:
+  repository: ghcr.io/radius-project/samples/demo
+  tag: latest
