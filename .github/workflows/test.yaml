@@ -23,7 +23,7 @@ on:
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
-  RAD_CLI_URL: https://get.radapp.dev/tools/rad/install.sh
+  RAD_CLI_URL: https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
   test:
