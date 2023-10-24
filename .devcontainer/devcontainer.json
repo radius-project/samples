@@ -4,7 +4,6 @@
 	"workspaceFolder": "/workspaces/samples",
 	"onCreateCommand": "bash ./.devcontainer/on-create.sh",
 	"postCreateCommand": "bash ./.devcontainer/post-create.sh",
-	"remoteUser": "root",
 	"runArgs": [
 	  "--privileged",
 	  "--init"
