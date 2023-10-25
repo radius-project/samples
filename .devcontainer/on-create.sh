@@ -15,8 +15,4 @@ else
     fi
 fi
 
-if [ "$RADIUS_VERSION" = "edge" ]; then
-    wget -q "https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh" -O - | /bin/bash -s edge
-else
-    wget -q "https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh" -O - | /bin/bash
-fi
+wget -q "https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh" -O - | /bin/bash
