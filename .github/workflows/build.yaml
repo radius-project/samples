@@ -31,6 +31,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -54,11 +55,14 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
           push: ${{ env.PUSH_IMAGE }}
-          tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
+          tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }} 
+          
+          
+
