@@ -20,9 +20,7 @@ env:
   VERSION: ${{ github.event.pull_request.number || 'latest' }}
   # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project.
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
-  # Set to true to push images to registry.
-  PUSH_IMAGE: true
-
+ 
 jobs:
   build-ghcr:
     name: Build and push sample images to GHCR
@@ -48,6 +46,15 @@ jobs:
           - directory: samples/volumes/
             image: samples/volumes
     steps:
+      - name: Evaluate push
+        id: eval_push
+        run: |
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              PUSH_IMAGE='true'
+            else
+              PUSH_IMAGE='false'
+            fi
+            echo "PUSH_IMAGE=${PUSH_IMAGE}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Login to GitHub Container Registry
@@ -56,10 +63,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo "event name is:" ${{ github.event_name }} 
+      - run: echo "event type is:" ${{ github.event.action }} 
       - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          if: github.event_name == 'push'
-          push: ${{ env.PUSH_IMAGE }}
+          push: ${{ fromJSON(steps.eval_push.outputs.PUSH_IMAGE) }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
