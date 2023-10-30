@@ -49,7 +49,7 @@ jobs:
       - name: Evaluate PUSH_IMAGE
         id: eval_push_image
         run: |
-            if [[ "${{ github.event_name }}" == "push"]]; then
+            if [[ "${{ github.event_name }}" == "push" ]]; then
               PUSH_IMAGE=true
             else
               PUSH_IMAGE=false
