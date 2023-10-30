@@ -50,9 +50,9 @@ jobs:
         id: eval_push_image
         run: |
             if [[ "${{ github.event_name }}" == "push" ]]; then
-              PUSH_IMAGE=true
+              PUSH_IMAGE=TRUE
             else
-              PUSH_IMAGE=false
+              PUSH_IMAGE=TRUE
             fi
             echo "PUSH_IMAGE=${PUSH_IMAGE}" >> $GITHUB_OUTPUT
       - name: Checkout code
