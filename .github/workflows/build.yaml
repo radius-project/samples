@@ -68,5 +68,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          push: ${{ fromJSON(steps.eval_push.outputs.PUSH_IMAGE) }}
+          push: ${{ github.event_name == 'push' && true || false }}
+          # push: ${{ fromJSON(steps.eval_push.outputs.PUSH_IMAGE) }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
