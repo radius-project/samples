@@ -60,5 +60,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
+                   context: ./${{ matrix.directory }}
+          if: github.event_name == 'push'
           push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
