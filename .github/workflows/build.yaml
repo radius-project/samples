@@ -63,8 +63,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "event name is:" ${{ github.event_name }} 
-      - run: echo "event type is:" ${{ github.event.action }} 
       - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v4
         with:
