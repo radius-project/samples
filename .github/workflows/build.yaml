@@ -54,6 +54,7 @@ jobs:
             else
               PUSH_IMAGE='false'
             fi
+            echo "PUSH_IMAGE=${PUSH_IMAGE}"
             echo "PUSH_IMAGE=${PUSH_IMAGE}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,5 +70,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          push: steps.eval_push_image.outputs.PUSH_IMAGE
+          push: ${{ fromJSON(steps.eval_push_image.outputs.PUSH_IMAGE) }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
