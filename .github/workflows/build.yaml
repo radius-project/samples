@@ -54,7 +54,6 @@ jobs:
             else
               PUSH_IMAGE='false'
             fi
-            echo "PUSH_IMAGE=${PUSH_IMAGE}"
             echo "PUSH_IMAGE=${PUSH_IMAGE}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v4
