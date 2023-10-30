@@ -57,6 +57,7 @@ jobs:
             echo "PUSH_IMAGE=${PUSH_IMAGE}" >> $GITHUB_OUTPUT
       - name: Checkout code
         uses: actions/checkout@v4
+      # Using fromJSON to convert string to boolean. Ref. https://github.com/actions/runner/issues/1483
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
         with:
