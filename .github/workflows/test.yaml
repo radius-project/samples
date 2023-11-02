@@ -214,12 +214,16 @@ jobs:
         run: |
           namespace="default-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
+          kubectl get pods -l $label -n $namespace
+          kubectl get pod -A --no-headers |awk '{arr[$4]++}END{for (a in arr) print a, arr[a]}'
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: Wait for all pods to be ready2
         if: always()
         run: |
           namespace="default-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
+          kubectl get pod -A --no-headers |awk '{arr[$4]++}END{for (a in arr) print a, arr[a]}'
+          kubectl get pods -l $label -n $namespace
           kubectl describe pods -l $label -n $namespace
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
