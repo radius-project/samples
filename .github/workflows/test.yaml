@@ -23,7 +23,6 @@ on:
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
-  RAD_CLI_URL: https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
   test:
@@ -182,23 +181,7 @@ jobs:
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          for attempt in 1 2 3 4 5; do
-            if [[ -n "${{ inputs.version }}" && "${{ inputs.version }}" != "edge" && "${{ inputs.version }}" != *"rc"* ]]; then
-              INPUT_CHANNEL=$(echo "${{ inputs.version }}" | cut -d '.' -f 1,2)
-              echo "Downloading rad CLI version $INPUT_CHANNEL"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s $INPUT_CHANNEL
-            elif [[ -n "${{ inputs.version }}" ]]; then
-              echo "Downloading rad CLI version ${{ inputs.version }}"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
-            else
-              echo "Downloading latest rad CLI"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash
-            fi
-
-            if [ $? -eq 0 ]; then
-                break
-            fi
-          done
+          ./.github/scripts/install-radius.sh ${{ inputs.version }}
       - name: Initialize local environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
