@@ -215,6 +215,7 @@ jobs:
           namespace="default-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
+          k describe pods -l $label -n $namespace
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
