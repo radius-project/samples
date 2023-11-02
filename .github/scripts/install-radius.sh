@@ -27,7 +27,7 @@ if [[ $VERSION == "edge" ]]; then
     mv ./dist/linux_amd64/release/rad ./rad
     chmod +x ./rad
     mv ./rad /usr/local/bin/rad
-elif [[ $VERSION != *"rc"* ]]; then
+elif [[ -n $VERSION && $VERSION != *"rc"* ]]; then
     INPUT_CHANNEL=$(echo $VERSION | cut -d '.' -f 1,2)
     echo "Downloading rad CLI version $INPUT_CHANNEL"
     wget -q $RAD_CLI_URL -O - | /bin/bash -s $INPUT_CHANNEL
