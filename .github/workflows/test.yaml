@@ -216,6 +216,10 @@ jobs:
           label="radapp.io/application=${{ matrix.app }}"
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
           kubectl describe pods -l $label -n $namespace
+      - name: Wait for all pods to be ready2
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: |
+          kubectl describe pods -l $label -n $namespace
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
