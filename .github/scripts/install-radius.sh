@@ -23,8 +23,6 @@ RAD_CLI_EDGE_URL=ghcr.io/radius-project/rad/linux-amd64:latest
 if [[ $VERSION == "edge" ]]; then
     echo Downloading rad CLI edge version
     oras pull $RAD_CLI_EDGE_URL
-    # TEMP: https://github.com/radius-project/radius/issues/6633
-    mv ./dist/linux_amd64/release/rad ./rad
     chmod +x ./rad
     mv ./rad /usr/local/bin/rad
 elif [[ -n $VERSION && $VERSION != *"rc"* ]]; then
