@@ -20,7 +20,9 @@ env:
   VERSION: ${{ github.event.pull_request.number || 'latest' }}
   # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project.
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
- 
+  # Set to true to push images to registry.
+  PUSH_IMAGE: true
+
 jobs:
   build-ghcr:
     name: Build and push sample images to GHCR
@@ -58,5 +60,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          push: ${{ github.event_name == 'push' && true || false }}
+          push: ${{ env.PUSH_IMAGE }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
