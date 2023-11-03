@@ -31,12 +31,6 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
-    - name: az CLI login
-      run: |
-        az login --service-principal \
-          --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
-          --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
-          --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
     - name: Parse release version and set environment variables
       run: python ./.github/scripts/get_docs_version.py
     - name: Download rad-bicep
