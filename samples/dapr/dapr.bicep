@@ -48,11 +48,11 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
       image: 'ghcr.io/radius-project/samples/dapr-frontend:latest'
       env: {
         CONNECTION_BACKEND_APPID: backend.name
-        ASPNETCORE_URLS: 'http://*:8080'
       }
       ports: {
         ui: {
-          containerPort: 8080
+          containerPort: 80
+          provides: frontendRoute.id
         }
       }
     }
@@ -60,6 +60,26 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
       {
         kind: 'daprSidecar'
         appId: 'frontend'
+      }
+    ]
+  }
+}
+
+resource frontendRoute 'Applications.Core/httpRoutes@2023-10-01-preview' = {
+  name: 'frontend-route'
+  properties: {
+    application: app.id
+  }
+}
+
+resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
+  name: 'gateway'
+  properties: {
+    application: app.id
+    routes: [
+      {
+        path: '/'
+        destination: frontendRoute.id
       }
     ]
   }
