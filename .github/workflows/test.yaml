@@ -181,7 +181,11 @@ jobs:
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          ./.github/scripts/install-radius.sh ${{ inputs.version }}
+          RADIUS_VERSION="${{ inputs.version }}"
+          if [[ -z "${{ inputs.version }}" ]]; then
+              RADIUS_VERSION=edge
+          fi
+          ./.github/scripts/install-radius.sh $RADIUS_VERSION
       - name: Initialize local environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
