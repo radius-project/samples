@@ -5,8 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Payment HTTP route')
 param paymentHttpName string
@@ -30,7 +33,7 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/payment.api:${TAG}'
+      image: '${imageRegistry}/payment.api:${imageTag}'
       env: {
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'

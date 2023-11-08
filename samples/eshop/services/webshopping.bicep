@@ -5,8 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -50,7 +53,7 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webshoppingagg:${TAG}'
+      image: '${imageRegistry}/webshoppingagg:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
@@ -106,7 +109,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/envoy:latest'
+      image: '${imageRegistry}/envoy:latest'
       ports: {
         http: {
           containerPort: 80

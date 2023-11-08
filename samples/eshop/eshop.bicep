@@ -5,12 +5,13 @@ import radius as rad
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
+@description('Container registry to pull from, with optional path. Defaults to "ghcr.io/radius-project/samples/eshop"')
+param imageRegistry string = 'ghcr.io/radius-project/samples/eshop'
+
 @description('Container image tag to use for eshop images. Defaults to "linux-dotnet7".')
-param TAG string = 'linux-dotnet7'
+param imageTag string = 'linux-dotnet7'
 
 // Variables ---------------------------------------------------------
-
-var applicationName = 'eshop'
 
 // Get the environment name from the environment ID
 var environmentName = last(split(environment, '/'))
@@ -18,14 +19,14 @@ resource eshopEnvironment 'Applications.Core/environments@2023-10-01-preview' ex
   name: environmentName
 }
 
-// Check if the environment has the rabbitmqqueues recipe enabled
+// Check if the environment has the rabbitmqqueues recipe registered
 // If it does not, use Azure ServiceBus
 var AZURESERVICEBUSENABLED = contains(eshopEnvironment.properties.recipes, 'Applications.Messaging/rabbitmqqueues') ? 'False' : 'True'
 
 // Application --------------------------------------------------------
 
 resource eshopApplication 'Applications.Core/applications@2023-10-01-preview' = {
-  name: applicationName
+  name: 'eshop'
   properties: {
     environment: environment
   }
@@ -57,7 +58,8 @@ module basket 'services/basket.bicep' = {
   name: 'basket'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     basketHttpName: networking.outputs.basketHttp
@@ -72,7 +74,8 @@ module catalog 'services/catalog.bicep' = {
   name: 'catalog'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     catalogGrpcName: networking.outputs.catalogGrpc
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
@@ -86,7 +89,8 @@ module identity 'services/identity.bicep' = {
   name: 'identity'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     basketHttpName: networking.outputs.basketHttp
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
@@ -104,7 +108,8 @@ module ordering 'services/ordering.bicep' = {
   name: 'ordering'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     basketHttpName: networking.outputs.basketHttp
     catalogHttpName: networking.outputs.catalogHttp
     gatewayName: networking.outputs.gateway
@@ -124,7 +129,8 @@ module payment 'services/payment.bicep' = {
   name: 'payment'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     paymentHttpName: networking.outputs.paymentHttp
     eventBusConnectionString: infra.outputs.eventBusConnectionString
     AZURESERVICEBUSENABLED: AZURESERVICEBUSENABLED
@@ -143,7 +149,8 @@ module web 'services/web.bicep' = {
   name: 'web'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     orderingsignalrhubHttpName: networking.outputs.orderingsignalrhubHttp
@@ -159,7 +166,8 @@ module webhooks 'services/webhooks.bicep' = {
   name: 'webhooks'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     gatewayName: networking.outputs.gateway
     identityHttpName: networking.outputs.identityHttp
     sqlWebhooksDbName: infra.outputs.sqlWebhooksDb
@@ -174,7 +182,8 @@ module webshopping 'services/webshopping.bicep' = {
   name: 'webshopping'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     basketGrpcName: networking.outputs.basketGrpc
     basketHttpName: networking.outputs.basketHttp
     catalogGrpcName: networking.outputs.catalogGrpc
@@ -194,7 +203,8 @@ module webstatus 'services/webstatus.bicep' = {
   name: 'webstatus'
   params: {
     application: eshopApplication.id
-    TAG: TAG
+    imageRegistry: imageRegistry
+    imageTag: imageTag
     basketHttpName: networking.outputs.basketHttp
     catalogHttpName: networking.outputs.catalogHttp
     identityHttpName: networking.outputs.identityHttp

@@ -5,8 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -42,7 +45,7 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webhooks.api:${TAG}'
+      image: '${imageRegistry}/webhooks.api:${imageTag}'
       env: {
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -81,7 +84,7 @@ resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webhooks.client:${TAG}'
+      image: '${imageRegistry}/webhooks.client:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

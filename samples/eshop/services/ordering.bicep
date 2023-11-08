@@ -5,8 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -57,7 +60,7 @@ resource ordering 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/ordering.api:${TAG}'
+      image: '${imageRegistry}/ordering.api:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -106,7 +109,7 @@ resource orderbgtasks 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/ordering.backgroundtasks:${TAG}'
+      image: '${imageRegistry}/ordering.backgroundtasks:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -142,7 +145,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = 
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/ordering.signalrhub:${TAG}'
+      image: '${imageRegistry}/ordering.signalrhub:${imageTag}'
       env: {
         PATH_BASE: '/payment-api'
         ASPNETCORE_ENVIRONMENT: 'Development'

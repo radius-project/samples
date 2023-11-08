@@ -5,8 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -46,7 +49,7 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/identity.api:${TAG}'
+      image: '${imageRegistry}/identity.api:${imageTag}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
