@@ -57,7 +57,7 @@ jobs:
           - name: eshop-containers
             runOnPullRequest: true
             app: eshop
-            env: containers-eshop
+            env: default
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
@@ -187,7 +187,7 @@ jobs:
               RADIUS_VERSION=edge
           fi
           ./.github/scripts/install-radius.sh $RADIUS_VERSION
-      - name: Initialize local environment
+      - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
@@ -202,6 +202,11 @@ jobs:
           rad env switch default
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:latest --resource-type Applications.Datastores/sqlDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:latest --resource-type Applications.Messaging/rabbitMQQueues
+      - name: Configure cloud credentials
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && ( matrix.credential == 'azure' || matrix.credential == 'aws')
+        run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
@@ -210,20 +215,17 @@ jobs:
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
             rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
-      # Deploy application and run tests
-      - name: Create and use eShop environment
+      ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
+      - name: Initialize eShop environments
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
-            rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscription=${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
-            rad env update ${{ matrix.env }} --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
+            rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscriptionId=${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
           elif [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad deploy ./samples/eshop/environments/aws.bicep -p awsAccountId=${{ secrets.AWS_ACCOUNT_ID }} -p awsRegion=${{ env.AWS_REGION }} -p eksClusterName=${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-            rad env update ${{ matrix.env }} --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-          else
-            rad deploy ./samples/eshop/environments/containers.bicep
           fi
           rad env switch ${{ matrix.env }}
+      # Deploy application and run tests
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
