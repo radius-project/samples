@@ -9,8 +9,8 @@ param awsRegion string
 @description('Name of your EKS cluster')
 param eksClusterName string
 
-resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
-  name: 'aws-eshop'
+resource environment 'Applications.Core/environments@2023-10-01-preview' = {
+  name: 'aws'
   properties: {
     compute: {
       kind: 'kubernetes'
@@ -26,7 +26,7 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
       'Applications.Datastores/sqlDatabases': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/aws/sqldatabases:edge'
+          templatePath: 'ghcr.io/radius-project/recipes/aws/sqldatabases:latest'
           parameters: {
             eksClusterName: eksClusterName
           }
@@ -35,7 +35,7 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
       'Applications.Datastores/redisCaches': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/aws/rediscaches:edge'
+          templatePath: 'ghcr.io/radius-project/recipes/aws/rediscaches:latest'
           parameters: {
             eksClusterName: eksClusterName
           }
@@ -46,7 +46,7 @@ resource awsEshopEnv 'Applications.Core/environments@2023-10-01-preview' = {
       'Applications.Messaging/rabbitMQQueues': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/local-dev/rabbitmqmessagequeues:edge'
+          templatePath: 'ghcr.io/radius-project/recipes/local-dev/rabbitmqmessagequeues:latest'
         }
       }
     }

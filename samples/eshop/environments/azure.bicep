@@ -1,13 +1,13 @@
 import radius as rad
 
-@description('Azure ResourceGroup name')
-param azureResourceGroup string = resourceGroup().name
+@description('The name of the Azure resource group where Azure resources will be deployed.')
+param azureResourceGroup string
 
-@description('Azure SubscriptionId')
-param azureSubscription string = subscription().subscriptionId
+@description('The Azure subscription ID where Azure resources will be deployed.')
+param azureSubscriptionId string
 
-resource azureEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
-  name: 'azure-eshop'
+resource environment 'Applications.Core/environments@2023-10-01-preview' = {
+  name: 'azure'
   properties: {
     compute: {
       kind: 'kubernetes'
@@ -16,26 +16,26 @@ resource azureEShopEnv 'Applications.Core/environments@2023-10-01-preview' = {
     }
     providers: {
       azure: {
-        scope: '/subscriptions/${azureSubscription}/resourceGroups/${azureResourceGroup}'
+        scope: '/subscriptions/${azureSubscriptionId}/resourceGroups/${azureResourceGroup}'
       }
     }
     recipes: {
       'Applications.Datastores/sqlDatabases': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/azure/sqldatabases:edge'
+          templatePath: 'ghcr.io/radius-project/recipes/azure/sqldatabases:latest'
         }
       }
       'Applications.Datastores/redisCaches': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/azure/rediscaches:latest'
+          templatePath: 'ghcr.io/radius-project/recipes/azure/rediscaches:latest'
         }
       }
       'Applications.Core/extenders': {
         servicebus: {
           templateKind: 'bicep'
-          templatePath: 'radius.azurecr.io/recipes/azure/extender-servicebus:latest'
+          templatePath: 'ghcr.io/radius-project/recipes/azure/extender-servicebus:latest'
         }
       }
     }
