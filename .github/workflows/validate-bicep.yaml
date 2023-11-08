@@ -31,11 +31,9 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v2
-    - name: Parse release version and set environment variables
-      run: python ./.github/scripts/get_docs_version.py
     - name: Download rad-bicep
       run: |
-        ./.github/scripts/curl-with-retries.sh https://get.radapp.dev/tools/bicep-extensibility/${{ env.DOCS_CHANNEL }}/linux-x64/rad-bicep --output rad-bicep
+        oras pull ghcr.io/radius-project/radius/bicep/rad-bicep/linux-x64:latest
         chmod +x rad-bicep
         ./rad-bicep --version
     - name: Verify Bicep files
