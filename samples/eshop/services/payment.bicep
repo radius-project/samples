@@ -30,7 +30,7 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/payment.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/payment.api:${TAG}'
       env: {
         'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'

@@ -43,7 +43,7 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/catalog.api:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/catalog.api:${TAG}'
       env: {
         UseCustomizationData: 'False'
         PATH_BASE: '/catalog-api'

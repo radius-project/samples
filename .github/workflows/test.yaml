@@ -23,12 +23,11 @@ on:
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
 env:
-  RAD_CLI_URL: https://get.radapp.dev/tools/rad/install.sh
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
   test:
     name: Sample tests
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius-Samples]
+    runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
@@ -180,33 +179,14 @@ jobs:
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
-      # TODO: Remove authentication once GHCR is public
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: rad-ci-bot
-          password: ${{ secrets.GH_RAD_CI_BOT_PAT }}
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          for attempt in 1 2 3 4 5; do
-            if [[ -n "${{ inputs.version }}" && "${{ inputs.version }}" != "edge" && "${{ inputs.version }}" != *"rc"* ]]; then
-              INPUT_CHANNEL=$(echo "${{ inputs.version }}" | cut -d '.' -f 1,2)
-              echo "Downloading rad CLI version $INPUT_CHANNEL"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s $INPUT_CHANNEL
-            elif [[ -n "${{ inputs.version }}" ]]; then
-              echo "Downloading rad CLI version ${{ inputs.version }}"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s ${{ inputs.version }}
-            else
-              echo "Downloading edge rad CLI"
-              wget -q "${{ env.RAD_CLI_URL }}" -O - | /bin/bash -s edge
-            fi
-
-            if [ $? -eq 0 ]; then
-                break
-            fi
-          done
+          RADIUS_VERSION="${{ inputs.version }}"
+          if [[ -z "${{ inputs.version }}" ]]; then
+              RADIUS_VERSION=edge
+          fi
+          ./.github/scripts/install-radius.sh $RADIUS_VERSION
       - name: Initialize local environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -220,8 +200,8 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path radius.azurecr.io/recipes/dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
             rad credential register azure --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
@@ -284,8 +264,8 @@ jobs:
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
-          namespace="${{ matrix.env }}-${{ matrix.app }}"
-          label="radius.dev/application=${{ matrix.app }}"
+          namespace="default-${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
             kubectl logs $pod_name -n $namespace > playwright/pod-logs/${{ matrix.name }}/${pod_name}.txt

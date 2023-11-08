@@ -50,7 +50,7 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webshoppingagg:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webshoppingagg:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
@@ -106,7 +106,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop-envoy:0.1.4'
+      image: 'ghcr.io/radius-project/samples/eshop/envoy:latest'
       ports: {
         http: {
           containerPort: 80

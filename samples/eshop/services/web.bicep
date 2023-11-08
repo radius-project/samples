@@ -40,7 +40,7 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webspa:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webspa:${TAG}'
       env: {
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
@@ -93,7 +93,7 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'radius.azurecr.io/eshop/webmvc:${TAG}'
+      image: 'ghcr.io/radius-project/samples/eshop/webmvc:${TAG}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'

@@ -1,0 +1,5 @@
+apiVersion: v1
+appVersion: "0.1.0"
+version: 0.1.0
+name: demo
+description: A Helm chart for the Radius demo application.

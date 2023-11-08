@@ -18,51 +18,10 @@ concurrency:
 
 env:
   VERSION: ${{ github.event.pull_request.number || 'latest' }}
-  # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
-  # TODO_LAUNCH: Remove this env var once we opensource the repo - https://github.com/radius-project/samples/issues/439
-  DOCKER_REGISTRY: ${{ github.event.pull_request.number && 'radiusdev.azurecr.io' || 'radius.azurecr.io' }}
-  # Use radiusdev.azurecr.io for PR build. Otherwise, use radius.azurecr.io.
+  # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project.
   CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
-  # Set to true to push images to registry.
-  PUSH_IMAGE: true
-
+ 
 jobs:
-  # TODO_LAUNCH: Remove this build job once we opensource the repo - https://github.com/radius-project/samples/issues/439
-  build-acr:
-    name: Build and push sample images to ACR
-    if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - directory: samples/demo/
-            image: samples/demo
-          - directory: samples/dapr/ui/
-            image: samples/dapr-frontend
-          - directory: samples/dapr/nodeapp/
-            image: samples/dapr-backend
-          - directory: samples/aws/
-            image: samples/aws
-          - directory: samples/aws-sqs/
-            image: samples/aws-sqs
-          - directory: samples/volumes/
-            image: samples/volumes
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Login to container registry
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ env.DOCKER_REGISTRY }}
-          username: '${{ secrets.AZURE_SP_DOCKER_USERNAME }}'
-          password: '${{ secrets.AZURE_SP_DOCKER_PASSWORD }}'
-      - name: Build and push ${{ matrix.image }}
-        uses: docker/build-push-action@v4
-        with:
-          context: ./${{ matrix.directory }}
-          push: ${{ env.PUSH_IMAGE }}
-          tags: ${{ env.DOCKER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
   build-ghcr:
     name: Build and push sample images to GHCR
     if: github.event.action != 'closed'
@@ -99,29 +58,5 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./${{ matrix.directory }}
-          push: ${{ env.PUSH_IMAGE }}
+          push: ${{ github.event_name == 'push' && true || false }}
           tags: ${{ env.CONTAINER_REGISTRY }}/${{ matrix.image }}:${{ env.VERSION }}
-  
-  # TODO_LAUNCH: Remove this job once we opensource the repo because all pkgs will be cleaned up regularly - https://github.com/radius-project/samples/issues/439
-  cleanup:
-    name: Cleanup ${{ matrix.image }}
-    if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [
-          samples/demo,
-          samples/dapr-frontend,
-          samples/dapr-backend,
-          samples/aws,
-          samples/aws-sqs,
-          samples/volumes
-        ]
-    steps:
-      - name: Login to az cli and ACR
-        run: |
-          az login --service-principal --username ${{ secrets.AZURE_SP_DOCKER_USERNAME }} --password ${{ secrets.AZURE_SP_DOCKER_PASSWORD }} --tenant ${{ secrets.AZURE_SP_DOCKER_TENANT }}
-          az acr login --name ${{ env.DOCKER_REGISTRY }}
-      - name: Delete PR images
-        run: az acr repository delete --name ${{ env.DOCKER_REGISTRY }} --image "${{ matrix.image }}:${{ env.VERSION }}" --yes
