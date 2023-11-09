@@ -64,7 +64,7 @@ jobs:
           - name: eshop-azure
             runOnPullRequest: false
             app: eshop
-            env: azure-eshop
+            env: azure
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: azure
@@ -72,7 +72,7 @@ jobs:
           - name: eshop-aws
             runOnPullRequest: false
             app: eshop
-            env: aws-eshop
+            env: aws
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             credential: aws
