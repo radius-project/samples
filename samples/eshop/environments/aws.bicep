@@ -46,7 +46,7 @@ resource environment 'Applications.Core/environments@2023-10-01-preview' = {
       'Applications.Messaging/rabbitMQQueues': {
         default: {
           templateKind: 'bicep'
-          templatePath: 'ghcr.io/radius-project/recipes/local-dev/rabbitmqmessagequeues:latest'
+          templatePath: 'ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:latest'
         }
       }
     }
