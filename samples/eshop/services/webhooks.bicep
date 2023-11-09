@@ -5,21 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
-
-@description('Use Azure Service Bus for messaging')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESERVICEBUSENABLED string
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
 
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -36,12 +26,16 @@ param webhooksclientHttpName string
 @description('The name of the Webhooks SQL portable resource')
 param sqlWebhooksDbName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventBusConnectionString string
+
+@description('Use Azure Service Bus for messaging. Allowed values: "True", "False".')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string
 
 // CONTAINERS -----------------------------------------------------------
 
@@ -51,15 +45,15 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webhooks.api:${TAG}'
+      image: '${imageRegistry}/webhooks.api:${imageTag}'
       env: {
         PATH_BASE: '/webhooks-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: sqlWebhooksDb.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -90,7 +84,7 @@ resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webhooks.client:${TAG}'
+      image: '${imageRegistry}/webhooks.client:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
@@ -141,8 +135,4 @@ resource webhooksclientHttp 'Applications.Core/httpRoutes@2023-10-01-preview' ex
 
 resource sqlWebhooksDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: sqlWebhooksDbName
-}
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }

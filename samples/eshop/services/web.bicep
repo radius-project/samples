@@ -5,17 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
-
-@description('Optional App Insights Key')
-param APPLICATION_INSIGHTS_KEY string
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
 
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -49,14 +43,13 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webspa:${TAG}'
+      image: '${imageRegistry}/webspa:${imageTag}'
       env: {
         PATH_BASE: '/'
         ASPNETCORE_ENVIRONMENT: 'Production'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         UseCustomizationData: 'False'
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: redisKeystore.connectionString()
@@ -103,16 +96,15 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webmvc:${TAG}'
+      image: '${imageRegistry}/webmvc:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
         DPConnectionString: redisKeystore.connectionString()
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
         ExternalPurchaseUrl: '${gateway.properties.url}/${webshoppingapigwHttp.properties.hostname}'
         CallBackUrl: '${gateway.properties.url}/webmvc'

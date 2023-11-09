@@ -5,14 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
 
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -50,21 +47,18 @@ param webshoppingapigwHttp2Name string
 @description('Web Shopping Aggregator Http Route name')
 param webshoppingaggHttpName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingagg'
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/webshoppingagg:${TAG}'
+      image: '${imageRegistry}/webshoppingagg:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         PATH_BASE: '/webshoppingagg'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
         urls__basket: basketHttp.properties.url
         urls__catalog: catalogHttp.properties.url
@@ -88,10 +82,6 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
       }
     }
     connections: {
-      rabbitmq: {
-        source: rabbitmq.id
-        disableDefaultEnvVars: true
-      }
       identity: {
         source: identityHttp.id
         disableDefaultEnvVars: true
@@ -119,7 +109,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/envoy:latest'
+      image: '${imageRegistry}/envoy:latest'
       ports: {
         http: {
           containerPort: 80
@@ -182,10 +172,4 @@ resource webshoppingapigwHttp 'Applications.Core/httpRoutes@2023-10-01-preview' 
 
 resource webshoppingapigwHttp2 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
   name: webshoppingapigwHttp2Name
-}
-
-// PORTABLE RESOURCES --------------------------------------------------------
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }
