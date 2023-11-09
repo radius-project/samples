@@ -8,8 +8,8 @@ param environment string
 @description('Container registry to pull from, with optional path. Defaults to "ghcr.io/radius-project/samples/eshop"')
 param imageRegistry string = 'ghcr.io/radius-project/samples/eshop'
 
-@description('Container image tag to use for eshop images. Defaults to "linux-dotnet7".')
-param imageTag string = 'linux-dotnet7'
+@description('Container image tag to use for eshop images. Defaults to "latest".')
+param imageTag string = 'latest'
 
 // Variables ---------------------------------------------------------
 
