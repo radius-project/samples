@@ -5,24 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
+
 @description('Container image tag to use for eshop images')
-param TAG string
-
-@description('Optional App Insights Key')
-param APPLICATION_INSIGHTS_KEY string
-
-@description('Use Azure Service Bus for messaging.')
-@allowed([
-  'True'
-  'False'
-])
-param AZURESERVICEBUSENABLED string
-
-@description('What container orchestrator to use')
-@allowed([
-  'K8S'
-])
-param ORCHESTRATOR_TYPE string
+param imageTag string
 
 @description('The name of the Radius Gateway')
 param gatewayName string
@@ -39,12 +26,16 @@ param basketGrpcName string
 @description('The name of the Redis Basket portable resource')
 param redisBasketName string
 
-@description('The name of the RabbitMQ portable resource')
-param rabbitmqName string
-
-@description('The connection string of the Azure Service Bus')
+@description('The connection string for the event bus')
 @secure()
-param serviceBusConnectionString string
+param eventBusConnectionString string
+
+@description('Use Azure Service Bus for messaging. Allowed values: "True", "False".')
+@allowed([
+  'True'
+  'False'
+])
+param AZURESERVICEBUSENABLED string
 
 // Container -------------------------------------
 
@@ -54,19 +45,18 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/basket.api:${TAG}'
+      image: '${imageRegistry}/basket.api:${imageTag}'
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
         UseLoadTest: 'False'
         PATH_BASE: '/basket-api'
-        OrchestratorType: ORCHESTRATOR_TYPE
+        ORCHESTRATOR_TYPE: 'K8S'
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
-        EventBusConnection: (AZURESERVICEBUSENABLED == 'True') ? serviceBusConnectionString : rabbitmq.properties.host
+        EventBusConnection: eventBusConnectionString
         identityUrl: identityHttp.properties.url
         IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
       }
@@ -112,12 +102,8 @@ resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing =
   name: basketGrpcName
 }
 
-// Portable Resource ------------------------------------------
+// Portable Resource -----------------------------------------
 
 resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisBasketName
-}
-
-resource rabbitmq 'Applications.Messaging/rabbitMQQueues@2023-10-01-preview' existing = {
-  name: rabbitmqName
 }

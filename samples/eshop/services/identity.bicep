@@ -5,18 +5,11 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
-@description('Optional App Insights Key')
-param APPLICATION_INSIGHTS_KEY string
-
-@description('Use dev spaces')
-@allowed([
-  'True'
-  'False'
-])
-param ENABLEDEVSPACES string
+@description('Container registry to pull from, with optional path.')
+param imageRegistry string
 
 @description('Container image tag to use for eshop images')
-param TAG string
+param imageTag string
 
 @description('Name of the Gateway')
 param gatewayName string
@@ -56,7 +49,7 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: 'ghcr.io/radius-project/samples/eshop/identity.api:${TAG}'
+      image: '${imageRegistry}/identity.api:${imageTag}'
       env: {
         PATH_BASE: '/identity-api'
         ASPNETCORE_ENVIRONMENT: 'Development'
@@ -64,9 +57,7 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
         DPConnectionString: redisKeystore.connectionString()
-        ApplicationInsights__InstrumentationKey: APPLICATION_INSIGHTS_KEY
-        XamarinCallback: ''
-        EnableDevspaces: ENABLEDEVSPACES
+        EnableDevspaces: 'False'
         ConnectionString: sqlIdentityDb.connectionString()
         MvcClient: '${gateway.properties.url}/${webmvcHttp.properties.hostname}'
         SpaClient: gateway.properties.url
