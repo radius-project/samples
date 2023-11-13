@@ -228,6 +228,7 @@ jobs:
         run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
       - name: Wait for all pods to be ready
         if: steps.gen-id.outputs.RUN_TEST == 'true'
+        id: wait-for-pods
         run: |
           namespace="default-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
@@ -258,7 +259,7 @@ jobs:
       # Handle failures
       - name: Get Pod logs for failed tests
         id: get-pod-logs
-        if: failure() && steps.run-playwright-test.outcome == 'failure'
+        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure')
         run: |
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
