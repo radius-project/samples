@@ -1,5 +1,6 @@
 {
   "exclude": [
+    "app.ts",
     "client/**/*",
     "dist/**/*"
   ],
