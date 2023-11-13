@@ -11,9 +11,6 @@ param imageRegistry string
 @description('Container image tag to use for eshop images')
 param imageTag string
 
-@description('Name of the Payment HTTP route')
-param paymentHttpName string
-
 @description('The connection string for the event bus')
 @secure()
 param eventBusConnectionString string

@@ -76,7 +76,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: '${imageRegistry}/envoy:latest'
+      image: '${imageRegistry}/eshop-envoy:0.1.0'
       ports: {
         http: {
           containerPort: 80
