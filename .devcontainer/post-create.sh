@@ -1,5 +1,10 @@
 #!/bin/sh
 
+curl "https://rynowakkubernetesinterop.blob.core.windows.net/rad-cdk/rad" --output rad
+chmod +x rad
+sudo mv rad /usr/local/bin
+rad version
+
 ## Create a k3d cluster
 while (! kubectl cluster-info ); do
   # Docker takes a few seconds to initialize
