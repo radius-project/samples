@@ -52,6 +52,11 @@ resource webstatus 'Applications.Core/containers@2023-10-01-preview' = {
           port: 8107
         }
       }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
+      }
     }
   }
 }

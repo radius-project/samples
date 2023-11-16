@@ -54,6 +54,11 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5113
         }
       }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
+      }
     }
     connections: {
       sql: {

@@ -47,6 +47,11 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5121
         }
       }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
+      }
     }
     connections: {
       identity: {
@@ -86,6 +91,11 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
           containerPort: 8001
           port: 15202
         }
+      }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
       }
     }
   }

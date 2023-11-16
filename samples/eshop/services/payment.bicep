@@ -44,6 +44,11 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5108
         }
       }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
+      }
     }
   }
 }
