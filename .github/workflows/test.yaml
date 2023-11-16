@@ -236,7 +236,7 @@ jobs:
           namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           kubectl get deployments -A
-          kubectl rollout status deployment default-dapr -n $namespace --timeout=90s
+          kubectl rollout status deployment -l $label -n $namespace --timeout=90s
           kubectl wait --for=condition=Ready pod -l $label -n $namespace --timeout=5m
       - name: DEBUG
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
