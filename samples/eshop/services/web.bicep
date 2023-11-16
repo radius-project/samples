@@ -37,7 +37,7 @@ param redisKeystoreName string
 
 // CONTAINER --------------------------------------------------------------------
 
-// Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
+// Based objhgjn https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webspa
 resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'web-spa'
   properties: {
