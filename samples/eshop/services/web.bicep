@@ -90,7 +90,7 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
   }
 }
 
-// Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
+// Based on adfasfhttps://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webmvc
 resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webmvc'
   properties: {
