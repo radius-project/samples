@@ -235,16 +235,7 @@ jobs:
         run: |
           namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
-          kubectl get deployments -A
           kubectl rollout status deployment -l $label -n $namespace --timeout=90s
-      - name: DEBUG
-        if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
-        run: |
-          namespace="${{ matrix.env }}-${{ matrix.app }}"
-          label="radapp.io/application=${{ matrix.app }}"
-          kubectl get pods -A
-          kubectl get pods -l $label -n $namespace
-          kubectl describe pods -l $label -n $namespace
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
