@@ -289,7 +289,7 @@ jobs:
         run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label bug --label test-failure
       # Cleanup
       - name: Delete app
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           rad app delete ${{ matrix.app }} -y
       - name: Delete Azure resource group
@@ -305,7 +305,7 @@ jobs:
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
           # Delete all AWS resources created by the test
-          ./.github/scripts/delete-aws-resources.sh ${{ matrix.app }}
+          ./.github/scripts/delete-aws-resources.sh '/planes/radius/local/resourcegroups/default/providers/Applications.Core/applications/${{ matrix.app }}'
       - name: Delete EKS Cluster
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
@@ -313,4 +313,4 @@ jobs:
           rad uninstall kubernetes
           # Delete EKS cluster
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
-          eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait
+          eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait --force
