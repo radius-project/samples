@@ -17,8 +17,8 @@
 # ------------------------------------------------------------
 
 
-APP_NAME=$1
-APP_LABEL='RadiusApplication'
+APP_ID=$1
+APP_LABEL='radapp.io/application'
 RESOURCE_TYPES='AWS::RDS::DBInstance,AWS::RDS::DBSubnetGroup,AWS::MemoryDB::Cluster,AWS::MemoryDB::SubnetGroup'
 
 # File to store the list of deleted resources
@@ -45,7 +45,7 @@ function delete_aws_resources() {
         do
           key=$(jq -r '.Key' <<< "$tag")
           value=$(jq -r '.Value' <<< "$tag")
-          if [[ "$key" == "$APP_LABEL" && "$value" == "$APP_NAME" ]]
+          if [[ "$key" == "$APP_LABEL" && "$value" == "$APP_ID" ]]
           then
             echo "Deleting resource of type: $resource_type with identifier: $identifier"
             echo "$identifier\n" >> $DELETED_RESOURCES_FILE
