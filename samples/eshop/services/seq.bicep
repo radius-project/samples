@@ -23,8 +23,7 @@ resource seq 'Applications.Core/containers@2023-10-01-preview' = {
         }
       }
       livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
+        kind:'tcp'
         containerPort:80
       }
     }
