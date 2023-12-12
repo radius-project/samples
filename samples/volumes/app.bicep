@@ -2,6 +2,8 @@ import radius as rad
 
 param environment string
 
+param image string = 'ghcr.io/radius-project/samples/volumes:latest'
+
 resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'myapp'
   properties: {
@@ -14,7 +16,7 @@ resource container 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'ghcr.io/radius-project/samples/volumes:latest'
+      image: image
       volumes: {
         temp: {
           kind: 'ephemeral'
