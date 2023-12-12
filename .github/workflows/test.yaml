@@ -42,8 +42,8 @@ jobs:
             port: 3000
             container: demo
             enableDapr: false
-            images: [samples/demo]
-            directories: [samples/demo/]
+            images: samples/demo
+            directories: samples/demo/
           - name: dapr
             runOnPullRequest: true
             app: dapr
@@ -179,10 +179,13 @@ jobs:
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          echo ${{ matrix.images }}
-          for image in ${{ matrix.images }}; do
-            echo $image
-            cd $image.directory
+          images=$(echo ${{ matrix.images }} | sed "s/,/ /g")
+          directories=$(echo ${{ matrix.directories }} | sed "s/,/ /g")
+          for index in "${!images[@]}"; do
+            image=${images[$index]}
+            directory=${directories[$index]}
+            docker build -t localhost:51351/$image $directory
+            docker push localhost:51351/$image
           done
       - name: Install Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
