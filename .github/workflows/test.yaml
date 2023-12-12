@@ -42,12 +42,8 @@ jobs:
             port: 3000
             container: demo
             enableDapr: false
-            images: [
-              {
-                directory: samples/demo/,
-                image: samples/demo,
-              }
-            ]
+            images: [samples/demo]
+            directories: [samples/demo/]
           - name: dapr
             runOnPullRequest: true
             app: dapr
