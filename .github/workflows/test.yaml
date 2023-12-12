@@ -37,7 +37,7 @@ jobs:
             app: demo
             env: default
             path: ./samples/demo/app.bicep
-            args: --application demo -p image=localhost:51351/samples/demo
+            args: --application demo -p image=sampleregistry:5000/samples/demo
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
             container: demo
@@ -49,7 +49,7 @@ jobs:
             app: dapr
             env: default
             path: ./samples/dapr/dapr.bicep
-            args: -p frontendImage=localhost:51351/samples/dapr-frontend -p backendImage=localhost:51351/samples/dapr-backend
+            args: -p frontendImage=sampleregistry:5000samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
             enableDapr: true
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
@@ -58,7 +58,7 @@ jobs:
             app: myapp
             env: default
             path: ./samples/volumes/app.bicep
-            args: -p image=localhost:51351/samples/volumes
+            args: -p image=sampleregistry:5000/samples/volumes
             enableDapr: false
             images: samples/volumes
             directories: samples/volumes/
@@ -181,7 +181,7 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create reciperegistry:51351
+        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
