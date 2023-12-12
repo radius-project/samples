@@ -187,11 +187,15 @@ jobs:
         run: |
           images=$(echo ${{ matrix.images }} | sed "s/,/ /g")
           directories=$(echo ${{ matrix.directories }} | sed "s/,/ /g")
+          echo "Building images: $images"
+          echo "Directories: $directories"
           for index in "${!images[@]}"; do
             image=${images[$index]}
             directory=${directories[$index]}
-            docker build -t localhost:51351/$image $directory
-            docker push localhost:51351/$image
+            echo "Building image: $image"
+            echo "Directory: $directory"
+            docker build -t localhost:51351/$image:latest $directory
+            docker push localhost:51351/$image:latest
           done
       - name: Install Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
