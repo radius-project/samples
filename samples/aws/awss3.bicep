@@ -13,6 +13,8 @@ param aws_secret_access_key string
 
 param aws_region string
 
+param image string = 'ghcr.io/radius-project/samples/aws:latest'
+
 resource s3 'AWS.S3/Bucket@default' = {
   alias: bucket
   properties: {
@@ -39,7 +41,7 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
         AWS_SECRET_ACCESS_KEY: aws_secret_access_key
         AWS_DEFAULT_REGION: aws_region
       }
-      image: 'ghcr.io/radius-project/samples/aws:latest'
+      image: image
     }
   }
 }
