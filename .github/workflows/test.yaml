@@ -50,7 +50,7 @@ jobs:
             app: dapr
             env: default
             path: ./samples/dapr/dapr.bicep
-            deployArgs: -p frontendImage=sampleregistry:5000samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
+            deployArgs: -p frontendImage=sampleregistry:5000/samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
             enableDapr: true
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
