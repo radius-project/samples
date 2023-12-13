@@ -186,13 +186,15 @@ jobs:
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
-          images=$(echo ${{ matrix.images }} | sed "s/,/ /g")
-          directories=$(echo ${{ matrix.directories }} | sed "s/,/ /g")
+          # split images and directories into arrays
+          IFS=',' read -ra images <<< "${{ matrix.images }}"
+          IFS=',' read -ra directories <<< "${{ matrix.directories }}"
           echo "Building images: $images"
           echo "Directories: $directories"
           for index in "${!images[@]}"; do
             image=${images[$index]}
             directory=${directories[$index]}
+            echo "Building image $image from directory $directory"
             docker build -t localhost:51351/$image:latest $directory
             docker push localhost:51351/$image:latest
           done
