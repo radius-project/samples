@@ -193,8 +193,6 @@ jobs:
           for index in "${!images[@]}"; do
             image=${images[$index]}
             directory=${directories[$index]}
-            echo "Building image: $image"
-            echo "Directory: $directory"
             docker build -t localhost:51351/$image:latest $directory
             docker push localhost:51351/$image:latest
           done
