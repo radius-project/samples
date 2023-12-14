@@ -286,7 +286,7 @@ jobs:
           if-no-files-found: error
       - name: Create GitHub issue on failure
         if: failure() && github.event_name == 'schedule'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label bug --label test-failure
       # Cleanup
       - name: Delete app
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
