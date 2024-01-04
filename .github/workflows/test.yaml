@@ -315,7 +315,9 @@ jobs:
       - name: Delete app
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad app delete ${{ matrix.app }} -y
+          if command -v rad &> /dev/null; then
+            rad app delete ${{ matrix.app }} -y
+          fi
       - name: Delete Azure resource group
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
@@ -334,7 +336,10 @@ jobs:
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
           # Uninstall Radius from EKS cluster
-          rad uninstall kubernetes
+          # if rad cli exists
+          if command -v rad &> /dev/null; then
+            rad uninstall kubernetes
+          fi
           # Delete EKS cluster
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
           eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait --force
