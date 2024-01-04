@@ -271,6 +271,8 @@ jobs:
             echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
+          k get pods -A
+          k describe pods -A
           cd playwright/
           npm ci
           npx playwright install --with-deps
