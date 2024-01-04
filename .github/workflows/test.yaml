@@ -136,21 +136,6 @@ jobs:
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
-      # Create and install test environment
-      - name: Create Azure resource group
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
-        id: create-azure-resource-group
-        run: |
-          current_time=$(date +%s)
-          az group create \
-            --location ${{ env.AZURE_LOCATION }} \
-            --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
-            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
-            --tags creationTime=$current_time
-          while [ $(az group exists --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}) = false ]; do
-            echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
-            sleep 5
-          done
       - name: Configure AWS
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
@@ -158,25 +143,6 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
-      - name: Create EKS Cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        id: create-eks
-        run: |
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin
-          eksctl create cluster \
-            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --nodes-min 1 --nodes-max 2 --node-type t3.large \
-            --zones ${{ env.AWS_ZONES }} \
-            --managed \
-            --region ${{ env.AWS_REGION }}
-          while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
-            echo "Waiting for EKS cluster to be created..."
-            sleep 60
-          done
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-        timeout-minutes: 60
-        continue-on-error: false
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -198,6 +164,40 @@ jobs:
             docker build -t localhost:51351/$image:latest $directory
             docker push localhost:51351/$image:latest
           done
+      # Create and install test environment
+      - name: Create Azure resource group
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
+        id: create-azure-resource-group
+        run: |
+          current_time=$(date +%s)
+          az group create \
+            --location ${{ env.AZURE_LOCATION }} \
+            --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
+            --tags creationTime=$current_time
+          while [ $(az group exists --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}) = false ]; do
+            echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
+            sleep 5
+          done
+      - name: Create EKS Cluster
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        id: create-eks
+        run: |
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+          eksctl create cluster \
+            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
+            --nodes-min 1 --nodes-max 2 --node-type t3.large \
+            --zones ${{ env.AWS_ZONES }} \
+            --managed \
+            --region ${{ env.AWS_REGION }}
+          while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
+            echo "Waiting for EKS cluster to be created..."
+            sleep 60
+          done
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+        timeout-minutes: 60
+        continue-on-error: false
       - name: Install Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
         run: |
