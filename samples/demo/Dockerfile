@@ -14,7 +14,6 @@ WORKDIR /usr/src/app
 
 COPY --from=BUILD /usr/src/app/dist ./dist
 COPY --from=BUILD /usr/src/app/node_modules ./node_modules
-COPY --from=BUILD /usr/src/app/client/build/. ./dist/www/
 
 EXPOSE 3000
 ENV PORT=3000
