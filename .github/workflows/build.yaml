@@ -6,25 +6,14 @@ on:
     branches:
       - edge
       - v*.*
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - edge
-      - v*.*
-
-concurrency:
-  group: build-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: true
 
 env:
-  VERSION: ${{ github.event.pull_request.number || 'latest' }}
-  # Use ghcr.io/radius-project/dev for PR build. Otherwise, use ghcr.io/radius-project.
-  CONTAINER_REGISTRY: ${{ github.event.pull_request.number && 'ghcr.io/radius-project/dev' || 'ghcr.io/radius-project' }}
+  VERSION: 'latest'
+  CONTAINER_REGISTRY: 'ghcr.io/radius-project'
  
 jobs:
   build-ghcr:
     name: Build and push sample images to GHCR
-    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       contents: read
