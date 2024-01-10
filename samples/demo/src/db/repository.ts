@@ -1,6 +1,8 @@
 import { MongoFactory  } from './mongo';
 import { RedisFactory } from './redis';
 import { InMemoryFactory } from './inmemory';
+import { DaprFactory } from './dapr';
+import { CommunicationProtocolEnum } from '@dapr/dapr';
 
 export interface Item {
     id: string | undefined
@@ -23,6 +25,11 @@ export interface Repository {
 }
 
 export function createFactory(): RepositoryFactory {
+    if (process.env.CONNECTION_STATESTORE_COMPONENTNAME) {
+      console.log(`Using Dapr state store: found component name '${process.env.CONNECTION_STATESTORE_COMPONENTNAME}'in environment variable CONNECTION_STATESTORE_COMPONENTNAME`);
+      return new DaprFactory(process.env.CONNECTION_STATESTORE_COMPONENTNAME, { communicationProtocol: CommunicationProtocolEnum.GRPC });
+    }
+
     if (process.env.CONNECTION_MONGODB_CONNECTIONSTRING) {
       console.log("Using MongoDB: found connection string in environment variable CONNECTION_MONGODB_CONNECTIONSTRING");
       return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);

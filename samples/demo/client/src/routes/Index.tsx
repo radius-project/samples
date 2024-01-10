@@ -3,7 +3,7 @@ import { useLoaderData } from "react-router-dom";
 export function Index() {
   const { process, env, network } = useLoaderData() as ContainerInfo;
 
-  // Find all environment variables that start with npm_
+  // Find all environment variables that start with CONNECTION_
   const connections = Object.entries(env).filter(([key, value]) => key.startsWith("CONNECTION_"));
   // Now split the key into parts between _, and find all unique second parts
   const uniqueConnections = Array.from(new Set(connections.map(([key, value]) => key.split("_")[1])));
