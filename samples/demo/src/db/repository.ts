@@ -1,6 +1,7 @@
 import { MongoFactory  } from './mongo';
 import { RedisFactory } from './redis';
 import { InMemoryFactory } from './inmemory';
+import { DaprStateStoreFactory } from './daprstatestore';
 
 export interface Item {
     id: string | undefined
@@ -23,6 +24,11 @@ export interface Repository {
 }
 
 export function createFactory(): RepositoryFactory {
+    if (process.env.CONNECTION_STATESTORE_COMPONENTNAME) {
+      console.log("Using Dapr State Store: found component name in environment variable CONNECTION_STATESTORE_COMPONENTNAME");
+      return new DaprStateStoreFactory(process.env.CONNECTION_STATESTORE_COMPONENTNAME);
+    }
+
     if (process.env.CONNECTION_MONGODB_CONNECTIONSTRING) {
       console.log("Using MongoDB: found connection string in environment variable CONNECTION_MONGODB_CONNECTIONSTRING");
       return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
