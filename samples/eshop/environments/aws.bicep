@@ -29,6 +29,7 @@ resource environment 'Applications.Core/environments@2023-10-01-preview' = {
           templatePath: 'ghcr.io/radius-project/recipes/aws/sqldatabases:latest'
           parameters: {
             eksClusterName: eksClusterName
+            backupRetentionPeriod: 0
           }
         }
       }
