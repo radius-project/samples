@@ -73,13 +73,16 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
     // Get the failure rate from the environment variable RADIUS_DEMO_FAILURE_RATE. This is a percentage that defaults to 100
     const radiusDemoFailureRate = parseFloat(process.env.RADIUS_DEMO_FAILURE_RATE || '100') / 100;
 
+    // Environment variable that controls if the failure simulation is enabled. Defaults to 0 (disabled).
+    const radiusDemoFailureEnabled = parseInt(process.env.RADIUS_DEMO_FAILURE_ENABLED || '0');
+
     app.post(`/api/todos`, async (req, res) => {
         const respository = await factory.create()
         try {
             const item = req.body as Item;
 
             // Titles that end with a space are used to simulate an error condition and return a 500.
-            if (item && item.title && item.title.endsWith(' ')) {
+            if (item && item.title && item.title.endsWith(' ') && radiusDemoFailureEnabled > 0) {
                 // To make the error condition a little more unpredictable, we also read the FAILURE_RATE env
                 // variable which represents the percentage of requests that will fail. For example, setting
                 // FAILURE_RATE to 30 means tht 30% of requests that end with a space will fail.
