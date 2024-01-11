@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@azure/monitor-opentelemetry": "^1.1.1",
+    "@dapr/dapr": "^3.2.0",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.3",
     "@types/uuid": "^8.3.4",
