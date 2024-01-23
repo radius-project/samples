@@ -1,0 +1,19 @@
+name: Purge AWS RDS DBInstance snapshots
+on:
+  schedule:
+    # Runs at 00:30 and 12:30
+    - cron: "30 0,12 * * *"
+jobs:
+  purge_rds_snapshots:
+    name: Purge AWS RDS DBInstance snapshots
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Purge AWS RDS DBInstance snapshots
+        run: |
+          ./.github/workflows/purge_rds_snapshots.sh
+      - name: Create GitHub issue on failure
+        if: ${{ failure() }}
+        run: |
+          gh issue create --title "Purge AWS RDS DBInstance snapshots workflow failed" \
+            --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." \
+            --repo ${{ github.repository }}
