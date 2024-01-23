@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Purge AWS RDS DBInstance snapshots
         run: |
-          ./.github/workflows/purge_rds_snapshots.sh
+          ./.github/scripts/purge-aws-rds-snapshots.sh
       - name: Create GitHub issue on failure
         if: ${{ failure() }}
         run: |
