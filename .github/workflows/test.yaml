@@ -27,12 +27,13 @@ env:
 jobs:
   test:
     name: Sample tests
-    runs-on: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: demo
+            os: ubuntu-latest
             runOnPullRequest: true
             app: demo
             env: default
@@ -46,6 +47,7 @@ jobs:
             images: samples/demo
             directories: samples/demo/
           - name: dapr
+            os: ubuntu-latest-m
             runOnPullRequest: true
             app: dapr
             env: default
@@ -55,6 +57,7 @@ jobs:
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
           - name: volumes
+            os: ubuntu-latest
             runOnPullRequest: true
             app: myapp
             env: default
@@ -64,6 +67,7 @@ jobs:
             images: samples/volumes
             directories: samples/volumes/
           - name: eshop-containers
+            os: ubuntu-latest-m
             runOnPullRequest: true
             app: eshop
             env: default
@@ -71,6 +75,7 @@ jobs:
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure
+            os: ubuntu-latest
             runOnPullRequest: false
             app: eshop
             env: azure
@@ -79,6 +84,7 @@ jobs:
             credential: azure
             enableDapr: false
           - name: eshop-aws
+            os: ubuntu-latest
             runOnPullRequest: false
             app: eshop
             env: aws
