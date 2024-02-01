@@ -27,11 +27,11 @@ env:
 jobs:
   test:
     name: Sample tests
-    runs-on: [ubuntu-latest-m]
+    runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest-m]
+        os: [ubuntu-latest]
         include:
           - name: demo
             runOnPullRequest: true
