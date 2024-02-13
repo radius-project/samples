@@ -3,11 +3,15 @@ on:
   schedule:
     # Runs at 00:30 and 12:30
     - cron: "30 0,12 * * *"
+env:
+    GH_TOKEN: ${{ github.token }}
 jobs:
   purge_rds_snapshots:
     name: Purge AWS RDS DBInstance snapshots
     runs-on: [ubuntu-latest]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Purge AWS RDS DBInstance snapshots
         run: |
           ./.github/scripts/purge-aws-rds-snapshots.sh
