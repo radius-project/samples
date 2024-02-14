@@ -5,6 +5,7 @@ on:
     - cron: "30 0,12 * * *"
 env:
     GH_TOKEN: ${{ github.token }}
+    AWS_REGION: us-west-2
 jobs:
   purge_rds_snapshots:
     name: Purge AWS RDS DBInstance snapshots
@@ -12,6 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Login to AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ env.AWS_REGION }}
+          aws configure set output json
       - name: Purge AWS RDS DBInstance snapshots
         run: |
           ./.github/scripts/purge-aws-rds-snapshots.sh
