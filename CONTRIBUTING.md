@@ -12,7 +12,11 @@ We welcome small pull request contributions from anyone (docs improvements, bug 
 We the maintainers have discretion over what features and pull requests we accept. Please understand that we are responsible for the long-term support and maintenance of Radius, and so we sometimes need to make hard decisions to limit the scope. For another perspective on this, we really like this [article](https://www.igvita.com/2011/12/19/dont-push-your-pull-requests/).
 
 ## Sending a pull request
-Please submit pull requests using a forked repo and open pull requests against the `edge` branch (the default) unless otherwise instructed.
+
+Please submit pull requests using a forked repo and open pull requests against:
+
+- The default, versioned branch (`v0.30` for example) if you are adding/fixing a sample and it is compatible with the latest release of Radius.
+- The `edge` branch if you are contributing a sample that requires a feature that will be available in the next release of Radius.
 
 When opening a pull request, the form will be pre-populated with our template. Please fill out the template to provide structure to your PR message. If you've already written a good commit message (see below) it will be easy to use with our template.
 
