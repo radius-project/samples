@@ -63,7 +63,7 @@ If you are the code reviewer, it's your responsibility to follow up (politely) i
 
 We welcome **any contributor or community member** to engage with **any pull request** on our repository. Feel free to make suggestions for improvements and ask questions that are relevant. If you're asking questions for your learning, please make it clear that your questions are "non-blocking" for the pull request.
 
-See the [code reviewing documentation](../contributing-code/contributing-code-reviewing/README.md) for guidance on code reviewing.
+See the [code reviewing documentation](https://github.com/radius-project/radius/blob/main/docs/contributing/contributing-code/contributing-code-reviewing/README.md) for guidance on code reviewing.
 
 ## Inactive Pull Requests
 
