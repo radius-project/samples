@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge.'
+        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge."
         required: false
-        default: 'edge'
+        default: "edge"
         type: string
   push:
     branches:
@@ -76,7 +76,7 @@ jobs:
             enableDapr: false
           - name: eshop-azure
             os: ubuntu-latest
-            runOnPullRequest: false
+            runOnPullRequest: true
             app: eshop
             env: azure
             path: ./samples/eshop/eshop.bicep
@@ -85,7 +85,7 @@ jobs:
             enableDapr: false
           - name: eshop-aws
             os: ubuntu-latest
-            runOnPullRequest: false
+            runOnPullRequest: true
             app: eshop
             env: aws
             path: ./samples/eshop/eshop.bicep
