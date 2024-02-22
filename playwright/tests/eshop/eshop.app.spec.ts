@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForWebApp } from "../util/helper";
 
 test("eShop on Containers App Basic UI and Functionality Checks", async ({ page }) => {
   // Listen for all console events and handle errors
@@ -13,6 +14,8 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
   
   // Remove quotes from the endpoint if they exist
   endpoint = (endpoint as string).replace(/['"]+/g, '')
+
+  await waitForWebApp(endpoint);
   
   await page.goto(endpoint);
 
