@@ -4,7 +4,7 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#    
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
@@ -25,10 +25,6 @@ if [[ $VERSION == "edge" ]]; then
     oras pull $RAD_CLI_EDGE_URL
     chmod +x ./rad
     mv ./rad /usr/local/bin/rad
-elif [[ -n $VERSION && $VERSION != *"rc"* ]]; then
-    INPUT_CHANNEL=$(echo $VERSION | cut -d '.' -f 1,2)
-    echo "Downloading rad CLI version $INPUT_CHANNEL"
-    wget -q $RAD_CLI_URL -O - | /bin/bash -s $INPUT_CHANNEL
 elif [[ -n $VERSION ]]; then
     echo Downloading rad CLI version $VERSION
     wget -q $RAD_CLI_URL -O - | /bin/bash -s $VERSION
