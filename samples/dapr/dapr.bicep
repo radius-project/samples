@@ -6,6 +6,9 @@ param environment string
 @description('Specifies Kubernetes namespace for redis.')
 param namespace string = 'default'
 
+param frontendImage string = 'ghcr.io/radius-project/samples/dapr-frontend:latest'
+param backendImage string = 'ghcr.io/radius-project/samples/dapr-backend:latest'
+
 resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'dapr'
   properties: {
@@ -18,7 +21,7 @@ resource backend 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'ghcr.io/radius-project/samples/dapr-backend:latest'
+      image: backendImage
       ports: {
         web: {
           containerPort: 3000
@@ -45,7 +48,7 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: app.id
     container: {
-      image: 'ghcr.io/radius-project/samples/dapr-frontend:latest'
+      image: frontendImage
       env: {
         CONNECTION_BACKEND_APPID: backend.name
         ASPNETCORE_URLS: 'http://*:8080'

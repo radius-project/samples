@@ -45,5 +45,5 @@ jobs:
           --method PATCH \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /repos/radius-project/samples \
+          repos/radius-project/samples \
           -f default_branch='v${{ steps.parse_release_channel.outputs.channel }}'

@@ -27,34 +27,47 @@ env:
 jobs:
   test:
     name: Sample tests
-    runs-on: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: demo
+            os: ubuntu-latest
             runOnPullRequest: true
             app: demo
             env: default
             path: ./samples/demo/app.bicep
-            args: --application demo
+            deployArgs: --application demo -p image=sampleregistry:5000/samples/demo
+            exposeArgs: --application demo
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
             container: demo
             enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
           - name: dapr
+            os: ubuntu-latest-m
             runOnPullRequest: true
             app: dapr
             env: default
             path: ./samples/dapr/dapr.bicep
+            deployArgs: -p frontendImage=sampleregistry:5000/samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
             enableDapr: true
+            images: samples/dapr-frontend,samples/dapr-backend
+            directories: samples/dapr/ui/,samples/dapr/nodeapp/
           - name: volumes
+            os: ubuntu-latest
             runOnPullRequest: true
             app: myapp
             env: default
             path: ./samples/volumes/app.bicep
+            deployArgs: -p image=sampleregistry:5000/samples/volumes
             enableDapr: false
+            images: samples/volumes
+            directories: samples/volumes/
           - name: eshop-containers
+            os: ubuntu-latest-m
             runOnPullRequest: true
             app: eshop
             env: default
@@ -62,6 +75,7 @@ jobs:
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure
+            os: ubuntu-latest
             runOnPullRequest: false
             app: eshop
             env: azure
@@ -70,6 +84,7 @@ jobs:
             credential: azure
             enableDapr: false
           - name: eshop-aws
+            os: ubuntu-latest
             runOnPullRequest: false
             app: eshop
             env: aws
@@ -127,6 +142,34 @@ jobs:
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+      - name: Configure AWS
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ env.AWS_REGION }}
+          aws configure set output json
+      - name: Download k3d
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+      - name: Create k3d cluster
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
+      - name: Build images
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
+        run: |
+          # split images and directories into arrays
+          IFS=',' read -ra images <<< "${{ matrix.images }}"
+          IFS=',' read -ra directories <<< "${{ matrix.directories }}"
+          echo "Building images: $images"
+          echo "Directories: $directories"
+          for index in "${!images[@]}"; do
+            image=${images[$index]}
+            directory=${directories[$index]}
+            echo "Building image $image from directory $directory"
+            docker build -t localhost:51351/$image:latest $directory
+            docker push localhost:51351/$image:latest
+          done
       # Create and install test environment
       - name: Create Azure resource group
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
@@ -142,13 +185,6 @@ jobs:
             echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
             sleep 5
           done
-      - name: Configure AWS
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region ${{ env.AWS_REGION }}
-          aws configure set output json
       - name: Create EKS Cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
@@ -168,12 +204,6 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
-      - name: Download k3d
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-      - name: Create k3d cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential != 'aws'
-        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0"
       - name: Install Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
         run: |
@@ -228,7 +258,7 @@ jobs:
       # Deploy application and run tests
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: rad deploy ${{ matrix.path }} ${{ matrix.args }}
+        run: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
       - name: Wait for all pods to be ready
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         id: wait-for-pods
@@ -241,7 +271,7 @@ jobs:
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose containers ${{ matrix.container }} ${{ matrix.args }} --port ${{ matrix.port }} &
+            rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
             echo "Endpoint: $endpoint"
@@ -285,13 +315,15 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       - name: Create GitHub issue on failure
-        if: failure() && github.event_name != 'pull_request' && github.event_name != 'workflow_dispatch'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }}
+        if: failure() && github.event_name == 'schedule'
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
       # Cleanup
       - name: Delete app
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad app delete ${{ matrix.app }} -y
+          if command -v rad &> /dev/null; then
+            rad app delete ${{ matrix.app }} -y
+          fi
       - name: Delete Azure resource group
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
@@ -310,7 +342,10 @@ jobs:
         if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
           # Uninstall Radius from EKS cluster
-          rad uninstall kubernetes
+          # if rad cli exists
+          if command -v rad &> /dev/null; then
+            rad uninstall kubernetes
+          fi
           # Delete EKS cluster
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
           eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait --force
