@@ -14,15 +14,6 @@ param imageTag string
 @description('The name of the Radius Gateway')
 param gatewayName string
 
-@description('The name of the Identity HTTP Route')
-param identityHttpName string
-
-@description('The name of the Basket HTTP Route')
-param basketHttpName string
-
-@description('The name of the Basket gRPC Route')
-param basketGrpcName string
-
 @description('The name of the Redis Basket portable resource')
 param redisBasketName string
 
@@ -57,30 +48,37 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         ConnectionString: redisBasket.connectionString()
         EventBusConnection: eventBusConnectionString
-        identityUrl: identityHttp.properties.url
-        IdentityUrlExternal: '${gateway.properties.url}/${identityHttp.properties.hostname}'
+        identityUrl: 'http://identity-api:5105'
+        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: basketHttp.id
+          port: 5103
         }
         grpc: {
           containerPort: 81
-          provides: basketGrpc.id
+          port: 9103
         }
       }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
+      } 
     }
+
     connections: {
       redis: {
         source: redisBasket.id
         disableDefaultEnvVars: true
       }
       identity: {
-        source: identityHttp.id
+        source: 'http://identity-api:5105'
         disableDefaultEnvVars: true
       }
     }
+    
   }
 }
 
@@ -90,19 +88,7 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource identityHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: identityHttpName
-}
-
-resource basketHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: basketHttpName
-}
-
-resource basketGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: basketGrpcName
-}
-
-// Portable Resource -----------------------------------------
+// Portable Resource ------------------------------------------
 
 resource redisBasket 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisBasketName

@@ -100,24 +100,11 @@ module stateStore 'infra/dapr-state-store.bicep' = {
   }
 }
 
-// HTTP Routes
-module httpRoutes 'infra/http-routes.bicep' = {
-  name: '${deployment().name}-http-routes'
-  params: {
-    appId: eShopOnDapr.id
-  }
-}
-
 // Gateway
 module gateway 'infra/gateway.bicep' = {
   name: '${deployment().name}-gateway'
   params: {
     appId: eShopOnDapr.id
-    blazorClientRouteName: httpRoutes.outputs.blazorClientRouteName
-    identityApiRouteName: httpRoutes.outputs.identityApiRouteName
-    seqRouteName: httpRoutes.outputs.seqRouteName
-    webshoppingGwRouteName: httpRoutes.outputs.webshoppingGwRouteName
-    webstatusRouteName: httpRoutes.outputs.webstatusRouteName
   }
 }
 
@@ -129,7 +116,6 @@ module seq 'services/seq.bicep' = {
   name: '${deployment().name}-seq'
   params: {
     appId: eShopOnDapr.id
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -137,9 +123,7 @@ module blazorClient 'services/blazor-client.bicep' = {
   name: '${deployment().name}-blazor-client'
   params: {
     appId: eShopOnDapr.id
-    blazorClientRouteName: httpRoutes.outputs.blazorClientRouteName
     gatewayName: gateway.outputs.gatewayName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -147,12 +131,9 @@ module basketApi 'services/basket-api.bicep' = {
   name: '${deployment().name}-basket-api'
   params: {
     appId: eShopOnDapr.id
-    basketApiRouteName: httpRoutes.outputs.basketApiRouteName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprStateStoreName: stateStore.outputs.daprStateStoreName
     gatewayName: gateway.outputs.gatewayName
-    identityApiRouteName: httpRoutes.outputs.identityApiRouteName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -160,12 +141,10 @@ module catalogApi 'services/catalog-api.bicep' = {
   name: '${deployment().name}-catalog-api'
   params: {
     appId: eShopOnDapr.id
-    catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
     catalogDbName: sqlServer.outputs.catalogDbName
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
     keyVaultName: secretStore.outputs.keyVaultName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -174,11 +153,9 @@ module identityApi 'services/identity-api.bicep' = {
   params: {
     appId: eShopOnDapr.id
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
-    identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     identityDbName: sqlServer.outputs.identityDbName
     gatewayName: gateway.outputs.gatewayName
     keyVaultName: secretStore.outputs.keyVaultName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -188,12 +165,9 @@ module orderingApi 'services/ordering-api.bicep' = {
     appId: eShopOnDapr.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
     daprSecretStoreName: secretStore.outputs.daprSecretStoreName
-    identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     gatewayName: gateway.outputs.gatewayName
     keyVaultName: secretStore.outputs.keyVaultName
-    orderingApiRouteName: httpRoutes.outputs.orderingApiRouteName
     orderingDbName: sqlServer.outputs.orderingDbName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -202,8 +176,6 @@ module paymentApi 'services/payment-api.bicep' = {
   params: {
     appId: eShopOnDapr.id
     daprPubSubBrokerName: daprPubSub.outputs.daprPubSubBrokerName
-    paymentApiRouteName: httpRoutes.outputs.paymentApiRouteName
-    seqRouteName: httpRoutes.outputs.seqRouteName
   }
 }
 
@@ -211,10 +183,7 @@ module webshoppingAgg 'services/webshopping-agg.bicep' = {
   name: '${deployment().name}-ws-agg'
   params: {
     appId: eShopOnDapr.id
-    identityApiRouteName: httpRoutes.outputs.identityApiRouteName
     gatewayName: gateway.outputs.gatewayName
-    seqRouteName: httpRoutes.outputs.seqRouteName
-    webshoppingAggRouteName: httpRoutes.outputs.webshoppingAggRouteName
   }
 }
 
@@ -222,9 +191,6 @@ module webshoppingGw 'services/webshopping-gw.bicep' = {
   name: '${deployment().name}-ws-gw'
   params: {
     appId: eShopOnDapr.id
-    catalogApiRouteName: httpRoutes.outputs.catalogApiRouteName
-    orderingApiRouteName: httpRoutes.outputs.orderingApiRouteName
-    webshoppingGwRouteName: httpRoutes.outputs.webshoppingGwRouteName
   }
 }
 
@@ -232,7 +198,5 @@ module webstatus 'services/webstatus.bicep' = {
   name: '${deployment().name}-webstatus'
   params: {
     appId: eShopOnDapr.id
-    blazorClientApiRouteName: httpRoutes.outputs.blazorClientRouteName
-    webstatusRouteName: httpRoutes.outputs.webstatusRouteName
   }
 }
