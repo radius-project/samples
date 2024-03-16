@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge.'
+        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge."
         required: false
-        default: 'edge'
+        default: "edge"
         type: string
   push:
     branches:
@@ -75,8 +75,8 @@ jobs:
             uiTestFile: tests/eshop/eshop.app.spec.ts
             enableDapr: false
           - name: eshop-azure
-            os: ubuntu-latest
-            runOnPullRequest: false
+            os: ubuntu-latest-m
+            runOnPullRequest: true
             app: eshop
             env: azure
             path: ./samples/eshop/eshop.bicep
@@ -84,8 +84,8 @@ jobs:
             credential: azure
             enableDapr: false
           - name: eshop-aws
-            os: ubuntu-latest
-            runOnPullRequest: false
+            os: ubuntu-latest-m
+            runOnPullRequest: true
             app: eshop
             env: aws
             path: ./samples/eshop/eshop.bicep
@@ -149,6 +149,12 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
+      - name: Print system memory (Before)
+        run: |
+          echo "System Memory Info:"
+          free -h
+          echo "Docker Info:"
+          docker info | grep Memory
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -266,6 +272,12 @@ jobs:
           namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           kubectl rollout status deployment -l $label -n $namespace --timeout=90s
+      - name: Print system memory (After)
+        run: |
+          echo "System Memory Info:"
+          free -h
+          echo "Docker Info:"
+          docker info | grep Memory
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
