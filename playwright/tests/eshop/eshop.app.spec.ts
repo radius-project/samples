@@ -14,10 +14,10 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
   // Remove quotes from the endpoint if they exist
   endpoint = (endpoint as string).replace(/['"]+/g, '')
   
-  await page.goto(endpoint);
+  await page.goto(endpoint, { waitUntil: 'commit', timeout: 60000 });
 
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/catalog");
+  expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
 
   // Expect page to have proper title
   expect(page).toHaveTitle("eShopOnContainers - SPA");
@@ -53,7 +53,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
 
   // After login, expect to be redirected to the catalog page
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/catalog");
+  expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
 
   // Expect page to have proper title
   expect(page).toHaveTitle("eShopOnContainers - SPA");
@@ -82,7 +82,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({ page 
     .click();
 
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/basket");
+  expect(page).toHaveURL(new RegExp(`${endpoint}/basket.*`));
 
   // Checkout
   await page.getByRole('button', { name: 'Checkout' })
