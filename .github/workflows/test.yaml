@@ -22,6 +22,9 @@ on:
       - edge
   schedule: # 7:45 AM Pacific Time
     - cron: "45 15 * * *"
+permissions:
+  id-token: write # Required for requesting the JWT
+  contents: read  # Required for actions/checkout
 env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
@@ -135,13 +138,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: az CLI login
+      - name: Login to Azure
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
-        run: |
-          az login --service-principal \
-            --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
-            --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
-            --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_SP_TESTS_APPID }}
+          tenant-id: ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
       - name: Configure AWS
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
