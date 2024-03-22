@@ -5,6 +5,9 @@ import radius as rad
 @description('Radius environment ID. Set automatically by Radius')
 param environment string
 
+@description('Application name. Defaults to "eshop"')
+param applicationName string = 'eshop'
+
 @description('Container registry to pull from, with optional path. Defaults to "ghcr.io/radius-project/samples/eshop"')
 param imageRegistry string = 'ghcr.io/radius-project/samples/eshop'
 
@@ -26,7 +29,7 @@ var AZURESERVICEBUSENABLED = contains(eshopEnvironment.properties.recipes, 'Appl
 // Application --------------------------------------------------------
 
 resource eshopApplication 'Applications.Core/applications@2023-10-01-preview' = {
-  name: 'eshop'
+  name: applicationName
   properties: {
     environment: environment
   }
@@ -120,7 +123,7 @@ module payment 'services/payment.bicep' = {
 module seq 'services/seq.bicep' = {
   name: 'seq'
   params: {
-    application: eshopApplication.id 
+    application: eshopApplication.id
   }
 }
 
