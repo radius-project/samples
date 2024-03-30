@@ -18,7 +18,7 @@ jobs:
   release-samples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
           ref: edge
