@@ -214,7 +214,7 @@ jobs:
         run: |
           RADIUS_VERSION="${{ inputs.version }}"
           if [[ -z "${{ inputs.version }}" ]]; then
-              RADIUS_VERSION=edge
+            RADIUS_VERSION=edge
           fi
           ./.github/scripts/install-radius.sh $RADIUS_VERSION
       - name: Initialize default environment
@@ -258,6 +258,7 @@ jobs:
       # Deploy application and run tests
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
+        id: deploy-app
         run: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
       - name: Wait for all pods to be ready
         if: steps.gen-id.outputs.RUN_TEST == 'true'
@@ -294,7 +295,7 @@ jobs:
       # Handle failures
       - name: Get Pod logs for failed tests
         id: get-pod-logs
-        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure')
+        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure' || steps.deploy-app.outcome == 'failure')
         run: |
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}

@@ -8,12 +8,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.35.0",
-    "@types/node": "^20.6.0",
-    "@types/uuid": "^9.0.3",
-    "typescript": "^5.2.2"
+    "@playwright/test": "^1.43.0",
+    "@types/node": "^20.12.5",
+    "@types/uuid": "^9.0.8",
+    "typescript": "^5.4.4"
   },
   "dependencies": {
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.1"
   }
 }

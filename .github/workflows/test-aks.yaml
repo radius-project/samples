@@ -32,7 +32,7 @@ jobs:
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AZURE_LOCATION: westus3
+      AZURE_LOCATION: eastus
       AKS_RESOURCE_GROUP: samples-test-rg
       AKS_CLUSTER_NAME: samples-test-aks
       AWS_REGION: us-west-2
@@ -60,7 +60,7 @@ jobs:
         run: |
           RADIUS_VERSION="${{ inputs.version }}"
           if [[ -z "${{ inputs.version }}" ]]; then
-              RADIUS_VERSION=edge
+            RADIUS_VERSION=edge
           fi
           ./.github/scripts/install-radius.sh $RADIUS_VERSION
       - name: Clean up cluster
@@ -112,26 +112,26 @@ jobs:
           - name: eshop-azure
             os: ubuntu-latest-m
             runOnPullRequest: true
-            app: eshop-azure
+            app: eshop
             env: azure
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
             deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-azure/providers/Applications.Core/environments/azure'
             credential: azure
-          # - name: eshop-aws
-          #   os: ubuntu-latest-m
-          #   runOnPullRequest: true
-          #   app: eshop-aws
-          #   env: aws
-          #   path: ./samples/eshop/eshop.bicep
-          #   uiTestFile: tests/eshop/eshop.app.spec.ts
-          #   deployArgs: -p environment='/planes/radius/local/resourceGroups/default/providers/Applications.Core/environments/aws'
-          #   credential: aws
+          - name: eshop-aws
+            os: ubuntu-latest-m
+            runOnPullRequest: true
+            app: eshop
+            env: aws
+            path: ./samples/eshop/eshop.bicep
+            uiTestFile: tests/eshop/eshop.app.spec.ts
+            deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-aws/providers/Applications.Core/environments/aws'
+            credential: aws
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AZURE_LOCATION: westus3
-      AKS_RESOURCE_GROUP: samples-functional-tests
+      AZURE_LOCATION: eastus
+      AKS_RESOURCE_GROUP: samples-test-rg
       AKS_CLUSTER_NAME: samples-test-aks
       AWS_REGION: us-west-2
       AWS_ZONES: us-west-2a,us-west-2b,us-west-2c
@@ -227,6 +227,7 @@ jobs:
         timeout-minutes: 60
         continue-on-error: false
       - name: Download rad CLI
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           RADIUS_VERSION="${{ inputs.version }}"
           if [[ -z "${{ inputs.version }}" ]]; then
@@ -242,10 +243,17 @@ jobs:
           export PATH=$GITHUB_WORKSPACE/bin:$PATH
           which rad || { echo "cannot find rad"; exit 1; }
 
+          # Install Radius for AWS
+          if [[ "${{ matrix.credential }}" == "aws" ]]; then
+            rad install kubernetes
+          fi
+
           echo "*** Create workspace, group and environment for test ***"
           rad workspace create kubernetes --force
           rad group create ${{ matrix.name }}
           rad group switch ${{ matrix.name }}
+          rad env create ${{ matrix.env }}
+          rad env switch ${{ matrix.env }}
 
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscriptionId=${{ secrets.AZURE_SANDBOX_SUBSCRIPTION_ID }}
@@ -254,9 +262,6 @@ jobs:
             rad deploy ./samples/eshop/environments/aws.bicep -p awsAccountId=${{ secrets.AWS_ACCOUNT_ID }} -p awsRegion=${{ env.AWS_REGION }} -p eksClusterName=${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
             rad env switch ${{ matrix.env }}
           else
-            rad env create ${{ matrix.env }}
-            rad env switch ${{ matrix.env }}
-            
             echo "Registering recipes for ${{ matrix.env }} environment..."
             rad recipe register default -e ${{ matrix.env }} --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
             rad recipe register default -e ${{ matrix.env }} --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
@@ -277,6 +282,7 @@ jobs:
       # Deploy application and run tests
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
+        id: deploy-app
         run: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }} -e ${{ matrix.env }}
       - name: Wait for all pods to be ready
         if: steps.gen-id.outputs.RUN_TEST == 'true'
@@ -313,7 +319,7 @@ jobs:
       # Handle failures
       - name: Get Pod logs for failed tests
         id: get-pod-logs
-        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure')
+        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure' || steps.deploy-app.outcome == 'failure')
         run: |
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
