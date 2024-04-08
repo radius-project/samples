@@ -3,6 +3,9 @@ import { test, expect } from "@playwright/test";
 test("eShop on Containers App Basic UI and Functionality Checks", async ({
   page,
 }) => {
+
+  // Wait 1 second before starting the test so that all services are created and ready
+  await page.waitForTimeout(1000);
   // Listen for all console events and handle errors
   page.on("console", (msg) => {
     if (msg.type() === "error") {
