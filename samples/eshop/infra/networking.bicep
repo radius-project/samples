@@ -4,10 +4,13 @@ import radius as rad
 @description('Radius application ID')
 param application string
 
+// GATEWAY RESOURCE NAME - Unique string generated from the application and gw
+param gatewayName string = 'gw${uniqueString(application)}'
+
 // GATEWAY ---------------------------------------------------------
 
 resource gateway 'Applications.Core/gateways@2023-10-01-preview' = {
-  name: 'gateway'
+  name: gatewayName
   properties: {
     application: application
     routes: [
