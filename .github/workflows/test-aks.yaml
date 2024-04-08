@@ -15,11 +15,6 @@ on:
     paths:
       - "samples/**"
       - ".github/workflows/**"
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - v*.*
-      - edge
   schedule: # Run every 2 hours
     - cron: "0 */2 * * *"
 env:
