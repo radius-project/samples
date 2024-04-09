@@ -134,7 +134,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         run: |
@@ -300,7 +300,7 @@ jobs:
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
-          namespace="default-${{ matrix.app }}"
+          namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
