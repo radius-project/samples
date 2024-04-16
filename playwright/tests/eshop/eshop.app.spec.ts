@@ -1,103 +1,92 @@
 import { test, expect } from "@playwright/test";
 
-test("eShop on Containers App Basic UI and Functionality Checks", async ({ page }) => {
+test("eShop on Containers App Basic UI and Functionality Checks", async ({
+  page,
+}) => {
   // Listen for all console events and handle errors
-  page.on('console', msg => {
-    if (msg.type() === 'error') {
+  page.on("console", (msg) => {
+    if (msg.type() === "error") {
       console.log(`Error text: "${msg.text()}"`);
     }
   });
 
-  let endpoint = process.env.ENDPOINT
-  expect(endpoint).toBeDefined()
-  
+  let endpoint = process.env.ENDPOINT;
+  expect(endpoint).toBeDefined();
+
   // Remove quotes from the endpoint if they exist
-  endpoint = (endpoint as string).replace(/['"]+/g, '')
-  
+  endpoint = (endpoint as string).replace(/['"]+/g, "");
+  console.log(`Endpoint: ${endpoint}`);
   await page.goto(endpoint);
 
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/catalog");
-
+  await expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
   // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - SPA");
+  await expect(page).toHaveTitle("eShopOnContainers - SPA");
 
-  // Check for the LOGIN button
-  await expect(page.getByText("LOGIN"))
-    .toBeVisible();
+  // Check for the LOGIN button in the home page
+  const loginButton = page.getByText("LOGIN");
+  await expect(loginButton).toBeVisible();
+  await loginButton.click();
 
-  // Click on the LOGIN button
-  await page.getByText("LOGIN").click();
-
-  // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - Identity");
+  // Expect login page to have proper title
+  await expect(page).toHaveTitle("eShopOnContainers - Identity");
 
   // Fill in the username and password
-  expect(page.getByPlaceholder('Username'))
-    .toBeVisible();
-  await page.getByPlaceholder('Username')
-    .click();
-  await page.getByPlaceholder('Username')
-    .fill('alice');
+  const username = page.getByPlaceholder("Username");
+  await expect(username).toBeVisible();
+  await username.click();
+  await username.fill("alice");
 
-  expect(page.getByPlaceholder('Password'))
-    .toBeVisible();
-  await page.getByPlaceholder('Password')
-    .click();
-  await page.getByPlaceholder('Password')
-    .fill('Pass123$');
+  const password = page.getByPlaceholder("Password");
+  await expect(password).toBeVisible();
+  await password.click();
+  await password.fill("Pass123$");
 
   // Click on the LOGIN button
-  await page.getByRole('button', { name: 'Login' })
-    .click();
+  await page.getByRole("button", { name: "Login" }).click();
 
   // After login, expect to be redirected to the catalog page
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/catalog");
-
+  await expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
   // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - SPA");
+  await expect(page).toHaveTitle("eShopOnContainers - SPA");
 
   // Logged user details should be visible
-  expect(page.getByText('AliceSmith@email.com'))
-    .toBeVisible();
-
+  const user = page.getByText("AliceSmith@email.com");
+  await expect(user).toBeVisible();
   // Click on the user details
-  await page.getByText('AliceSmith@email.com').click();
+  await user.click();
 
   // Check dropdown menu
-  expect(page.getByText('My orders'))
-    .toBeVisible();
-  expect(page.getByText('Log Out'))
-    .toBeVisible();
+  await expect(page.getByText("My orders")).toBeVisible();
+  await expect(page.getByText("Log Out")).toBeVisible();
 
   let numberOfItemsAdded = 0;
   // Add an item to the cart
-  await page.locator('div:nth-child(2) > .esh-catalog-item > .esh-catalog-thumbnail-wrapper > .esh-catalog-thumbnail-icon > .esh-catalog-thumbnail-icon-svg')
-    .click();
+  const firstItem = page.locator("div:nth-child(1) > .esh-catalog-item");
+  await expect(firstItem).toBeVisible();
+  await firstItem.click();
+  numberOfItemsAdded++;
+
+  // Add an item to the cart
+  const secondItem = page.locator("div:nth-child(2) > .esh-catalog-item");
+  await expect(secondItem).toBeVisible();
+  await secondItem.click();
   numberOfItemsAdded++;
 
   // Go to the cart
-  await page.getByRole('link', { name: `${numberOfItemsAdded}` })
-    .click();
+  const cartLink = page.getByRole("link", { name: `${numberOfItemsAdded}` });
+  await expect(cartLink).toBeVisible();
+  await cartLink.click();
 
   // Expect page to have proper URL
-  expect(page).toHaveURL(endpoint+"/basket");
-
+  await expect(page).toHaveURL(new RegExp(`${endpoint}/basket.*`));
   // Checkout
-  await page.getByRole('button', { name: 'Checkout' })
-    .click();
-
+  await page.getByRole("button", { name: "Checkout" }).click();
   // Place the order
-  await page.getByRole('button', { name: 'Place Order' })
-    .click();
-
+  await page.getByRole("button", { name: "Place Order" }).click();
   // Continue Shopping
-  await page.getByRole('link', { name: 'Continue Shopping' })
-    .click();
-
+  await page.getByRole("link", { name: "Continue Shopping" }).click();
   // Logout
-  await page.locator('div').filter({ hasText: 'Log Out' })
-    .nth(0)
-    .click();
+  await page.locator("div").filter({ hasText: "Log Out" }).nth(0).click();
 });
