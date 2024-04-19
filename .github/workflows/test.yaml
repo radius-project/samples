@@ -270,20 +270,25 @@ jobs:
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
-        run: |
-          if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
-            echo "Endpoint: http://localhost:${{ matrix.port }}"
-            export ENDPOINT="http://localhost:${{ matrix.port }}"
-          else
-            endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
-            echo "Endpoint: $endpoint"
-            export ENDPOINT=$endpoint
-          fi
-          cd playwright/
-          npm ci
-          npx playwright install --with-deps
-          npx playwright test ${{ matrix.uiTestFile }} --retries 3
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            if [[ "${{ matrix.container }}" != "" ]]; then
+              rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+              echo "Endpoint: http://localhost:${{ matrix.port }}"
+              export ENDPOINT="http://localhost:${{ matrix.port }}"
+            else
+              endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+              echo "Endpoint: $endpoint"
+              export ENDPOINT=$endpoint
+            fi
+            cd playwright/
+            npm ci
+            npx playwright install --with-deps
+            npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
         if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
