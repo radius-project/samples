@@ -61,17 +61,33 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   await expect(page.getByText("My orders")).toBeVisible();
   await expect(page.getByText("Log Out")).toBeVisible();
 
+  // Find the catalog
+  console.log("Finding the catalog");
+  const catalogSelector = "esh-catalog";
+  await page.waitForSelector(catalogSelector);
+  const catalog = page.locator(catalogSelector);
+  await expect(catalog).toBeVisible();
+  console.log("Catalog found");
+
   let numberOfItemsAdded = 0;
   // Add an item to the cart
-  const firstItem = page.locator("div:nth-child(1) > .esh-catalog-item");
+  console.log("Adding the first item to the cart");
+  const firstItemSelector = "div:nth-child(1) > .esh-catalog-item";
+  await page.waitForSelector(firstItemSelector);
+  const firstItem = page.locator(firstItemSelector);
   await expect(firstItem).toBeVisible();
   await firstItem.click();
+  console.log("Item added to the cart");
   numberOfItemsAdded++;
 
   // Add an item to the cart
-  const secondItem = page.locator("div:nth-child(2) > .esh-catalog-item");
+  console.log("Adding the second item to the cart");
+  const secondItemSelector = "div:nth-child(2) > .esh-catalog-item";
+  await page.waitForSelector(secondItemSelector);
+  const secondItem = page.locator(secondItemSelector);
   await expect(secondItem).toBeVisible();
   await secondItem.click();
+  console.log("Item added to the cart");
   numberOfItemsAdded++;
 
   // Go to the cart
