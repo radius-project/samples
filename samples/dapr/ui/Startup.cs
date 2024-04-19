@@ -24,6 +24,10 @@ namespace ui
             services.AddServerSideBlazor();
 
             var appId = Environment.GetEnvironmentVariable("CONNECTION_BACKEND_APPID");
+            if (string.IsNullOrEmpty(appId))
+            {
+                throw new ArgumentNullException("CONNECTION_BACKEND_APPID", "Please set the environment variable CONNECTION_BACKEND_APPID to the id of the backend app.");
+            }
             services.AddSingleton<HttpClient>(DaprClient.CreateInvokeHttpClient(appId));
         }
 
