@@ -1,6 +1,7 @@
 import radius as radius
 
 param application string
+param environment string
 
 param image string = 'ghcr.io/radius-project/samples/demo:latest'
 
