@@ -23,16 +23,13 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
 
   // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - SPA");
+  await expect(page).toHaveTitle("eShopOnContainers - SPA");
 
   // Check for the LOGIN button
   await expect(page.getByText("LOGIN")).toBeVisible();
 
-  // Click on the LOGIN button
-  await page.getByText("LOGIN").click();
-
-  // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - Identity");
+  // Expect login page to have proper title
+  await expect(page).toHaveTitle("eShopOnContainers - Identity");
 
   // Fill in the username and password
   expect(page.getByPlaceholder("Username")).toBeVisible();
@@ -51,7 +48,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   expect(page).toHaveURL(new RegExp(`${endpoint}/catalog.*`));
 
   // Expect page to have proper title
-  expect(page).toHaveTitle("eShopOnContainers - SPA");
+  await expect(page).toHaveTitle("eShopOnContainers - SPA");
 
   // Logged user details should be visible
   expect(page.getByText("AliceSmith@email.com")).toBeVisible();
