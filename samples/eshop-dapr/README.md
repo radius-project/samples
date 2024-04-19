@@ -1,6 +1,6 @@
 # eShop on Dapr reference application
 
-Visit the [Project Radius docs](https://radapp.dev/getting-started/reference-apps/eshop-dapr/) to learn more.
+Visit the [Radius docs](https://radapp.dev/getting-started/reference-apps/eshop-dapr/) to learn more.
 
 ## Source
 
