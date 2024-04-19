@@ -3,9 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The name of the Catalog API HTTP route.')
-param catalogApiRouteName string
-
 @description('The name of the Catalog database portable resource.')
 param catalogDbName string
 
@@ -19,8 +16,6 @@ param daprSecretStoreName string
 @description('The name of the Key Vault to get secrets from.')
 param keyVaultName string
 
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
 
 @description('The Dapr application ID.')
 var daprAppId = 'catalog-api'
@@ -28,10 +23,6 @@ var daprAppId = 'catalog-api'
 //-----------------------------------------------------------------------------
 // Get references to existing resources 
 //-----------------------------------------------------------------------------
-
-resource catalogApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: catalogApiRouteName
-}
 
 resource catalogDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
   name: catalogDbName
@@ -49,10 +40,6 @@ resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
-}
-
 //-----------------------------------------------------------------------------
 // Deploy Catalog API container
 //-----------------------------------------------------------------------------
@@ -67,12 +54,11 @@ resource catalogApi 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         RetryMigrations: 'true'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: catalogApiRoute.id
         }
       }
     }
@@ -104,7 +90,7 @@ resource catalogApi 'Applications.Core/containers@2023-10-01-preview' = {
         }
       }
       seqRoute: {
-        source: seqRoute.id
+        source: 'http://seq:5340'
       }
     }
   }

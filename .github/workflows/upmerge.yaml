@@ -1,0 +1,37 @@
+name: Upmerge samples to edge
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upmerge:
+    name: Upmerge samples to edge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: edge
+          # https://github.com/actions/checkout/issues/125#issuecomment-570254411
+          fetch-depth: 0
+      - name: Configure git
+        run: |
+          git config --global user.email "radiuscoreteam@service.microsoft.com"
+          git config --global user.name "Radius CI Bot"
+      - name: Create new branch
+        run: |
+          export DATE=$(date +%Y-%m-%d)
+          export RAND=$(openssl rand -hex 2)
+          echo "BRANCH_NAME=upmerge/$DATE-$RAND" >> $GITHUB_ENV
+          git checkout -b upmerge/$DATE-$RAND
+      - name: Upmerge samples
+        run: |
+          export SOURCE_BRANCH=$(basename ${{ github.ref }})
+          echo "Upmerging samples from $SOURCE_BRANCH to edge"
+          git fetch origin $SOURCE_BRANCH
+          git merge --no-commit origin/$SOURCE_BRANCH
+          git commit -m "Upmerge to edge"
+          git push --set-upstream origin $BRANCH_NAME
+      - name: Create pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT}}
+        run: gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head $BRANCH_NAME

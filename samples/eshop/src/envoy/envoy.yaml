@@ -106,7 +106,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: webshoppingagg-http
+        address: webshoppingagg
         port_value: 5121
   - name: catalog
     connect_timeout: 0.25s
@@ -114,7 +114,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: catalog-http
+        address: catalog-api
         port_value: 5101
   - name: basket
     connect_timeout: 0.25s
@@ -122,7 +122,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: basket-http
+        address: basket-api
         port_value: 5103
   - name: ordering
     connect_timeout: 0.25s
@@ -130,7 +130,7 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: ordering-http
+        address: ordering-api
         port_value: 5102
   - name: signalr-hub
     connect_timeout: 0.25s
@@ -138,6 +138,6 @@ static_resources:
     lb_policy: round_robin
     hosts:
     - socket_address:
-        address: orderingsignalrhub-http
+        address: ordering-signalrhub
         port_value: 5112
   

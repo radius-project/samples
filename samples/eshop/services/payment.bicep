@@ -11,9 +11,6 @@ param imageRegistry string
 @description('Container image tag to use for eshop images')
 param imageTag string
 
-@description('Name of the Payment HTTP route')
-param paymentHttpName string
-
 @description('The connection string for the event bus')
 @secure()
 param eventBusConnectionString string
@@ -44,15 +41,14 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: paymentHttp.id
+          port: 5108
         }
+      }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
       }
     }
   }
-}
-
-// NETWORKING ------------------------------------------------------
-
-resource paymentHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: paymentHttpName
 }

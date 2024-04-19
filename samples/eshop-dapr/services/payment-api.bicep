@@ -3,12 +3,6 @@ import radius as radius
 @description('The Radius application ID.')
 param appId string
 
-@description('The name of the Payment API HTTP route.')
-param paymentApiRouteName string
-
-@description('The name of the Seq HTTP route.')
-param seqRouteName string
-
 @description('The Dapr application ID.')
 param daprPubSubBrokerName string
 
@@ -21,14 +15,6 @@ var daprAppId = 'payment-api'
 
 resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' existing = {
   name: daprPubSubBrokerName
-}
-
-resource paymentApiRoute 'Applications.Core/httproutes@2023-10-01-preview' existing = {
-  name: paymentApiRouteName
-}
-
-resource seqRoute 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: seqRouteName
 }
 
 //-----------------------------------------------------------------------------
@@ -44,12 +30,11 @@ resource paymentApi 'Applications.Core/containers@2023-10-01-preview' = {
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development'
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        SeqServerUrl: seqRoute.properties.url
+        SeqServerUrl: 'http://seq:5340'
       }
       ports: {
         http: {
           containerPort: 80
-          provides: paymentApiRoute.id
         }
       }
     }
@@ -65,7 +50,7 @@ resource paymentApi 'Applications.Core/containers@2023-10-01-preview' = {
         source: daprPubSubBroker.id
       }
       seq: {
-        source: seqRoute.id
+        source: 'http://seq:5340'
       }
     }
   }

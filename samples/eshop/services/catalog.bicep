@@ -14,12 +14,6 @@ param imageTag string
 @description('Name of the Gateway')
 param gatewayName string
 
-@description('The name of the Catalog HTTP Route')
-param catalogHttpName string
-
-@description('The name of the Catalog gRPC Route')
-param catalogGrpcName string
-
 @description('The name of the Catalog SQL portable resource')
 param sqlCatalogDbName string
 
@@ -63,12 +57,17 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
       ports: {
         http: {
           containerPort: 80
-          provides: catalogHttp.id
+          port: 5101
         }
         grpc: {
           containerPort: 81
-          provides: catalogGrpc.id
+          port: 9101
         }
+      }
+      livenessProbe:{
+        kind:'httpGet'
+        path:'/hc'
+        containerPort:80
       }
     }
     connections: {
@@ -85,13 +84,6 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-resource catalogHttp 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: catalogHttpName
-}
-
-resource catalogGrpc 'Applications.Core/httpRoutes@2023-10-01-preview' existing = {
-  name: catalogGrpcName
-}
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 

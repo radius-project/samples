@@ -10,5 +10,5 @@ To build the docker image, run `docker build . -t ghcr.io/radius-project/samples
 
 Where NUMBER is one greater than the latest version made. To view versions, see https://ms.portal.azure.com/#view/Microsoft_Azure_ContainerRegistries/RepositoryBlade/id/%2Fsubscriptions%2F66d1209e-1382-45d3-99bb-650e6bf63fc0%2FresourceGroups%2Fassets%2Fproviders%2FMicrosoft.ContainerRegistry%2Fregistries%2Fradius/repository/eshop-envoy.
 
-To push the image, run `az acr login -n radius` and then `docker push ghcr.io/radius-project/samples/eshop-envoy:0.1.<NUMBER>`.
+To push the image, run `az acr login -n radius` and then `docker push ghcr.io/radius-project/samples/eshop/eshop-envoy:0.1.<NUMBER>`.
 
