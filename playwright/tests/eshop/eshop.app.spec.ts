@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForWebApp } from "../util/helper";
 
 test("eShop on Containers App Basic UI and Functionality Checks", async ({
   page,
