@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { v4 as uuidv4 } from "uuid";
+import { waitForWebApp } from "../util/helper";
 
 test("To-Do App Basic UI Checks", async ({ page }) => {
   // Listen for all console events and handle errors

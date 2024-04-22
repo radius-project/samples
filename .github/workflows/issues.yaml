@@ -3,6 +3,10 @@ name: Issues Automation
 on:
   issues:
     types: [opened, edited, deleted, closed, reopened, labeled, unlabeled, assigned]
+    
+concurrency:
+  group: issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
 
 jobs:
   ado:
@@ -21,3 +25,4 @@ jobs:
           ado_new_state: "New"
           ado_active_state: "Active"
           ado_close_state: "Closed"
+          ado_wit: "GitHub Issue"

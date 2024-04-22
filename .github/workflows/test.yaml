@@ -134,7 +134,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         run: |
@@ -270,20 +270,25 @@ jobs:
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
-        run: |
-          if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
-            echo "Endpoint: http://localhost:${{ matrix.port }}"
-            export ENDPOINT="http://localhost:${{ matrix.port }}"
-          else
-            endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
-            echo "Endpoint: $endpoint"
-            export ENDPOINT=$endpoint
-          fi
-          cd playwright/
-          npm ci
-          npx playwright install --with-deps
-          npx playwright test ${{ matrix.uiTestFile }} --retries 3
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            if [[ "${{ matrix.container }}" != "" ]]; then
+              rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+              echo "Endpoint: http://localhost:${{ matrix.port }}"
+              export ENDPOINT="http://localhost:${{ matrix.port }}"
+            else
+              endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
+              echo "Endpoint: $endpoint"
+              export ENDPOINT=$endpoint
+            fi
+            cd playwright/
+            npm ci
+            npx playwright install --with-deps
+            npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v4
         if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
@@ -300,7 +305,7 @@ jobs:
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
           # Get pod logs and save to file
-          namespace="default-${{ matrix.app }}"
+          namespace="${{ matrix.env }}-${{ matrix.app }}"
           label="radapp.io/application=${{ matrix.app }}"
           pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
           for pod_name in "${pod_names[@]}"; do
