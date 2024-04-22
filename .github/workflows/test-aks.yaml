@@ -15,6 +15,11 @@ on:
     paths:
       - "samples/**"
       - ".github/workflows/**"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - v*.*
+      - edge
   schedule: # Run every 2 hours
     - cron: "0 */2 * * *"
 env:
@@ -38,7 +43,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - name: az CLI login
         run: |
           az login --service-principal \
@@ -107,20 +112,20 @@ jobs:
           - name: eshop-azure
             os: ubuntu-latest-m
             runOnPullRequest: true
-            app: eshop
+            app: eshop-azure
             env: azure
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
-            deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-azure/providers/Applications.Core/environments/azure'
+            deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-azure/providers/Applications.Core/environments/azure' -p applicationName=eshop-azure
             credential: azure
           - name: eshop-aws
             os: ubuntu-latest-m
             runOnPullRequest: true
-            app: eshop
+            app: eshop-aws
             env: aws
             path: ./samples/eshop/eshop.bicep
             uiTestFile: tests/eshop/eshop.app.spec.ts
-            deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-aws/providers/Applications.Core/environments/aws'
+            deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-aws/providers/Applications.Core/environments/aws' -p applicationName=eshop-aws
             credential: aws
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
@@ -159,7 +164,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
