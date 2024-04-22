@@ -60,6 +60,14 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   expect(page.getByText("My orders")).toBeVisible();
   expect(page.getByText("Log Out")).toBeVisible();
 
+  // Find the catalog
+  console.log("Finding the catalog");
+  const catalogSelector = "esh-catalog";
+  await page.waitForSelector(catalogSelector);
+  const catalog = page.locator(catalogSelector);
+  await expect(catalog).toBeVisible();
+  console.log("Catalog found");
+
   let numberOfItemsAdded = 0;
   // Add an item to the cart
   await page
