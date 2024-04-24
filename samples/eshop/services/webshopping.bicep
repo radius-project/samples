@@ -34,11 +34,11 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
         urls__grpcBasket: 'grpc://basket-api:9103'
         urls__grpcCatalog: 'grpc://catalog-api:9101'
         urls__grpcOrdering: 'grpc://ordering-api:9102'
-        CatalogUrlHC: 'http://catalog-api:5101/hc'
-        OrderingUrlHC: 'http://ordering-api:5102/hc'
-        IdentityUrlHC: 'http://identity-api:5105/hc'
-        BasketUrlHC: 'http://basket-api:5103/hc'
-        PaymentUrlHC: 'http://payment-api:5108/hc'
+        CatalogUrlHC: 'http://catalog-api:5101/liveness'
+        OrderingUrlHC: 'http://ordering-api:5102/liveness'
+        IdentityUrlHC: 'http://identity-api:5105/liveness'
+        BasketUrlHC: 'http://basket-api:5103/liveness'
+        PaymentUrlHC: 'http://payment-api:5108/liveness'
         IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }
       ports: {
@@ -47,10 +47,15 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5121
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
       }
     }
     connections: {
@@ -74,7 +79,6 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   }
 }
 
-
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/apigwws
 resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingapigw'
@@ -92,9 +96,9 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
           port: 15202
         }
       }
-      livenessProbe:{
-        kind:'tcp'
-        containerPort:80
+      livenessProbe: {
+        kind: 'tcp'
+        containerPort: 80
       }
     }
   }

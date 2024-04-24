@@ -33,9 +33,9 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
         IdentityUrl: 'http://identity-api:80'
         IdentityUrlExternal: '${gateway.properties.url}/identity/'
         SeqServerUrl: 'http://seq:5340'
-        BasketUrlHC: 'http://localhost:3500/v1.0/invoke/basket-api/method/hc'
-        CatalogUrlHC: 'http://localhost:3500/v1.0/invoke/catalog-api/method/hc'
-        IdentityUrlHC: 'http://localhost:3500/v1.0/invoke/identity-api/method/hc'
+        BasketUrlHC: 'http://localhost:3500/v1.0/invoke/basket-api/method/liveness'
+        CatalogUrlHC: 'http://localhost:3500/v1.0/invoke/catalog-api/method/liveness'
+        IdentityUrlHC: 'http://localhost:3500/v1.0/invoke/identity-api/method/liveness'
       }
       ports: {
         http: {

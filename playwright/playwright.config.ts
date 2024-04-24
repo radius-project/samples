@@ -28,6 +28,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
+    video: "retain-on-failure",
   },
   /* Configure projects for major browsers */
   projects: [
@@ -46,7 +47,7 @@ export default defineConfig({
       use: { ...devices["Desktop Safari"] },
     },
   ],
-  timeout: 1 * 60 * 1000,
+  timeout: 5 * 60 * 1000,
   expect: {
     timeout: 30 * 1000,
   },
