@@ -18,7 +18,7 @@
 
 set -e
 
-echo "cleaning up cluster"
+echo "Cleaning up cluster"
 
 # Delete all test resources in queuemessages.
 if kubectl get crd queuemessages.ucp.dev >/dev/null 2>&1; then
@@ -39,9 +39,10 @@ if kubectl get crd resources.ucp.dev >/dev/null 2>&1; then
 fi
 
 # Delete all test namespaces.
-echo "delete all test namespaces"
+# Any namespace that is not in the list below will be deleted.
+echo "Delete all test namespaces"
 namespaces=$(kubectl get namespace |
-    grep -E '^containers.*|^dapr |^dapr-dapr.*|^demo.*|^demo-demo-.*|^eshop-containers.*|^volumes.*|^volumes-myapp.*|^azure.*' |
+    grep -vE '(radius-system|kube-system|kube-public|kube-node-lease|gatekeeper-system|default|dapr-system|cert-manager)' |
     awk '{print $1}')
 for ns in $namespaces; do
     if [ -z "$ns" ]; then
