@@ -125,14 +125,14 @@ jobs:
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: az CLI login
@@ -290,7 +290,7 @@ jobs:
             npx playwright install --with-deps
             npx playwright test ${{ matrix.uiTestFile }} --retries 3
       - name: Upload Playwright Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
         with:
           name: playwright-report-${{ matrix.name }}
@@ -315,7 +315,7 @@ jobs:
           # Get kubernetes events and save to file
           kubectl get events -n $namespace > playwright/pod-logs/${{ matrix.name }}/events.txt
       - name: Upload Pod logs for failed tests
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
           name: ${{ matrix.name }}-pod-logs

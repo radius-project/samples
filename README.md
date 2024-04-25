@@ -1,6 +1,6 @@
-# Project Radius Samples
+# Radius Samples
 
-This repository contains the source code for quickstarts, reference apps, and tutorials for Project Radius.
+This repository contains the source code for quickstarts, reference apps, and tutorials for Radius.
 
 To try out one of these samples, visit https://docs.radapp.dev
 

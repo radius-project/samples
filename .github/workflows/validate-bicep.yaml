@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Download rad-bicep
       run: |
         oras pull ghcr.io/radius-project/radius/bicep/rad-bicep/linux-x64:latest
