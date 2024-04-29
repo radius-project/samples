@@ -4,8 +4,8 @@ on:
     # Runs at 00:30 and 12:30
     - cron: "30 0,12 * * *"
 env:
-    GH_TOKEN: ${{ github.token }}
-    AWS_REGION: us-west-2
+  GH_TOKEN: ${{ github.token }}
+  AWS_REGION: us-west-2
 jobs:
   purge_rds_snapshots:
     name: Purge AWS RDS DBInstance snapshots

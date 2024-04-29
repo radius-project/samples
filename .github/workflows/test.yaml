@@ -20,8 +20,8 @@ on:
     branches:
       - v*.*
       - edge
-  schedule: # Run every 2 hours
-    - cron: "0 */2 * * *"
+  schedule: # Run every day at 12 PM
+    - cron: "0 12 * * *"
 env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
