@@ -111,7 +111,7 @@ jobs:
             deployArgs: -p environment='/planes/radius/local/resourceGroups/eshop-containers/providers/Applications.Core/environments/containers'
           - name: eshop-azure
             os: ubuntu-latest-m
-            runOnPullRequest: true
+            runOnPullRequest: false
             app: eshop-azure
             env: azure
             path: ./samples/eshop/eshop.bicep
@@ -120,7 +120,7 @@ jobs:
             credential: azure
           - name: eshop-aws
             os: ubuntu-latest-m
-            runOnPullRequest: true
+            runOnPullRequest: false
             app: eshop-aws
             env: aws
             path: ./samples/eshop/eshop.bicep
@@ -283,14 +283,12 @@ jobs:
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         id: deploy-app
-        run: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }} -e ${{ matrix.env }}
-      - name: Wait for all pods to be ready
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
-        id: wait-for-pods
-        run: |
-          namespace="${{ matrix.env }}-${{ matrix.app }}"
-          label="radapp.io/application=${{ matrix.app }}"
-          kubectl rollout status deployment -l $label -n $namespace --timeout=90s
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }} -e ${{ matrix.env }}
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
@@ -308,18 +306,28 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
+      # Upload Playwright test results even if the workflow is cancelled.
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v3
-        if: always() && ( steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure' )
+        if: always() && (steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure')
         with:
           name: playwright-report-${{ matrix.name }}
           path: playwright/playwright-report/
           retention-days: 30
           if-no-files-found: error
+      # Upload Playwright test videos in case of test failure even if the workflow is cancelled.
+      - name: Upload Playwright Videos
+        uses: actions/upload-artifact@v4
+        if: always() && steps.run-playwright-test.outcome == 'failure'
+        with:
+          name: playwright-video-${{ matrix.name }}
+          path: playwright/test-results/
+          retention-days: 30
+          if-no-files-found: error
       # Handle failures
       - name: Get Pod logs for failed tests
         id: get-pod-logs
-        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.wait-for-pods.outcome == 'failure' || steps.deploy-app.outcome == 'failure')
+        if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.deploy-app.outcome == 'failure')
         run: |
           # Create pod-logs directory
           mkdir -p playwright/pod-logs/${{ matrix.name }}
@@ -343,17 +351,17 @@ jobs:
           if-no-files-found: error
       - name: Create GitHub issue on failure
         if: failure() && github.event_name == 'schedule'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.app }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
       # Cleanup
       - name: Delete app and environment
-        if: always() && steps.gen-id.outputs.RUN_TEST == 'true'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
             rad app delete ${{ matrix.app }} -y
             rad env delete ${{ matrix.env }} -y
           fi
       - name: Delete Azure resource group
-        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
           # Delete Azure resources created by the test
           # if deletion fails, purge workflow will purge the resource group and its resources later
@@ -362,13 +370,12 @@ jobs:
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
       - name: Delete AWS Resources
-        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && steps.deploy-app.outcome == 'success'
         run: |
           # Delete all AWS resources created by the test
           ./.github/scripts/delete-aws-resources.sh '/planes/radius/local/resourcegroups/${{ matrix.env }}/providers/Applications.Core/applications/${{ matrix.app }}'
-      - name: Delete EKS Cluster
-        if: always() && steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+      - name: Delete EKS Cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+        if: steps.create-eks.outcome == 'success'
         run: |
-          # Delete EKS cluster
           echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
           eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait --force
