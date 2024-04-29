@@ -8,10 +8,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.43.0",
-    "@types/node": "^20.12.6",
+    "@playwright/test": "^1.43.1",
+    "@types/node": "^20.12.7",
     "@types/uuid": "^9.0.8",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "uuid": "^9.0.1"

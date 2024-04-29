@@ -52,10 +52,15 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5105
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
       }
     }
     connections: {
@@ -101,7 +106,6 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
 
-
 // PORTABLE RESOURCES -----------------------------------------------------------
 
 resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview' existing = {
@@ -111,7 +115,6 @@ resource sqlIdentityDb 'Applications.Datastores/sqlDatabases@2023-10-01-preview'
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }
-
 
 // Output
 @description('Name of the Identity container')

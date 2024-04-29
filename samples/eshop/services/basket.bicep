@@ -61,11 +61,16 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
           port: 9103
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
-      } 
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
+      }
     }
 
     connections: {
@@ -78,7 +83,7 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
         disableDefaultEnvVars: true
       }
     }
-    
+
   }
 }
 

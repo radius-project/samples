@@ -54,10 +54,15 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5113
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
       }
     }
     connections: {
@@ -72,7 +77,6 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
     }
   }
 }
-
 
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webhooks-web
 resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
