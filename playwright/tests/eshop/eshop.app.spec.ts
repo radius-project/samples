@@ -92,6 +92,12 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
 
   while (attempts < maxAttempts) {
     try {
+      // If the item is not found in the first attempt,
+      // reload the page to trigger the API call again.
+      if (attempts > 0) {
+        await page.reload();
+      }
+
       await page.waitForSelector(firstItemSelector);
       firstItem = page.locator(firstItemSelector);
       await expect(firstItem).toBeVisible();
@@ -102,7 +108,6 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
     } catch (error) {
       // If the item is not found within 5 seconds, an error will be thrown here, then the page will be reloaded
       console.error("Item not found:", error);
-      await page.reload();
       attempts++;
     }
   }
