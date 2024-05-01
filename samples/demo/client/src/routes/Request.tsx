@@ -7,8 +7,6 @@ export default function Request() {
     const [body, setBody] = React.useState("");
     const [reloadCount, setReloadCount] = React.useState(0);
 
-    const [title, setTitle] = React.useState("");
-
     React.useEffect(() => {
         let mounted = true;
         const worker = async () => {
@@ -27,7 +25,7 @@ export default function Request() {
         return () => {
             mounted = false;
         }
-    }, [reloadCount])
+    }, [body, method, reloadCount, url])
 
     return (
         <div>
