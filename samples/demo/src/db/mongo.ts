@@ -44,8 +44,8 @@ export class MongoRepository implements Repository {
                 id: item.id,
                 title: item.title,
                 done: item.done,
-            })
-        return result.value as Item | null;
+            });
+        return result?.value as Item | null;
     }
     async create(item: Item): Promise<Item> {
         const id = uuidv4();
