@@ -64,10 +64,15 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
           port: 9101
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
       }
     }
     connections: {
@@ -83,7 +88,6 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
 resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
   name: gatewayName
 }
-
 
 // PORTABLE RESOURCES -----------------------------------------------------------
 

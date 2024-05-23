@@ -5,10 +5,11 @@ on:
 env:
   AZURE_RG_DELETE_LIST_FILE: "az_rg_list.txt"
   VALID_RESOURCE_WINDOW: 6*60*60
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 jobs:
   purge_azure_resources:
     name: Azure resources clean-ups
-    runs-on: [self-hosted, 1ES.Pool=1ES-Radius]
+    runs-on: [ubuntu-latest]
     steps:
       - name: Login to Azure
         run: |
@@ -22,13 +23,21 @@ jobs:
       - name: List Test Resource Groups
         run: |
           echo "## Test resource group list" >> $GITHUB_STEP_SUMMARY
-          az group list --query "[?starts_with(name, 'samplestest-')].{Name:name, creationTime:tags.creationTime}" -o json > resource_groups.json
+          az group list --query "[?starts_with(name, 'rg-samplestest-')].{Name:name, creationTime:tags.creationTime}" -o json > resource_groups.json
 
           current_time=$(date +%s)
           hours_ago=$((current_time - ${{ env.VALID_RESOURCE_WINDOW }}))
 
-          jq -r '.[] | select(.creationTime == null || .creationTime < '$hours_ago') | .Name' resource_groups.json > ${{ env.AZURE_RG_DELETE_LIST_FILE}}
-          jq -r '.[] | {name: .Name, creationTime: .creationTime // "None"}' resource_groups.json > $GITHUB_STEP_SUMMARY
+          # This jq command processes the data in 'resource_groups.json'.
+          # For each object in the JSON array, it checks if the 'creationTime' property is null or less than the value of 'hours_ago'.
+          # Note that the 'creationTime' is converted to a number for the comparison.
+          # Then the name of the resource group is written to the file specified by the 'AZURE_RG_DELETE_LIST_FILE' environment variable.
+          jq -r '.[] | select(.creationTime == null // (.creationTime | tonumber) < '$hours_ago') | .Name' resource_groups.json > ${{ env.AZURE_RG_DELETE_LIST_FILE}}
+
+          # This jq command also processes the data in 'resource_groups.json'.
+          # For each object in the JSON array, it outputs a string containing the 'Name' property, and the 'creationTime' property.
+          # If 'creationTime' is null, it outputs the string "None" instead.
+          jq -r '.[] | "\(.Name) \(.creationTime // "None")"' resource_groups.json > $GITHUB_STEP_SUMMARY
 
       - name: Delete Azure Resource Groups
         run: |
@@ -40,8 +49,8 @@ jobs:
           done
 
       - name: Create GitHub issue on failure
-        if: ${{ failure() }}
+        if: failure()
         run: |
-          gh issue create --title "Samples purge test resources failed \
+          gh issue create --title "Samples purge test resources failed" \
             --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." \
-            s--repo ${{ github.repository }}
+            --repo ${{ github.repository }}

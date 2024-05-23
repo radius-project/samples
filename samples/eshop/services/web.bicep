@@ -36,7 +36,7 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
         CallBackUrl: '${gateway.properties.url}/'
         DPConnectionString: redisKeystore.connectionString()
         IdentityUrl: '${gateway.properties.url}/identity-api'
-        IdentityUrlHC: 'http://identity-api:5105/hc'
+        IdentityUrlHC: 'http://identity-api:5105/liveness'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
         SignalrHubUrl: 'http://ordering-signalrhub:5112'
       }
@@ -46,10 +46,15 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5104
         }
       }
-      livenessProbe:{
-        kind:'httpGet'
-        path:'/hc'
-        containerPort:80
+      livenessProbe: {
+        kind: 'httpGet'
+        path: '/liveness'
+        containerPort: 80
+      }
+      readinessProbe: {
+        kind: 'httpGet'
+        path: '/hc'
+        containerPort: 80
       }
     }
     connections: {
@@ -96,7 +101,7 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
         ExternalPurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
         CallBackUrl: '${gateway.properties.url}/webmvc'
         IdentityUrl: '${gateway.properties.url}/identity-api'
-        IdentityUrlHC: 'http://identity-api:5105/hc'
+        IdentityUrlHC: 'http://identity-api:5105/liveness'
         PurchaseUrl: 'http://webshoppingapigw:5202'
         SignalrHubUrl: 'http://ordering-signalrhub:5112'
       }
@@ -143,7 +148,6 @@ resource gateway 'Applications.Core/gateways@2023-10-01-preview' existing = {
 resource redisKeystore 'Applications.Datastores/redisCaches@2023-10-01-preview' existing = {
   name: redisKeystoreName
 }
-
 
 // Output
 @description('Name of the Web spa container')
