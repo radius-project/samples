@@ -19,7 +19,7 @@ This reference app is a "radified" version of the [eShop on containers](https://
    rad credential register aws --aws-access-key-id <your-aws-access-key-id> --aws-secret-access-key <your-aws-secret-access-key>
 
    # Azure
-   rad credential register azure --client-id <your-azure-service-principal-client-id> --client-secret <your-azure-service-principal-client-secret> --tenant-id <your-azure-service-principal-tenant-id>
+   rad credential register azure sp --client-id <your-azure-service-principal-client-id> --client-secret <your-azure-service-principal-client-secret> --tenant-id <your-azure-service-principal-tenant-id>
    ```
 1. Clone the repository and switch to the app directory:
    ```bash
