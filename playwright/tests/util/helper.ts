@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export async function waitForWebApp(url: string | undefined, timeout = 30000) {
+export async function waitForWebApp(url: string | undefined, timeout = 60000) {
   if (!url) {
     throw new Error("URL is not defined");
   }

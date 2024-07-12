@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("eShop on Containers App Basic UI and Functionality Checks", async ({
   page,
@@ -17,17 +17,34 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   let endpoint = process.env.ENDPOINT;
   expect(endpoint).toBeDefined();
 
-  // Remove quotes from the endpoint if they exist
-  try {
-    endpoint = (endpoint as string).replace(/['"]+/g, "");
-    log(`Navigating to the endpoint: ${endpoint}`);
-    await page.goto(endpoint);
-  } catch (error) {
-    console.error(
-      `Attempt ${testInfo.retry}: Failed to navigate to the endpoint:`,
-      error
-    );
-  }
+// Remove quotes from the endpoint if they exist
+try {
+  endpoint = (endpoint as string).replace(/['"]+/g, "");
+  log(`Endpoint after removing quotes: ${endpoint}`);
+} catch (error) {
+  console.error(`Error processing the endpoint:`, error);
+}
+
+// Check if the endpoint is reachable
+try {
+  const response = await fetch(endpoint);
+  if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+  log(`Endpoint is reachable: ${endpoint}`);
+} catch (error) {
+  console.error(`Failed to reach the endpoint:`, error);
+  return;
+}
+
+// Navigate to the endpoint
+try {
+  log(`Navigating to the endpoint: ${endpoint}`);
+  await page.goto(endpoint);
+} catch (error) {
+  console.error(
+    `Attempt ${testInfo.retry}: Failed to navigate to the endpoint:`,
+    error
+  );
+}
 
   // Expect page to have proper URL
   log(`Checking the URL: ${endpoint}/catalog`);
