@@ -27,6 +27,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
       `Attempt ${testInfo.retry}: Failed to navigate to the endpoint:`,
       error
     );
+    throw new Error(`Failed to navigate to the endpoint: ${endpoint}`);
   }
 
   // Expect page to have proper URL
