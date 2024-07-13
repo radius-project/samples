@@ -2,7 +2,7 @@
 
 This quickstart teaches how to add a Dapr sidecar to your application and use Dapr building blocks.
 
-Visit [radapp.dev](https://docs.radapp.dev/getting-started/quickstarts/quickstart-dapr/) for instructions on deploying this quickstart app to try it out.
+Visit [radapp.io](https://docs.radapp.io/tutorials/dapr/) for instructions on deploying this quickstart app to try it out.
 
 ## Overview
 
@@ -12,7 +12,7 @@ You will deploy an online store where you can order items:
 
 ## Containers
 
-This Radius application will have two [containers](https://docs.radapp.dev/concepts/appmodel-concept/):
+This Radius application will have two [containers](https://docs.radapp.io/concepts/technical/api/):
 
 - A frontend UI for users to place orders. Written with .NET Blazor.
 - A backend order processing microservice. Written in Node.JS.
@@ -21,7 +21,7 @@ This Radius application will have two [containers](https://docs.radapp.dev/conce
 
 The user-facing UI app (`frontend`) offers a portal for users to place orders. Upon creating an order, `frontend` uses [Dapr service invocation](https://docs.dapr.io/developing-applications/building-blocks/service-invocation/service-invocation-overview/) to send requests to `nodeapp`.
 
-The `frontend` container is configured with a [Dapr sidecar extension](https://docs.radapp.dev/reference/resource-schema/link-schema/dapr-schema/extension/) to add the sidecar container.
+The `frontend` container is configured with a [Dapr sidecar extension](https://docs.radapp.io/reference/resource-schema/dapr-schema/extension/) to add the sidecar container.
 
 <img src="images/frontend.png" alt="A diagram of the complete application" width=400 />
 
@@ -29,29 +29,29 @@ The `frontend` container is configured with a [Dapr sidecar extension](https://d
 
 The order processing microservice (`backend`) accepts HTTP requests to create or display orders. It accepts HTTP requests on two endpoints: `GET /order` and `POST /neworder`.
 
-The `backend` container is configured with a [Dapr sidecar extension](https://docs.radapp.dev/reference/resource-schema/link-schema/dapr-schema/extension/) to add the sidecar container, along with a [Dapr Route](#routes) to model Dapr communication.
+The `backend` container is configured with a [Dapr sidecar extension](https://docs.radapp.io/reference/resource-schema/dapr-schema/extension/) to add the sidecar container, along with a [Dapr Route](#routes) to model Dapr communication.
 
 <img src="images/backend.png" alt="A diagram of the backend order processing service" width=600 />
 
 ## Routes
 
-Radius offers communication between services via [Routes](https://docs.radapp.dev/concepts/appmodel-concept/#routes).
+Radius offers communication between services via [Routes](https://docs.radapp.io/guides/author-apps/networking/overview/).
 
 ### Dapr service invocation
 
-In this quickstart we will be using a [Dapr HTTP invoke route](https://docs.radapp.dev/reference/resource-schema/link-schema/dapr-schema/http/) resource to model communication from `frontend` to `backend`. This allows `frontend` to use Dapr service invocation to interact with `backend`.
+In this quickstart we will be using a [Dapr HTTP invoke route](https://docs.radapp.io/reference/resource-schema/dapr-schema/) resource to model communication from `frontend` to `backend`. This allows `frontend` to use Dapr service invocation to interact with `backend`.
 
 <img src="images/invoke.png" alt="A diagram of the Dapr service invocation" width=500 />
 
 ## Link
 
-A [Dapr statestore link](https://docs.radapp.dev/reference/resource-schema/link-schema/dapr-schema/dapr-secretstore/) is used to model and deploy the Dapr statestore component.
+A [Dapr state store link](https://docs.radapp.io/reference/resource-schema/dapr-schema/statestore/) is used to model and deploy the Dapr state store component.
 
 ### `statestore` Dapr state store
 
-The [Dapr state store](https://docs.radapp.dev/reference/resource-schema/link-schema/dapr-schema/dapr-statestore/) resource (`statestore`) stores information about orders. It could be any compatible [Dapr state store](https://docs.dapr.io/developing-applications/building-blocks/state-management/state-management-overview/).
+The [Dapr state store](https://docs.radapp.io/reference/resource-schema/dapr-schema/statestore/) resource (`statestore`) stores information about orders. It could be any compatible [Dapr state store](https://docs.dapr.io/developing-applications/building-blocks/state-management/state-management-overview/).
 
-The Dapr component configuration is automatically generated for the statestore based on the resource or values provided in the link definition.
+The Dapr component configuration is automatically generated for the state store based on the resource or values provided in the link definition.
 
 #### Swappable infrastructure
 
