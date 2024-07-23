@@ -134,7 +134,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         run: |
@@ -154,7 +154,7 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
+        run: k3d cluster create --agents 4 --servers 3 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
@@ -266,6 +266,22 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+
+      # This step will check if any of the Pods got unhealthy after the deployment
+      - name: Check Pod health and restart if needed
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: |
+          namespace="${{ matrix.env }}-${{ matrix.app }}"
+          label="radapp.io/application=${{ matrix.app }}"
+          pod_names=($(kubectl get pods -l $label -n $namespace -o jsonpath='{.items[*].metadata.name}'))
+          for pod_name in "${pod_names[@]}"; do
+            kubectl wait --for=condition=ready pod/$pod_name -n $namespace --timeout=300s
+            if [[ $? -ne 0 ]]; then
+              echo "Pod $pod_name is not ready. Restarting the pod..."
+              kubectl delete pod $pod_name -n $namespace
+            fi
+          done
+
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test

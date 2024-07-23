@@ -21,7 +21,7 @@ test("eShop on Containers App Basic UI and Functionality Checks", async ({
   try {
     endpoint = (endpoint as string).replace(/['"]+/g, "");
     log(`Navigating to the endpoint: ${endpoint}`);
-    await page.goto(endpoint);
+    await page.goto(endpoint, { waitUntil: "domcontentloaded" });
   } catch (error) {
     console.error(
       `Attempt ${testInfo.retry}: Failed to navigate to the endpoint:`,
