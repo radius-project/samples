@@ -143,16 +143,6 @@ resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = 
           port: 5112
         }
       }
-      livenessProbe: {
-        kind: 'httpGet'
-        path: '/liveness'
-        containerPort: 80
-      }
-      readinessProbe: {
-        kind: 'httpGet'
-        path: '/hc'
-        containerPort: 80
-      }
     }
     connections: {
       redis: {

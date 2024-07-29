@@ -22,10 +22,6 @@ resource seq 'Applications.Core/containers@2023-10-01-preview' = {
           port: 5340
         }
       }
-      livenessProbe:{
-        kind:'tcp'
-        containerPort:80
-      }
     }
   }
 }
