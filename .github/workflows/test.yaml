@@ -23,7 +23,7 @@ on:
   schedule: # Run every day at 12 PM
     - cron: "0 12 * * *"
 env:
-  VERSION: ${{ github.env.VERSION  }}
+  VERSION: ${{ github.env.VERSION }}
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
   test-demo:
@@ -50,7 +50,7 @@ jobs:
     name: Test Dapr Application
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ github.env.VERSION  }}
+      version: ${{ github.env.VERSION }}
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: dapr
       os: ubuntu-latest-m
@@ -66,7 +66,7 @@ jobs:
     name: Test Volume Application
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ github.env.VERSION  }}
+      version: ${{ github.env.VERSION }}
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: volumes
       os: ubuntu-latest
@@ -82,7 +82,7 @@ jobs:
     name: Test eShop Application (Containers)
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ github.env.VERSION  }}
+      version: ${{ github.env.VERSION }}
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: eshop-containers
       os: ubuntu-latest-m
@@ -93,10 +93,10 @@ jobs:
       uiTestFile: tests/eshop/eshop.app.spec.ts
       enableDapr: false
   test-eshop-azure:
-    name: Test eShop Application (Containers)
+    name: Test eShop Application (Azure)
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ github.env.VERSION  }}
+      version: ${{ github.env.VERSION }}
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: eshop-azure
       os: ubuntu-latest-m
@@ -111,7 +111,7 @@ jobs:
     name: Test eShop Application (AWS)
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ github.env.VERSION  }}
+      version: ${{ github.env.VERSION }}
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: eshop-aws
       os: ubuntu-latest-m
