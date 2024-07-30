@@ -1,0 +1,225 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.1-experimental",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_EXPERIMENTAL_WARNING": "This template uses ARM features that are experimental. Experimental features should be enabled for testing purposes only, as there are no guarantees about the quality or stability of these features. Do not enable these settings for any production usage, or your production environment may be subject to breaking.",
+    "_EXPERIMENTAL_FEATURES_ENABLED": [
+      "Extensibility"
+    ],
+    "_generator": {
+      "name": "bicep",
+      "version": "0.29.47.4906",
+      "templateHash": "12499313113127413175"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the environment for resources."
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "defaultValue": "default",
+      "metadata": {
+        "description": "Specifies Kubernetes namespace for redis."
+      }
+    },
+    "frontendImage": {
+      "type": "string",
+      "defaultValue": "ghcr.io/radius-project/samples/dapr-frontend:latest"
+    },
+    "backendImage": {
+      "type": "string",
+      "defaultValue": "ghcr.io/radius-project/samples/dapr-backend:latest"
+    }
+  },
+  "imports": {
+    "Radius": {
+      "provider": "Radius",
+      "version": "latest"
+    },
+    "kubernetes": {
+      "provider": "Kubernetes",
+      "version": "1.0.0",
+      "config": {
+        "kubeConfig": "",
+        "namespace": "[parameters('namespace')]"
+      }
+    }
+  },
+  "resources": {
+    "app": {
+      "import": "Radius",
+      "type": "Applications.Core/applications@2023-10-01-preview",
+      "properties": {
+        "name": "dapr",
+        "properties": {
+          "environment": "[parameters('environment')]"
+        }
+      }
+    },
+    "backend": {
+      "import": "Radius",
+      "type": "Applications.Core/containers@2023-10-01-preview",
+      "properties": {
+        "name": "backend",
+        "properties": {
+          "application": "[reference('app').id]",
+          "container": {
+            "image": "[parameters('backendImage')]",
+            "ports": {
+              "web": {
+                "containerPort": 3000
+              }
+            }
+          },
+          "connections": {
+            "orders": {
+              "source": "[reference('stateStore').id]"
+            }
+          },
+          "extensions": [
+            {
+              "kind": "daprSidecar",
+              "appId": "backend",
+              "appPort": 3000
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "app",
+        "stateStore"
+      ]
+    },
+    "frontend": {
+      "import": "Radius",
+      "type": "Applications.Core/containers@2023-10-01-preview",
+      "properties": {
+        "name": "frontend",
+        "properties": {
+          "application": "[reference('app').id]",
+          "container": {
+            "image": "[parameters('frontendImage')]",
+            "env": {
+              "CONNECTION_BACKEND_APPID": "[reference('backend').name]",
+              "ASPNETCORE_URLS": "http://*:8080"
+            },
+            "ports": {
+              "ui": {
+                "containerPort": 8080
+              }
+            }
+          },
+          "extensions": [
+            {
+              "kind": "daprSidecar",
+              "appId": "frontend"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "app",
+        "backend"
+      ]
+    },
+    "stateStore": {
+      "import": "Radius",
+      "type": "Applications.Dapr/stateStores@2023-10-01-preview",
+      "properties": {
+        "name": "statestore",
+        "properties": {
+          "environment": "[parameters('environment')]",
+          "application": "[reference('app').id]",
+          "resourceProvisioning": "manual",
+          "type": "state.redis",
+          "version": "v1",
+          "metadata": {
+            "redisHost": "[format('{0}.{1}.svc.cluster.local:{2}', reference('service').metadata.name, parameters('namespace'), reference('service').spec.ports[0].port)]",
+            "redisPassword": ""
+          }
+        }
+      },
+      "dependsOn": [
+        "app",
+        "service"
+      ]
+    },
+    "statefulset": {
+      "import": "kubernetes",
+      "type": "apps/StatefulSet@v1",
+      "properties": {
+        "metadata": {
+          "name": "redis",
+          "labels": {
+            "app": "redis"
+          }
+        },
+        "spec": {
+          "replicas": 1,
+          "serviceName": "[reference('service').metadata.name]",
+          "selector": {
+            "matchLabels": {
+              "app": "redis"
+            }
+          },
+          "template": {
+            "metadata": {
+              "labels": {
+                "app": "redis"
+              }
+            },
+            "spec": {
+              "automountServiceAccountToken": true,
+              "terminationGracePeriodSeconds": 10,
+              "containers": [
+                {
+                  "name": "redis",
+                  "image": "redis:6.2",
+                  "securityContext": {
+                    "allowPrivilegeEscalation": false
+                  },
+                  "ports": [
+                    {
+                      "containerPort": 6379
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "service"
+      ]
+    },
+    "service": {
+      "import": "kubernetes",
+      "type": "core/Service@v1",
+      "properties": {
+        "metadata": {
+          "name": "redis",
+          "labels": {
+            "app": "redis"
+          }
+        },
+        "spec": {
+          "clusterIP": "None",
+          "ports": [
+            {
+              "port": 6379
+            }
+          ],
+          "selector": {
+            "app": "redis"
+          }
+        }
+      }
+    }
+  }
+}

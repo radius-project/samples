@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // Parameters ---------------------------------------------------------
 
@@ -51,7 +51,7 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
         PicBaseUrl: PICBASEURL
         AzureStorageEnabled: 'False'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlCatalogDb.connectionString()
+        ConnectionString: sqlCatalogDb.listSecrets().connectionString
         EventBusConnection: eventBusConnectionString
       }
       ports: {

@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // Parameters ---------------------------------------------------------
 
@@ -46,7 +46,7 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
         PORT: '80'
         GRPC_PORT: '81'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: redisBasket.connectionString()
+        ConnectionString: redisBasket.listSecrets().connectionString
         EventBusConnection: eventBusConnectionString
         identityUrl: 'http://identity-api:5105'
         IdentityUrlExternal: '${gateway.properties.url}/identity-api'
