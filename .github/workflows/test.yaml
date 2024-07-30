@@ -46,7 +46,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [dev, stage, prod]
         include:
           - name: demo
             os: ubuntu-latest
