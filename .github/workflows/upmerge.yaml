@@ -17,7 +17,7 @@ jobs:
         run: |
           git config --global user.email "radiuscoreteam@service.microsoft.com"
           git config --global user.name "Radius CI Bot"
-      - name: Create new branch
+      - name: Create new branch from edge
         run: |
           export DATE=$(date +%Y-%m-%d)
           export RAND=$(openssl rand -hex 2)
@@ -28,10 +28,17 @@ jobs:
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
           echo "Upmerging samples from $SOURCE_BRANCH to edge"
           git fetch origin $SOURCE_BRANCH
-          git merge --no-commit origin/$SOURCE_BRANCH
-          git commit -m "Upmerge to edge"
-          git push --set-upstream origin $BRANCH_NAME
+          git merge -m "Upmerge to edge" origin/$SOURCE_BRANCH
+          
+          if git diff --quiet edge; then
+              echo "No changes to merge from $SOURCE_BRANCH to edge"
+              echo "NO_CHANGES=true" >> $GITHUB_ENV
+          else
+              echo "Pushing $BRANCH_NAME for PR to edge"
+              git push --set-upstream origin $BRANCH_NAME
+          fi
       - name: Create pull request
+        if: env.NO_CHANGES != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT}}
         run: gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head $BRANCH_NAME
