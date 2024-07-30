@@ -98,18 +98,13 @@ jobs:
       AZURE_LOCATION: westus3
       AWS_REGION: us-west-2
       AWS_ZONES: us-west-2a,us-west-2b,us-west-2c
+    if: ${{ github.event_name == 'pull_request' && matrix.runOnPullRequest == 'false' }}
     steps:
       # Setup the test assets and configuration
       - name: Generate output variables
         id: gen-id
         run: |
           RUN_IDENTIFIER=${{ env.RUN_IDENTIFIER }}-${{ matrix.name }}
-
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.runOnPullRequest }}" == "false" ]]; then
-            RUN_TEST=false
-          else
-            RUN_TEST=true
-          fi
 
           if [[ "${{ matrix.enableDapr }}" == "true" ]]; then
             ENABLE_DAPR=true
@@ -121,42 +116,37 @@ jobs:
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Checkout code
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v4
       - name: Ensure inputs.version is valid semver
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
+        if: inputs.version != ''
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
       - name: Setup Node
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
       - name: az CLI login
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
+        if: matrix.credential == 'azure'
         run: |
           az login --service-principal \
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
       - name: Configure AWS
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        if: matrix.credential == 'aws'
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
       - name: Download k3d
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Create k3d cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
       - name: Build images
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
+        if: matrix.images != ''
         run: |
           # split images and directories into arrays
           IFS=',' read -ra images <<< "${{ matrix.images }}"
@@ -172,7 +162,7 @@ jobs:
           done
       # Create and install test environment
       - name: Create Azure resource group
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
+        if: matrix.credential == 'azure'
         id: create-azure-resource-group
         run: |
           current_time=$(date +%s)
@@ -186,7 +176,7 @@ jobs:
             sleep 5
           done
       - name: Create EKS Cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        if: matrix.credential == 'aws'
         id: create-eks
         run: |
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -205,12 +195,11 @@ jobs:
         timeout-minutes: 60
         continue-on-error: false
       - name: Install Dapr
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
+        if: steps.gen-id.outputs.ENABLE_DAPR == 'true'
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
       - name: Download rad CLI
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           RADIUS_VERSION="${{ inputs.version }}"
           if [[ -z "${{ inputs.version }}" ]]; then
@@ -218,7 +207,6 @@ jobs:
           fi
           ./.github/scripts/install-radius.sh $RADIUS_VERSION
       - name: Initialize default environment
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad install kubernetes
@@ -235,7 +223,7 @@ jobs:
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:latest --resource-type Applications.Datastores/sqlDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:latest --resource-type Applications.Messaging/rabbitMQQueues
       - name: Configure cloud credentials
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && ( matrix.credential == 'azure' || matrix.credential == 'aws')
+        if: matrix.credential == 'azure' || matrix.credential == 'aws'
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
@@ -247,7 +235,7 @@ jobs:
           fi
       ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
       - name: Initialize eShop environments
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
+        if: matrix.app == 'eshop'
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscriptionId=${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
@@ -258,7 +246,6 @@ jobs:
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
-        if: steps.gen-id.outputs.RUN_TEST == 'true'
         id: deploy-app
         uses: nick-fields/retry@v3
         with:
@@ -267,7 +254,7 @@ jobs:
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
       - name: Run Playwright Test
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
+        if: matrix.uiTestFile != ''
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
@@ -329,13 +316,13 @@ jobs:
         run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
       # Cleanup
       - name: Delete app
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
+        if: steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
             rad app delete ${{ matrix.app }} -y
           fi
       - name: Delete Azure resource group
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
+        if: steps.create-azure-resource-group.outcome == 'success'
         run: |
           # Delete Azure resources created by the test
           # if deletion fails, purge workflow will purge the resource group and its resources later
@@ -344,7 +331,7 @@ jobs:
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
       - name: Delete AWS Resources
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && steps.deploy-app.outcome == 'success'
+        if: matrix.credential == 'aws' && steps.deploy-app.outcome == 'success'
         run: |
           # Delete all AWS resources created by the test
           ./.github/scripts/delete-aws-resources.sh '/planes/radius/local/resourcegroups/default/providers/Applications.Core/applications/${{ matrix.app }}'
