@@ -22,88 +22,103 @@ on:
       - edge
   schedule: # Run every day at 12 PM
     - cron: "0 12 * * *"
+env:
+  VERSION: ${{ github.env.VERSION  }}
+  RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
 jobs:
-  test:
+  test-demo:
+    name: Test Demo Application
     uses: ./.github/workflows/run-test.yaml
     with:
-      version: ${{ inputs.version }}
-      run-identifier: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
-      name: ${{ matrix.name }}
-      os: ${{ matrix.os }}
-      runOnPullRequest: ${{ matrix.runOnPullRequest }}
-      app: ${{ matrix.app }}
-      env: ${{ matrix.env }}
-      path: ${{ matrix.path }}
-      deployArgs: ${{ matrix.deployArgs }}
-      exposeArgs: ${{ matrix.exposeArgs }}
-      uiTestFile: ${{ matrix.uiTestFile }}
-      port: ${{ matrix.port }}
-      container: ${{ matrix.container }}
-      enableDapr: ${{ matrix.enableDapr }}
-      images: ${{ matrix.images }}
-      directories: ${{ matrix.directories }}
-      credential: ${{ matrix.credential }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: demo
-            os: ubuntu-latest
-            runOnPullRequest: true
-            app: demo
-            env: default
-            path: ./samples/demo/app.bicep
-            deployArgs: --application demo -p image=sampleregistry:5000/samples/demo
-            exposeArgs: --application demo
-            uiTestFile: tests/demo/demo.app.spec.ts
-            port: 3000
-            container: demo
-            enableDapr: false
-            images: samples/demo
-            directories: samples/demo/
-          - name: dapr
-            os: ubuntu-latest-m
-            runOnPullRequest: true
-            app: dapr
-            env: default
-            path: ./samples/dapr/dapr.bicep
-            deployArgs: -p frontendImage=sampleregistry:5000/samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
-            enableDapr: true
-            images: samples/dapr-frontend,samples/dapr-backend
-            directories: samples/dapr/ui/,samples/dapr/nodeapp/
-          - name: volumes
-            os: ubuntu-latest
-            runOnPullRequest: true
-            app: myapp
-            env: default
-            path: ./samples/volumes/app.bicep
-            deployArgs: -p image=sampleregistry:5000/samples/volumes
-            enableDapr: false
-            images: samples/volumes
-            directories: samples/volumes/
-          - name: eshop-containers
-            os: ubuntu-latest-m
-            runOnPullRequest: true
-            app: eshop
-            env: default
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            enableDapr: false
-          - name: eshop-azure
-            os: ubuntu-latest-m
-            runOnPullRequest: true
-            app: eshop
-            env: azure
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            credential: azure
-            enableDapr: false
-          - name: eshop-aws
-            os: ubuntu-latest-m
-            runOnPullRequest: false
-            app: eshop
-            env: aws
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            credential: aws
-            enableDapr: false
+      version: ${{ github.env.VERSION }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: demo
+      os: ubuntu-latest
+      runOnPullRequest: true
+      app: demo
+      env: default
+      path: ./samples/demo/app.bicep
+      deployArgs: --application demo -p image=sampleregistry:5000/samples/demo
+      exposeArgs: --application demo
+      uiTestFile: tests/demo/demo.app.spec.ts
+      port: 3000
+      container: demo
+      enableDapr: false
+      images: samples/demo
+      directories: samples/demo/
+  test-dapr:
+    name: Test Dapr Application
+    uses: ./.github/workflows/run-test.yaml
+    with:
+      version: ${{ github.env.VERSION  }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: dapr
+      os: ubuntu-latest-m
+      runOnPullRequest: true
+      app: dapr
+      env: default
+      path: ./samples/dapr/dapr.bicep
+      deployArgs: -p frontendImage=sampleregistry:5000/samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
+      enableDapr: true
+      images: samples/dapr-frontend,samples/dapr-backend
+      directories: samples/dapr/ui/,samples/dapr/nodeapp/
+  test-volumes:
+    name: Test Volume Application
+    uses: ./.github/workflows/run-test.yaml
+    with:
+      version: ${{ github.env.VERSION  }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: volumes
+      os: ubuntu-latest
+      runOnPullRequest: true
+      app: myapp
+      env: default
+      path: ./samples/volumes/app.bicep
+      deployArgs: -p image=sampleregistry:5000/samples/volumes
+      enableDapr: false
+      images: samples/volumes
+      directories: samples/volumes/
+  test-eshop-containers:
+    name: Test eShop Application (Containers)
+    uses: ./.github/workflows/run-test.yaml
+    with:
+      version: ${{ github.env.VERSION  }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: eshop-containers
+      os: ubuntu-latest-m
+      runOnPullRequest: true
+      app: eshop
+      env: default
+      path: ./samples/eshop/eshop.bicep
+      uiTestFile: tests/eshop/eshop.app.spec.ts
+      enableDapr: false
+  test-eshop-azure:
+    name: Test eShop Application (Containers)
+    uses: ./.github/workflows/run-test.yaml
+    with:
+      version: ${{ github.env.VERSION  }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: eshop-azure
+      os: ubuntu-latest-m
+      runOnPullRequest: true
+      app: eshop
+      env: azure
+      path: ./samples/eshop/eshop.bicep
+      uiTestFile: tests/eshop/eshop.app.spec.ts
+      credential: azure
+      enableDapr: false
+  test-eshop-aws:
+    name: Test eShop Application (AWS)
+    uses: ./.github/workflows/run-test.yaml
+    with:
+      version: ${{ github.env.VERSION  }}
+      run-identifier: ${{ github.env.RUN_IDENTIFIER }}
+      name: eshop-aws
+      os: ubuntu-latest-m
+      runOnPullRequest: false
+      app: eshop
+      env: aws
+      path: ./samples/eshop/eshop.bicep
+      uiTestFile: tests/eshop/eshop.app.spec.ts
+      credential: aws
+      enableDapr: false

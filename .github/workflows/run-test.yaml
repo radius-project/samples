@@ -30,31 +30,31 @@ on:
         required: true
         type: string
       deployArgs:
-        required: true
+        required: false
         type: string
       exposeArgs:
-        required: true
+        required: false
         type: string
       uiTestFile:
-        required: true
+        required: false
         type: string
       port:
-        required: true
+        required: false
         type: number
       container:
-        required: true
+        required: false
         type: string
       enableDapr:
         required: true
         type: boolean
       images:
-        required: true
+        required: false
         type: string
       directories:
-        required: true
+        required: false
         type: string
       credential:
-        required: true
+        required: false
         type: string
 jobs:
   test:
