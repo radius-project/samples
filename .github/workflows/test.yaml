@@ -91,7 +91,7 @@ jobs:
             enableDapr: false
           - name: eshop-azure
             os: ubuntu-latest-m
-            runOnPullRequest: false
+            runOnPullRequest: true
             app: eshop
             env: azure
             path: ./samples/eshop/eshop.bicep
