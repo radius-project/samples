@@ -31,11 +31,10 @@ jobs:
           git merge -m "Upmerge to edge" origin/$SOURCE_BRANCH
           
           if git diff --quiet edge; then
-              echo "No changes to commit"
+              echo "No changes to merge from $SOURCE_BRANCH to edge"
               echo "NO_CHANGES=true" >> $GITHUB_ENV
           else
-              echo "Committing changes"
-              git commit -m "Upmerge to edge"
+              echo "Pushing $BRANCH_NAME for PR to edge"
               git push --set-upstream origin $BRANCH_NAME
           fi
       - name: Create pull request
