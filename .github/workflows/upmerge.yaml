@@ -1,3 +1,18 @@
+# This workflow automates the process of upmerging changes from the current release branch to the edge branch.
+# During the course of a release, the release branch is the default branch so that PRs can be immediately
+# brought into the release without waiting for a new release. This workflow merges those changes into 
+# the edge branch so that edge can be used as the basis for the next release branch.
+#
+# It is triggered manually via the workflow_dispatch event.
+#
+# The workflow performs the following steps:
+# 1. Checks out the edge branch.
+# 2. Configures git with a user name and email.
+# 3. Creates a new branch from edge.
+# 4. Merges changes from the source branch into the new branch.
+# 5. Pushes the new branch if there are changes.
+# 6. Creates a pull request to merge the new branch into edge.
+
 name: Upmerge samples to edge
 
 on:
@@ -8,21 +23,30 @@ jobs:
     name: Upmerge samples to edge
     runs-on: ubuntu-latest
     steps:
+      
+      # Check out the edge branch
       - uses: actions/checkout@v4
         with:
           ref: edge
           # https://github.com/actions/checkout/issues/125#issuecomment-570254411
           fetch-depth: 0
+      
       - name: Configure git
         run: |
           git config --global user.email "radiuscoreteam@service.microsoft.com"
           git config --global user.name "Radius CI Bot"
+      
+      # Create a new branch from edge. This branch will be used to PR back into edge.
       - name: Create new branch from edge
         run: |
           export DATE=$(date +%Y-%m-%d)
           export RAND=$(openssl rand -hex 2)
           echo "BRANCH_NAME=upmerge/$DATE-$RAND" >> $GITHUB_ENV
-          git checkout -b upmerge/$DATE-$RAND
+          git checkout -b $BRANCH_NAME
+      
+      # Merge changes from the github.ref branch (the branch executing the workflow),
+      # which is expected to be the current release/default branch.
+      # If there are no changes, stop the workflow.
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
@@ -37,6 +61,8 @@ jobs:
               echo "Pushing $BRANCH_NAME for PR to edge"
               git push --set-upstream origin $BRANCH_NAME
           fi
+      
+      # Create a PR from the new branch to edge
       - name: Create pull request
         if: env.NO_CHANGES != 'true'
         env:
