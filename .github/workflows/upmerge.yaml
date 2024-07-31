@@ -15,6 +15,13 @@
 # 5. Pushes the new branch if there are changes.
 # 6. Creates a pull request to merge the new branch into edge.
 
+# Example:
+# The current release branch is v0.36. We are creating the new release for v0.37.
+# The release person manually triggers this workflow from branch v0.36. The workflow runs, which does the following
+# 1. A new branch is created named upmerge/2024-07-31-98b9. The source branch is edge.
+# 2. Changes from branch v0.36 are merged into branch upmerge/2024-07-31-98b9.
+# 3. A PR is created from branch upmerge/2024-07-31-98b9 --> edge. The workflow finishes and reports success.
+
 name: Upmerge samples to edge
 
 on:
