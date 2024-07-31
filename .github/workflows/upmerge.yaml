@@ -41,7 +41,8 @@ jobs:
         run: |
           export DATE=$(date +%Y-%m-%d)
           export RAND=$(openssl rand -hex 2)
-          echo "BRANCH_NAME=upmerge/$DATE-$RAND" >> $GITHUB_ENV
+          export BRANCH_NAME=upmerge/$DATE-$RAND
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
       
       # Merge changes from the github.ref branch (the branch executing the workflow),
