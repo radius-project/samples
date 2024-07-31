@@ -3,13 +3,15 @@
 # brought into the release without waiting for a new release. This workflow merges those changes into 
 # the edge branch so that edge can be used as the basis for the next release branch.
 #
-# It is triggered manually via the workflow_dispatch event.
+# This workflow assumes that it is being triggered from the current release branch, but it could be triggered from
+# any branch, and it uses that branch as the source branch for merging into the edge branch.
+# The workflow is triggered manually via the workflow_dispatch event.
 #
 # The workflow performs the following steps:
 # 1. Checks out the edge branch.
 # 2. Configures git with a user name and email.
 # 3. Creates a new branch from edge.
-# 4. Merges changes from the source branch into the new branch.
+# 4. Merges changes from the branch executing the workflow into the edge branch created in the previous step.
 # 5. Pushes the new branch if there are changes.
 # 6. Creates a pull request to merge the new branch into edge.
 
@@ -45,8 +47,8 @@ jobs:
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
       
-      # Merge changes from the github.ref branch (the branch executing the workflow),
-      # which is expected to be the current release/default branch.
+      # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
+      # branch is assumed to be the current release branch, but could be any branch.
       # If there are no changes, stop the workflow.
       - name: Upmerge samples
         run: |
