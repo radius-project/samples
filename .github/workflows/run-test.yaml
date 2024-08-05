@@ -58,7 +58,7 @@ on:
         type: string
 jobs:
   test:
-    name: Test Sample Application
+    name: ${{ inputs.name }}
     runs-on: ${{ inputs.os }}
     env:
       BRANCH: ${{ github.base_ref || github.ref_name }}
@@ -241,7 +241,9 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ inputs.uiTestFile }} --retries 3
-
+      - name: TEST
+        if: always()
+        run: |
           kubectl get pods -A
           kubectl describe pods -A
       - name: Upload Playwright Results

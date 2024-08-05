@@ -100,7 +100,7 @@ jobs:
       run-identifier: ${{ github.env.RUN_IDENTIFIER }}
       name: eshop-azure
       os: ubuntu-latest-m
-      runOnPullRequest: true
+      runOnPullRequest: false
       app: eshop
       env: azure
       path: ./samples/eshop/eshop.bicep
