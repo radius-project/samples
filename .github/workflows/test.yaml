@@ -189,7 +189,9 @@ jobs:
                 - arg: "--kube-controller-manager-arg=service-account-private-key-file=/etc/kubernetes/k3s/pki/sa.key"
                 - arg: "--disable=traefik@server:0"
           ports:
-            - port: 80:80@loadbalancer
+            - port: 80:80
+              nodeFilters:
+                - loadbalancer
           volumes:
             - volume: ./sa.pub:/etc/kubernetes/k3s/pki/sa.pub
             - volume: ./sa.key:/etc/kubernetes/k3s/pki/sa.key
