@@ -1,11 +1,5 @@
 name: Test Samples (k3d and EKS)
 
-permissions:
-  id-token: write # Required for requesting the JWT
-  contents: read # Required for listing the commits
-  packages: write # Required for uploading the package
-  checks: write # Required for creating a check run
-
 on:
   workflow_dispatch:
     inputs:
