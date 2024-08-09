@@ -204,10 +204,10 @@ jobs:
               nodeFilters:
                 - loadbalancer
           volumes:
-            - volume: ./sa.pub:/etc/kubernetes/k3s/pki/sa.pub
+            - volume: sa.pub:/etc/kubernetes/k3s/pki/sa.pub
               nodeFilters:
               - server:0
-            - volume: ./sa.key:/etc/kubernetes/k3s/pki/sa.key
+            - volume: sa.key:/etc/kubernetes/k3s/pki/sa.key
               nodeFilters:
               - server:0
           registries:
