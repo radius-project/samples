@@ -184,10 +184,20 @@ jobs:
             k3s:
               extraArgs:
                 - arg: "--kube-apiserver-arg=service-account-issuer=$AZURE_OIDC_ISSUER"
+                  nodeFilters:
+                    - server:*
                 - arg: "--kube-apiserver-arg=service-account-key-file=/etc/kubernetes/k3s/pki/sa.pub"
+                  nodeFilters:
+                    - server:*
                 - arg: "--kube-apiserver-arg=service-account-signing-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                  nodeFilters:
+                    - server:*
                 - arg: "--kube-controller-manager-arg=service-account-private-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                  nodeFilters:
+                    - server:*
                 - arg: "--disable=traefik@server:0"
+                  nodeFilters:
+                    - server:*
           ports:
             - port: 80:80
               nodeFilters:
