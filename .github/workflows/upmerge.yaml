@@ -1,3 +1,27 @@
+# This workflow automates the process of upmerging changes from the current release branch to the edge branch.
+# During the course of a release, the release branch is the default branch so that PRs can be immediately
+# brought into the release without waiting for a new release. This workflow merges those changes into 
+# the edge branch so that edge can be used as the basis for the next release branch.
+#
+# This workflow assumes that it is being triggered from the current release branch, but it could be triggered from
+# any branch, and it uses that branch as the source branch for merging into the edge branch.
+# The workflow is triggered manually via the workflow_dispatch event.
+#
+# The workflow performs the following steps:
+# 1. Checks out the edge branch.
+# 2. Configures git with a user name and email.
+# 3. Creates a new branch from edge.
+# 4. Merges changes from the branch executing the workflow into the edge branch created in the previous step.
+# 5. Pushes the new branch if there are changes.
+# 6. Creates a pull request to merge the new branch into edge.
+
+# Example:
+# The current release branch is v0.36. We are creating the new release for v0.37.
+# The release person manually triggers this workflow from branch v0.36. The workflow runs, which does the following
+# 1. A new branch is created named upmerge/2024-07-31-98b9. The source branch is edge.
+# 2. Changes from branch v0.36 are merged into branch upmerge/2024-07-31-98b9.
+# 3. A PR is created from branch upmerge/2024-07-31-98b9 --> edge. The workflow finishes and reports success.
+
 name: Upmerge samples to edge
 
 on:
@@ -8,30 +32,49 @@ jobs:
     name: Upmerge samples to edge
     runs-on: ubuntu-latest
     steps:
+      
+      # Check out the edge branch
       - uses: actions/checkout@v4
         with:
           ref: edge
           # https://github.com/actions/checkout/issues/125#issuecomment-570254411
           fetch-depth: 0
+      
       - name: Configure git
         run: |
           git config --global user.email "radiuscoreteam@service.microsoft.com"
           git config --global user.name "Radius CI Bot"
-      - name: Create new branch
+      
+      # Create a new branch from edge. This branch will be used to PR back into edge.
+      - name: Create new branch from edge
         run: |
           export DATE=$(date +%Y-%m-%d)
           export RAND=$(openssl rand -hex 2)
-          echo "BRANCH_NAME=upmerge/$DATE-$RAND" >> $GITHUB_ENV
-          git checkout -b upmerge/$DATE-$RAND
+          export BRANCH_NAME=upmerge/$DATE-$RAND
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+      
+      # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
+      # branch is assumed to be the current release branch, but could be any branch.
+      # If there are no changes, stop the workflow.
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
           echo "Upmerging samples from $SOURCE_BRANCH to edge"
           git fetch origin $SOURCE_BRANCH
-          git merge --no-commit origin/$SOURCE_BRANCH
-          git commit -m "Upmerge to edge"
-          git push --set-upstream origin $BRANCH_NAME
+          git merge -m "Upmerge to edge" origin/$SOURCE_BRANCH
+          
+          if git diff --quiet edge; then
+              echo "No changes to merge from $SOURCE_BRANCH to edge"
+              echo "NO_CHANGES=true" >> $GITHUB_ENV
+          else
+              echo "Pushing $BRANCH_NAME for PR to edge"
+              git push --set-upstream origin $BRANCH_NAME
+          fi
+      
+      # Create a PR from the new branch to edge
       - name: Create pull request
+        if: env.NO_CHANGES != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT}}
         run: gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head $BRANCH_NAME
