@@ -28,6 +28,8 @@ env:
   AZURE_WORKLOAD_IDENTITY_WEBHOOK_VER: "1.3.0"
   # Helm version
   HELM_VER: "v3.12.0"
+  # k3d CLI version
+  K3D_VER: "v5.7.3"
 jobs:
   test:
     name: Sample tests
@@ -158,7 +160,7 @@ jobs:
           aws configure set output json
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=${{ env.K3D_VER }} bash
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -173,18 +175,19 @@ jobs:
           echo $AZURE_OIDC_ISSUER_PRIVATE_KEY | base64 -d > sa.key
 
           # Create k3d cluster configuration
+          # https://k3d.io/v5.7.3/usage/configfile/?h=config+file
           cat <<EOF > k3d-config.yaml
-          apiVersion: k3d.io/v1alpha4
+          apiVersion: k3d.io/v1alpha5
           kind: Simple
           agents: 2
           options:
             k3s:
               extraArgs:
-                - --kube-apiserver-arg=service-account-issuer=$AZURE_OIDC_ISSUER
-                - --kube-apiserver-arg=service-account-key-file=/etc/kubernetes/k3s/pki/sa.pub
-                - --kube-apiserver-arg=service-account-signing-key-file=/etc/kubernetes/k3s/pki/sa.key
-                - --kube-controller-manager-arg=service-account-private-key-file=/etc/kubernetes/k3s/pki/sa.key
-                - --disable=traefik@server:0
+                - arg: "--kube-apiserver-arg=service-account-issuer=$AZURE_OIDC_ISSUER"
+                - arg: "--kube-apiserver-arg=service-account-key-file=/etc/kubernetes/k3s/pki/sa.pub"
+                - arg: "--kube-apiserver-arg=service-account-signing-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                - arg: "--kube-controller-manager-arg=service-account-private-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                - arg: "--disable=traefik@server:0"
           ports:
             - port: 80:80@loadbalancer
           volumes:
@@ -193,7 +196,8 @@ jobs:
           registries:
             create:
               name: sampleregistry
-              port: 51351
+              host: "0.0.0.0"
+              hostPort: "51351"
           EOF
 
           # Create the k3d cluster using the configuration file
