@@ -45,6 +45,11 @@ def validate_file(f):
     )
     stderr = result.stderr.decode("utf-8")
     exitcode = result.returncode
+  
+    warning_prefix = "WARNING: The following experimental Bicep features"
+    if stderr.startswith(warning_prefix) and "Error" not in stderr:
+        stderr = ""
+        exitcode = 0
 
     if exitcode != 0:
         failures.append(f)

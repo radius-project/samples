@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // PARAMETERS ---------------------------------------------------------
 
@@ -53,7 +53,7 @@ resource ordering 'Applications.Core/containers@2023-10-01-preview' = {
         PATH_BASE: '/ordering-api'
         GRPC_PORT: '81'
         PORT: '80'
-        ConnectionString: sqlOrderingDb.connectionString()
+        ConnectionString: sqlOrderingDb.listSecrets().connectionString
         EventBusConnection: eventBusConnectionString
         identityUrl: 'http://identity-api:5105'
         IdentityUrlExternal: '${gateway.properties.url}/identity-api'
@@ -99,7 +99,7 @@ resource orderbgtasks 'Applications.Core/containers@2023-10-01-preview' = {
         'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
         ORCHESTRATOR_TYPE: 'K8S'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlOrderingDb.connectionString()
+        ConnectionString: sqlOrderingDb.listSecrets().connectionString
         EventBusConnection: eventBusConnectionString
       }
       ports: {
@@ -133,7 +133,7 @@ resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = 
         IsClusterEnv: 'True'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
         EventBusConnection: eventBusConnectionString
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.password()},abortConnect=False'
+        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.listSecrets().password},abortConnect=False'
         identityUrl: 'http://identity-api:5105'
         IdentityUrlExternal: '${gateway.properties.url}/identity-api'
       }

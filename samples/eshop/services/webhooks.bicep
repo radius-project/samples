@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // PARAMETERS ---------------------------------------------------------
 
@@ -43,7 +43,7 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         ORCHESTRATOR_TYPE: 'K8S'
         AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlWebhooksDb.connectionString()
+        ConnectionString: sqlWebhooksDb.listSecrets().connectionString
         EventBusConnection: eventBusConnectionString
         identityUrl: 'http://identity-api:5105'
         IdentityUrlExternal: '${gateway.properties.url}/identity-api'

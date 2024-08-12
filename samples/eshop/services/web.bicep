@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // PARAMETERS ---------------------------------------------------------
 
@@ -34,7 +34,7 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
         ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
         CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: redisKeystore.connectionString()
+        DPConnectionString: redisKeystore.listSecrets().connectionString
         IdentityUrl: '${gateway.properties.url}/identity-api'
         IdentityUrlHC: 'http://identity-api:5105/liveness'
         PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
@@ -94,7 +94,7 @@ resource webmvc 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         PATH_BASE: '/webmvc'
         UseCustomizationData: 'False'
-        DPConnectionString: redisKeystore.connectionString()
+        DPConnectionString: redisKeystore.listSecrets().connectionString
         UseLoadTest: 'False'
         ORCHESTRATOR_TYPE: 'K8S'
         IsClusterEnv: 'True'
