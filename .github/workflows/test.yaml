@@ -24,6 +24,12 @@ on:
     - cron: "0 12 * * *"
 env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
+  # Azure workload identity webhook chart version
+  AZURE_WORKLOAD_IDENTITY_WEBHOOK_VER: "1.3.0"
+  # Helm version
+  HELM_VER: "v3.12.0"
+  # k3d CLI version
+  K3D_VER: "v5.7.3"
 jobs:
   test:
     name: Sample tests
@@ -135,6 +141,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VER }}
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         run: |
@@ -151,10 +160,65 @@ jobs:
           aws configure set output json
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=${{ env.K3D_VER }} bash
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
+        run: |
+          # Populate the following environment variables for Azure workload identity from secrets.
+          # AZURE_OIDC_ISSUER_PUBLIC_KEY
+          # AZURE_OIDC_ISSUER_PRIVATE_KEY
+          # AZURE_OIDC_ISSUER
+          eval "export $(echo "${{ secrets.FUNCTEST_AZURE_OIDC_JSON }}" | jq -r 'to_entries | map("\(.key)=\(.value)") | @sh')"
+
+          # Create k3d cluster with OIDC Issuer keys
+          echo $AZURE_OIDC_ISSUER_PUBLIC_KEY | base64 -d > sa.pub
+          echo $AZURE_OIDC_ISSUER_PRIVATE_KEY | base64 -d > sa.key
+
+          # Create k3d cluster configuration
+          # https://k3d.io/v5.7.3/usage/configfile/?h=config+file
+          cat <<EOF > k3d-config.yaml
+          apiVersion: k3d.io/v1alpha5
+          kind: Simple
+          servers: 1
+          agents: 2
+          options:
+            k3s:
+              extraArgs:
+                - arg: "--kube-apiserver-arg=service-account-issuer=$AZURE_OIDC_ISSUER"
+                  nodeFilters:
+                    - server:0
+                - arg: "--kube-apiserver-arg=service-account-key-file=/etc/kubernetes/k3s/pki/sa.pub"
+                  nodeFilters:
+                    - server:0
+                - arg: "--kube-apiserver-arg=service-account-signing-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                  nodeFilters:
+                    - server:0
+                - arg: "--kube-controller-manager-arg=service-account-private-key-file=/etc/kubernetes/k3s/pki/sa.key"
+                  nodeFilters:
+                    - server:0
+                - arg: "--disable=traefik@server:0"
+                  nodeFilters:
+                    - server:0
+          ports:
+            - port: 80:80
+              nodeFilters:
+                - loadbalancer
+          volumes:
+            - volume: sa.pub:/etc/kubernetes/k3s/pki/sa.pub
+              nodeFilters:
+              - server:0
+            - volume: sa.key:/etc/kubernetes/k3s/pki/sa.key
+              nodeFilters:
+              - server:0
+          registries:
+            create:
+              name: sampleregistry
+              host: "0.0.0.0"
+              hostPort: "51351"
+          EOF
+
+          # Create the k3d cluster using the configuration file
+          k3d cluster create --config ./k3d-config.yaml
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
@@ -209,6 +273,10 @@ jobs:
         run: |
           helm repo add dapr https://dapr.github.io/helm-charts/
           helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
+      - name: Install azure workload identity webhook chart
+        run: |
+          helm repo add azure-workload-identity https://azure.github.io/azure-workload-identity/charts
+          helm install workload-identity-webhook azure-workload-identity/workload-identity-webhook --namespace radius-default --create-namespace --version ${{ env.AZURE_WORKLOAD_IDENTITY_WEBHOOK_VER }} --set azureTenantID=${{ secrets.AZURE_TEST_TENANTID }}
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -221,9 +289,9 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad install kubernetes
+            rad install kubernetes --set global.azureWorkloadIdentity.enabled=true
           else
-            rad install kubernetes --set rp.publicEndpointOverride=localhost
+            rad install kubernetes --set rp.publicEndpointOverride=localhost,global.azureWorkloadIdentity.enabled=true
           fi
           rad group create default
           rad workspace create kubernetes default --group default
@@ -239,7 +307,7 @@ jobs:
         run: |
           if [[ "${{ matrix.credential }}" == "azure" ]]; then
             rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
-            rad credential register azure sp --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+            rad credential register azure wi --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
           fi
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
