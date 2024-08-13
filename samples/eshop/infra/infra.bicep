@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 @description('Radius environment ID')
 param environment string
@@ -113,4 +113,4 @@ output rabbitmq string = rabbitmq.name
 output servicebus string = servicebus.name
 
 @description('Event Bus connection string')
-output eventBusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.secrets('connectionString') : rabbitmq.properties.host
+output eventBusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.listSecrets().connectionString : rabbitmq.properties.host

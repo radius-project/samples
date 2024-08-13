@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('Specifies the environment for resources.')
 param environment string
@@ -83,10 +83,10 @@ resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
   }
 }
 
-import kubernetes as kubernetes{
+extension kubernetes with {
   kubeConfig: ''
   namespace: namespace
-}
+} as kubernetes
 
 resource statefulset 'apps/StatefulSet@v1' = {
   metadata: {

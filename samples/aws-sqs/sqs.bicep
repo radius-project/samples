@@ -1,5 +1,5 @@
-import aws as aws
-import radius as radius
+extension aws
+extension radius
 
 param environment string
 param queue_name string

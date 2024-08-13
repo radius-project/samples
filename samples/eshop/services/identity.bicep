@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // PARAMETERS ---------------------------------------------------------
 
@@ -35,9 +35,9 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
         ASPNETCORE_URLS: 'http://0.0.0.0:80'
         OrchestratorType: 'K8S'
         IsClusterEnv: 'True'
-        DPConnectionString: redisKeystore.connectionString()
+        DPConnectionString: redisKeystore.listSecrets().connectionString
         EnableDevspaces: 'False'
-        ConnectionString: sqlIdentityDb.connectionString()
+        ConnectionString: sqlIdentityDb.listSecrets().connectionString
         MvcClient: '${gateway.properties.url}/webmvc'
         SpaClient: gateway.properties.url
         BasketApiClient: '${gateway.properties.url}/basket-api'

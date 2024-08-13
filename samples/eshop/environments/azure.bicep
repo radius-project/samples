@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 @description('The name of the Azure resource group where Azure resources will be deployed.')
 param azureResourceGroup string
