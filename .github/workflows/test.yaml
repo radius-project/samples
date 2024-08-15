@@ -244,7 +244,7 @@ jobs:
           fi
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-            rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            rad credential register aws access-key --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
       - name: Initialize eShop environments
