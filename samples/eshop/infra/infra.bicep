@@ -113,4 +113,5 @@ output rabbitmq string = rabbitmq.name
 output servicebus string = servicebus.name
 
 @description('Event Bus connection string')
+#disable-next-line outputs-should-not-contain-secrets
 output eventBusConnectionString string = (AZURESERVICEBUSENABLED == 'True') ? servicebus.listSecrets().connectionString : rabbitmq.properties.host
