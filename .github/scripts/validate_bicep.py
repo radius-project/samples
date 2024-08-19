@@ -28,6 +28,7 @@ print(f"Using Bicep binary: {bicep_executable}", flush=True)
 
 files = []
 failures = []
+warnings = []
 
 # Walk the directory tree and find all .bicep files
 for root, _, filenames in os.walk("."):
@@ -46,12 +47,11 @@ def validate_file(f):
     stderr = result.stderr.decode("utf-8")
     exitcode = result.returncode
   
-    warning_prefix = "WARNING: The following experimental Bicep features"
-    if stderr.startswith(warning_prefix) and "Error" not in stderr:
-        stderr = ""
-        exitcode = 0
+    if "Warning" in stderr:
+        warnings.append(f)
+        print(stderr, flush=True)
 
-    if exitcode != 0:
+    if exitcode != 0 or "Error" in stderr:
         failures.append(f)
         print(stderr, flush=True)
 
@@ -61,5 +61,8 @@ concurrent.futures.wait(futures)
 
 for f in failures:
     print(f"Failed: {f}", flush=True)
+
+for f in warnings:
+    print(f"Warning: {f}", flush=True)
 
 exit(len(failures))
