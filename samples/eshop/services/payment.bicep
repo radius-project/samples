@@ -32,11 +32,21 @@ resource payment 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/payment.api:${imageTag}'
       env: {
-        'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': 'Verbose'
-        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        ORCHESTRATOR_TYPE: 'K8S'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: eventBusConnectionString
+        'Serilog__MinimumLevel__Override__payment-api.IntegrationEvents.EventHandling': {
+          value: 'Verbose'
+        }
+        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': {
+          value: 'Verbose'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
       }
       ports: {
         http: {

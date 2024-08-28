@@ -22,24 +22,60 @@ resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/webshoppingagg:${imageTag}'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        PATH_BASE: '/webshoppingagg'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ORCHESTRATOR_TYPE: 'K8S'
-        IsClusterEnv: 'True'
-        urls__basket: 'http://basket-api:5103'
-        urls__catalog: 'http://catalog-api:5101'
-        urls__orders: 'http://ordering-api:5102'
-        urls__identity: 'http://identity-api:5105'
-        urls__grpcBasket: 'grpc://basket-api:9103'
-        urls__grpcCatalog: 'grpc://catalog-api:9101'
-        urls__grpcOrdering: 'grpc://ordering-api:9102'
-        CatalogUrlHC: 'http://catalog-api:5101/liveness'
-        OrderingUrlHC: 'http://ordering-api:5102/liveness'
-        IdentityUrlHC: 'http://identity-api:5105/liveness'
-        BasketUrlHC: 'http://basket-api:5103/liveness'
-        PaymentUrlHC: 'http://payment-api:5108/liveness'
-        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        PATH_BASE: {
+          value: '/webshoppingagg'
+        }
+        ASPNETCORE_URLS:  {
+          value: 'http://0.0.0.0:80'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        IsClusterEnv: {
+          value: 'True'
+        }
+        urls__basket: {
+          value: 'http://basket-api:5103'
+        }
+        urls__catalog: {
+          value: 'http://catalog-api:5101'
+        }
+        urls__orders: {
+          value: 'http://ordering-api:5102'
+        }
+        urls__identity: {
+          value: 'http://identity-api:5105'
+        }
+        urls__grpcBasket: {
+          value: 'grpc://basket-api:9103'
+        }
+        urls__grpcCatalog: {
+          value: 'grpc://catalog-api:9101'
+        }
+        urls__grpcOrdering: {
+          value: 'grpc://ordering-api:9102'
+        }
+        CatalogUrlHC: {
+          value: 'http://catalog-api:5101/liveness'
+        }
+        OrderingUrlHC: {
+          value: 'http://ordering-api:5102/liveness'
+        }
+        IdentityUrlHC: {
+          value: 'http://identity-api:5105/liveness'
+        }
+        BasketUrlHC: {
+          value: 'http://basket-api:5103/liveness'
+        }
+        PaymentUrlHC: {
+          value: 'http://payment-api:5108/liveness'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {

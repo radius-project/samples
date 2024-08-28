@@ -38,15 +38,33 @@ resource webhooks 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/webhooks.api:${imageTag}'
       env: {
-        PATH_BASE: '/webhooks-api'
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ORCHESTRATOR_TYPE: 'K8S'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlWebhooksDb.listSecrets().connectionString
-        EventBusConnection: eventBusConnectionString
-        identityUrl: 'http://identity-api:5105'
-        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
+        PATH_BASE: {
+          value: '/webhooks-api'
+        }
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        ConnectionString: {
+          value: sqlWebhooksDb.listSecrets().connectionString
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
+        identityUrl: {
+          value: 'http://identity-api:5105'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {
