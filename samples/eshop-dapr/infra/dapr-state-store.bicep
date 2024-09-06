@@ -91,7 +91,7 @@ resource daprStateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
     version: 'v1'
     metadata: {
       url: cosmosAccount.properties.documentEndpoint
-      masterKey: listKeys(cosmosAccount.id, cosmosAccount.apiVersion).primaryMasterKey
+      masterKey: cosmosAccount.listKeys().primaryMasterKey
       database: cosmosDbName
       collection: cosmosDbCollectionName
       actorStateStore: 'true'
