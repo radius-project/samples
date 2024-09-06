@@ -81,8 +81,12 @@ resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
     type: 'state.redis'
     version: 'v1'
     metadata: {
-      redisHost: '${service.metadata.name}.${namespace}.svc.cluster.local:${service.spec.ports[0].port}'
-      redisPassword: ''
+      redisHost: {
+        value: '${service.metadata.name}.${namespace}.svc.cluster.local:${service.spec.ports[0].port}'
+      }
+      redisPassword: {
+        value: ''
+      }
     }
   }
 }
