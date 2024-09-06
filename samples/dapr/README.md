@@ -39,7 +39,7 @@ Radius offers communication between services via [Routes](https://docs.radapp.io
 
 ### Dapr service invocation
 
-In this quickstart we will be using a [Dapr HTTP invoke route](https://docs.radapp.io/reference/resource-schema/dapr-schema/) resource to model communication from `frontend` to `backend`. This allows `frontend` to use Dapr service invocation to interact with `backend`.
+In this tutorial we will be using a [Dapr HTTP invoke route](https://docs.radapp.io/reference/resource-schema/dapr-schema/) resource to model communication from `frontend` to `backend`. This allows `frontend` to use Dapr service invocation to interact with `backend`.
 
 <img src="images/invoke.png" alt="A diagram of the Dapr service invocation" width=500 />
 
