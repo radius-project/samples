@@ -41,22 +41,54 @@ resource ordering 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/ordering.api:${imageTag}'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        UseCustomizationData: 'False'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        CheckUpdateTime: '30000'
-        ORCHESTRATOR_TYPE: 'K8S'
-        UseLoadTest: 'False'
-        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        'Serilog__MinimumLevel__Override__ordering-api': 'Verbose'
-        PATH_BASE: '/ordering-api'
-        GRPC_PORT: '81'
-        PORT: '80'
-        ConnectionString: sqlOrderingDb.listSecrets().connectionString
-        EventBusConnection: eventBusConnectionString
-        identityUrl: 'http://identity-api:5105'
-        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        UseCustomizationData: {
+          value: 'False'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        CheckUpdateTime: {
+          value: '30000'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        UseLoadTest: {
+          value: 'False'
+        }
+        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': {
+          value: 'Verbose'
+        }
+        'Serilog__MinimumLevel__Override__ordering-api': {
+          value: 'Verbose'
+        }
+        PATH_BASE: {
+          value: '/ordering-api'
+        }
+        GRPC_PORT: {
+          value: '81'
+        }
+        PORT: {
+          value: '80'
+        }
+        ConnectionString: {
+          value: sqlOrderingDb.listSecrets().connectionString
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
+        identityUrl: {
+          value: 'http://identity-api:5105'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {
@@ -90,17 +122,39 @@ resource orderbgtasks 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/ordering.backgroundtasks:${imageTag}'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        UseCustomizationData: 'False'
-        CheckUpdateTime: '30000'
-        GracePeriodTime: '1'
-        UseLoadTest: 'False'
-        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': 'Verbose'
-        ORCHESTRATOR_TYPE: 'K8S'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlOrderingDb.listSecrets().connectionString
-        EventBusConnection: eventBusConnectionString
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        UseCustomizationData: {
+          value: 'False'
+        }
+        CheckUpdateTime: {
+          value: '30000'
+        }
+        GracePeriodTime: {
+          value: '1'
+        }
+        UseLoadTest: {
+          value: 'False'
+        }
+        'Serilog__MinimumLevel__Override__Microsoft.eShopOnContainers.BuildingBlocks.EventBusRabbitMQ': {
+          value: 'Verbose'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        ConnectionString: {
+          value: sqlOrderingDb.listSecrets().connectionString
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
       }
       ports: {
         http: {
@@ -126,16 +180,36 @@ resource orderingsignalrhub 'Applications.Core/containers@2023-10-01-preview' = 
     container: {
       image: '${imageRegistry}/ordering.signalrhub:${imageTag}'
       env: {
-        PATH_BASE: '/payment-api'
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: 'K8S'
-        IsClusterEnv: 'True'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        EventBusConnection: eventBusConnectionString
-        SignalrStoreConnectionString: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.listSecrets().password},abortConnect=False'
-        identityUrl: 'http://identity-api:5105'
-        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
+        PATH_BASE: {
+          value: '/payment-api'
+        }
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        OrchestratorType: {
+          value: 'K8S'
+        }
+        IsClusterEnv: {
+          value: 'True'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
+        SignalrStoreConnectionString: {
+          value: '${redisKeystore.properties.host}:${redisKeystore.properties.port},password=${redisKeystore.listSecrets().password},abortConnect=False'
+        }
+        identityUrl: {
+          value: 'http://identity-api:5105'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {

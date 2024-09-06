@@ -27,18 +27,42 @@ resource webspa 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/webspa:${imageTag}'
       env: {
-        PATH_BASE: '/'
-        ASPNETCORE_ENVIRONMENT: 'Production'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        UseCustomizationData: 'False'
-        ORCHESTRATOR_TYPE: 'K8S'
-        IsClusterEnv: 'True'
-        CallBackUrl: '${gateway.properties.url}/'
-        DPConnectionString: redisKeystore.listSecrets().connectionString
-        IdentityUrl: '${gateway.properties.url}/identity-api'
-        IdentityUrlHC: 'http://identity-api:5105/liveness'
-        PurchaseUrl: '${gateway.properties.url}/webshoppingapigw'
-        SignalrHubUrl: 'http://ordering-signalrhub:5112'
+        PATH_BASE: {
+          value: '/'
+        }
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Production'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        UseCustomizationData: {
+          value: 'False'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        IsClusterEnv: {
+          value: 'True'
+        }
+        CallBackUrl: {
+          value: '${gateway.properties.url}/'
+        }
+        DPConnectionString: {
+          value: redisKeystore.listSecrets().connectionString
+        }
+        IdentityUrl: {
+          value: '${gateway.properties.url}/identity-api'
+        }
+        IdentityUrlHC: {
+          value: 'http://identity-api:5105/liveness'
+        }
+        PurchaseUrl: {
+          value: '${gateway.properties.url}/webshoppingapigw'
+        }
+        SignalrHubUrl: {
+          value: 'http://ordering-signalrhub:5112'
+        }
       }
       ports: {
         http: {

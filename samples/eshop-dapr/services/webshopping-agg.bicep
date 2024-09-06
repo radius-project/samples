@@ -28,14 +28,30 @@ resource webshoppingAgg 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/webshoppingagg:rad-latest'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        IdentityUrl: 'http://identity-api:80'
-        IdentityUrlExternal: '${gateway.properties.url}/identity/'
-        SeqServerUrl: 'http://seq:5340'
-        BasketUrlHC: 'http://localhost:3500/v1.0/invoke/basket-api/method/liveness'
-        CatalogUrlHC: 'http://localhost:3500/v1.0/invoke/catalog-api/method/liveness'
-        IdentityUrlHC: 'http://localhost:3500/v1.0/invoke/identity-api/method/liveness'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        IdentityUrl: {
+          value: 'http://identity-api:80'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity/'
+        }
+        SeqServerUrl: {
+          value: 'http://seq:5340'
+        }
+        BasketUrlHC: {
+          value: 'http://localhost:3500/v1.0/invoke/basket-api/method/liveness'
+        }
+        CatalogUrlHC: {
+          value: 'http://localhost:3500/v1.0/invoke/catalog-api/method/liveness'
+        }
+        IdentityUrlHC: {
+          value: 'http://localhost:3500/v1.0/invoke/identity-api/method/liveness'
+        }
       }
       ports: {
         http: {

@@ -50,8 +50,12 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: frontendImage
       env: {
-        CONNECTION_BACKEND_APPID: backend.name
-        ASPNETCORE_URLS: 'http://*:8080'
+        CONNECTION_BACKEND_APPID: {
+          value: backend.name
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://*:8080'
+        }
       }
       ports: {
         ui: {

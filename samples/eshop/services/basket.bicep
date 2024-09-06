@@ -38,18 +38,42 @@ resource basket 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/basket.api:${imageTag}'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        UseLoadTest: 'False'
-        PATH_BASE: '/basket-api'
-        ORCHESTRATOR_TYPE: 'K8S'
-        PORT: '80'
-        GRPC_PORT: '81'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: redisBasket.listSecrets().connectionString
-        EventBusConnection: eventBusConnectionString
-        identityUrl: 'http://identity-api:5105'
-        IdentityUrlExternal: '${gateway.properties.url}/identity-api'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        UseLoadTest: {
+          value: 'False'
+        }
+        PATH_BASE: {
+          value: '/basket-api'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        PORT: {
+          value: '80'
+        }
+        GRPC_PORT: {
+          value: '81'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        ConnectionString: {
+          value: redisBasket.listSecrets().connectionString
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
+        identityUrl: {
+          value: 'http://identity-api:5105'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {
