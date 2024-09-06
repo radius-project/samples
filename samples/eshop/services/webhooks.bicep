@@ -104,14 +104,30 @@ resource webhooksclient 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/webhooks.client:${imageTag}'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Production'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        PATH_BASE: '/webhooks-web'
-        Token: 'WebHooks-Demo-Web'
-        CallBackUrl: '${gateway.properties.url}/webhooks-client'
-        SelfUrl: 'http://webhooks-client:5114'
-        WebhooksUrl: 'http://webhooks-api:5113'
-        IdentityUrl: '${gateway.properties.url}/identity-api'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Production'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        PATH_BASE: {
+          value: '/webhooks-web'
+        }
+        Token: {
+          value: 'WebHooks-Demo-Web'
+        }
+        CallBackUrl: {
+          value: '${gateway.properties.url}/webhooks-client'
+        }
+        SelfUrl: {
+          value: 'http://webhooks-client:5114'
+        }
+        WebhooksUrl: {
+          value: 'http://webhooks-api:5113'
+        }
+        IdentityUrl: {
+          value: '${gateway.properties.url}/identity-api'
+        }
       }
       ports: {
         http: {
