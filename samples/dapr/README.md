@@ -1,6 +1,6 @@
 # Dapr Quickstart
 
-This quickstart teaches how to add a Dapr sidecar to your application and use Dapr building blocks.
+This tutorial teaches how to add a Dapr sidecar to your application and use Dapr building blocks.
 
 Visit [radapp.io](https://docs.radapp.io/tutorials/dapr/) for instructions on deploying this quickstart app to try it out.
 
