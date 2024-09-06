@@ -29,12 +29,12 @@ jobs:
     name: Validate Bicep Code
     runs-on: ubuntu-latest
     steps:
+    - name: Check out repo
+      uses: actions/checkout@v4
     - name: Setup and verify bicep CLI
       run: |
         curl -Lo rad-bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
         chmod +x ./rad-bicep
         ./rad-bicep --version
-    - name: Check out repo
-      uses: actions/checkout@v4
     - name: Verify Bicep files
       run: python ./.github/scripts/validate_bicep.py
