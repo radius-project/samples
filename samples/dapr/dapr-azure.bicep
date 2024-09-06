@@ -97,9 +97,15 @@ resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
       { id: account::tableServices::table.id }
     ]
     metadata: {
-      accountName: account.name
-      accountKey: account.listKeys().keys[0].value
-      tableName: account::tableServices::table.name
+      accountName: {
+        value: account.name
+      }
+      accountKey: {
+        value: account.listKeys().keys[0].value
+      }
+      tableName: {
+        value: account::tableServices::table.name
+      }
     }
     type: 'state.azure.tablestorage'
     version: 'v1'

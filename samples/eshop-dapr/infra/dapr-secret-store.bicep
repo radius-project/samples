@@ -56,7 +56,9 @@ resource daprSecretStore 'Applications.Dapr/secretStores@2023-10-01-preview' = {
     type: 'secretstores.azure.keyvault'
     version: 'v1'
     metadata: {
-      vaultName: keyVaultName
+      vaultName: {
+        value: keyVaultName
+      }
     }
   }
 }
