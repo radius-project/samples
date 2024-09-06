@@ -2,7 +2,7 @@
 
 This repository contains the source code for quickstarts, reference apps, and tutorials for Radius.
 
-To try out one of these samples, visit https://docs.radapp.dev
+To try out one of these samples, visit <https://docs.radapp.io>
 
 ## Codespace
 
