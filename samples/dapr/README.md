@@ -12,7 +12,7 @@ You will deploy an online store where you can order items:
 
 ## Containers
 
-This Radius application will have two [containers](https://docs.radapp.io/concepts/technical/api/):
+This Radius application will have two [containers](https://docs.radapp.io/guides/author-apps/containers/overview/):
 
 - A frontend UI for users to place orders. Written with .NET Blazor.
 - A backend order processing microservice. Written in Node.JS.
