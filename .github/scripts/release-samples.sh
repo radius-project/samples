@@ -52,7 +52,7 @@ mv bicepconfig_updated.json bicepconfig.json
 
 # Push changes to GitHub
 git add --all
-git commit -m "Update docs for ${VERSION}"
+git commit -m "Update samples for ${VERSION}"
 git push origin "${CHANNEL_VERSION}"
 
 popd
