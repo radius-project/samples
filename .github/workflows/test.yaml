@@ -7,6 +7,13 @@ on:
         description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge)."
         required: false
         type: string
+  push:
+    branches:
+      - v*.*
+      - edge
+    paths:
+      - "samples/**"
+      - ".github/workflows/**"
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -121,6 +128,15 @@ jobs:
           RADIUS_VERSION=edge
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             RADIUS_VERSION=${{ github.event.inputs.version }}
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Get the target branch of the push event
+            TARGET_BRANCH=${{ github.ref }}
+            if [[ "$TARGET_BRANCH" == "refs/heads/edge" ]]; then
+              RADIUS_VERSION=edge
+            elif [[ "$TARGET_BRANCH" =~ ^refs/heads/v[0-9]+\.[0-9]+$ ]]; then
+              # Example: refs/heads/v0.1 -> 0.1
+              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
+            fi
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             # Get the target branch of the pull request
             TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
