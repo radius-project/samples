@@ -37,6 +37,22 @@ echo "Channel version: ${CHANNEL_VERSION}"
 echo "Creating release branch for ${REPOSITORY}..."
 
 pushd $REPOSITORY
+
 git checkout -B "${CHANNEL_VERSION}"
+
+# Update bicepconfig.json br:biceptypes.azurecr.io/radius with the CHANNEL
+BICEPCONFIG_RADIUS_STRING_REPLACEMENT="br:biceptypes.azurecr.io/radius:${CHANNEL}"
+awk -v REPLACEMENT="${BICEPCONFIG_RADIUS_STRING_REPLACEMENT}" '{gsub(/br:biceptypes\.azurecr\.io\/radius:latest/, REPLACEMENT); print}' bicepconfig.json > bicepconfig_updated.json
+mv bicepconfig_updated.json bicepconfig.json
+
+# Update bicepconfig.json br:biceptypes.azurecr.io/aws with the CHANNEL
+BICEPCONFIG_AWS_STRING_REPLACEMENT="br:biceptypes.azurecr.io/aws:${CHANNEL}"
+awk -v REPLACEMENT="${BICEPCONFIG_AWS_STRING_REPLACEMENT}" '{gsub(/br:biceptypes\.azurecr\.io\/aws:latest/, REPLACEMENT); print}' bicepconfig.json > bicepconfig_updated.json
+mv bicepconfig_updated.json bicepconfig.json
+
+# Push changes to GitHub
+git add --all
+git commit -m "Update samples for ${VERSION}"
 git push origin "${CHANNEL_VERSION}"
+
 popd
