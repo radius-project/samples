@@ -1,0 +1,40 @@
+name: Purge AWS Test Resources
+
+on:
+  schedule:
+    # Runs every day at 5 AM
+    - cron: "0 5 * * *"
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  AWS_REGION: us-west-2
+
+jobs:
+  purge_eks_clusters:
+    name: Purge AWS EKS Clusters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Login to AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ env.AWS_REGION }}
+          aws configure set output json
+
+      - name: Delete old AWS resources
+        run: bash .github/scripts/purge-aws-resources.sh
+
+      - name: Create GitHub issue on failure
+        if: failure() && github.event_name == 'schedule'
+        run: |
+          gh issue create --title "Purge Purge AWS Test Resources workflow failed" \
+            --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." \
+            --repo ${{ github.repository }}
