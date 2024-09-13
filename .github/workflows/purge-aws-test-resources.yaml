@@ -10,8 +10,8 @@ env:
   AWS_REGION: us-west-2
 
 jobs:
-  purge_eks_clusters:
-    name: Purge AWS EKS Clusters
+  purge_aws_resources:
+    name: Purge AWS Test Resources
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
