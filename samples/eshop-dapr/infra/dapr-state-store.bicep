@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -90,11 +90,21 @@ resource daprStateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
     type: 'state.azure.cosmosdb'
     version: 'v1'
     metadata: {
-      url: cosmosAccount.properties.documentEndpoint
-      masterKey: listKeys(cosmosAccount.id, cosmosAccount.apiVersion).primaryMasterKey
-      database: cosmosDbName
-      collection: cosmosDbCollectionName
-      actorStateStore: 'true'
+      url: {
+        value: cosmosAccount.properties.documentEndpoint
+      }
+      masterKey: {
+        value: cosmosAccount.listKeys().primaryMasterKey
+      }
+      database: {
+        value: cosmosDbName
+      }
+      collection: {
+        value: cosmosDbCollectionName
+      }
+      actorStateStore: {
+        value: 'true'
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 param appId string
 
@@ -11,10 +11,18 @@ resource webshoppingGw 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/webshoppingapigw:rad-latest'
       env: {
-        ENVOY_CATALOG_API_ADDRESS: 'catalog-api'
-        ENVOY_CATALOG_API_PORT: '80'
-        ENVOY_ORDERING_API_ADDRESS: 'ordering-api'
-        ENVOY_ORDERING_API_PORT: '80'
+        ENVOY_CATALOG_API_ADDRESS: {
+          value: 'catalog-api'
+        }
+        ENVOY_CATALOG_API_PORT: {
+          value: '80'
+        }
+        ENVOY_ORDERING_API_ADDRESS: {
+          value: 'ordering-api'
+        }
+        ENVOY_ORDERING_API_PORT: {
+          value: '80'
+        }
       }
       ports: {
         http: {

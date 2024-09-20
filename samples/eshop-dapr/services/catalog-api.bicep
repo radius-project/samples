@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -51,10 +51,18 @@ resource catalogApi 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/catalog.api:rad-latest'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        RetryMigrations: 'true'
-        SeqServerUrl: 'http://seq:5340'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        RetryMigrations: {
+          value: 'true'
+        }
+        SeqServerUrl: {
+          value: 'http://seq:5340'
+        }
       }
       ports: {
         http: {

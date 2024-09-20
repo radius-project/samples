@@ -31,10 +31,10 @@ jobs:
     steps:
     - name: Check out repo
       uses: actions/checkout@v4
-    - name: Download rad-bicep
+    - name: Setup and verify bicep CLI
       run: |
-        oras pull ghcr.io/radius-project/radius/bicep/rad-bicep/linux-x64:latest
-        chmod +x rad-bicep
+        curl -Lo rad-bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+        chmod +x ./rad-bicep
         ./rad-bicep --version
     - name: Verify Bicep files
       run: python ./.github/scripts/validate_bicep.py

@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 param environment string
 

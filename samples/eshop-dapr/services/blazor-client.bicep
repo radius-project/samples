@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -26,11 +26,21 @@ resource blazorClient 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/blazor.client:rad-latest'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        ApiGatewayUrlExternal: '${gateway.properties.url}/api/'
-        IdentityUrlExternal: '${gateway.properties.url}/identity/'
-        SeqServerUrl: 'http://seq:5340'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        ApiGatewayUrlExternal: {
+          value: '${gateway.properties.url}/api/'
+        }
+        IdentityUrlExternal: {
+          value: '${gateway.properties.url}/identity/'
+        }
+        SeqServerUrl: {
+          value: 'http://seq:5340'
+        }
       }
       ports: {
         http: {

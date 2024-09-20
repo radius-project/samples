@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -55,7 +55,9 @@ resource daprPubSubBroker 'Applications.Dapr/pubSubBrokers@2023-10-01-preview' =
     type: 'pubsub.azure.servicebus.topics'
     version: 'v1'
     metadata: {
-      connectionString: serviceBus::authorizationRule.listKeys().primaryConnectionString
+      connectionString: {
+        value: serviceBus::authorizationRule.listKeys().primaryConnectionString
+      }
     }
   }
 }

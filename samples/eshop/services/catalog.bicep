@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // Parameters ---------------------------------------------------------
 
@@ -42,17 +42,39 @@ resource catalog 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/catalog.api:${imageTag}'
       env: {
-        UseCustomizationData: 'False'
-        PATH_BASE: '/catalog-api'
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ORCHESTRATOR_TYPE: 'K8S'
-        PORT: '80'
-        GRPC_PORT: '81'
-        PicBaseUrl: PICBASEURL
-        AzureStorageEnabled: 'False'
-        AzureServiceBusEnabled: AZURESERVICEBUSENABLED
-        ConnectionString: sqlCatalogDb.connectionString()
-        EventBusConnection: eventBusConnectionString
+        UseCustomizationData: {
+          value: 'False'
+        }
+        PATH_BASE: {
+          value: '/catalog-api'
+        }
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ORCHESTRATOR_TYPE: {
+          value: 'K8S'
+        }
+        PORT: {
+          value: '80'
+        }
+        GRPC_PORT: {
+          value: '81'
+        }
+        PicBaseUrl: {
+          value: PICBASEURL
+        }
+        AzureStorageEnabled: {
+          value: 'False'
+        }
+        AzureServiceBusEnabled: {
+          value: AZURESERVICEBUSENABLED
+        }
+        ConnectionString: {
+          value: sqlCatalogDb.listSecrets().connectionString
+        }
+        EventBusConnection: {
+          value: eventBusConnectionString
+        }
       }
       ports: {
         http: {

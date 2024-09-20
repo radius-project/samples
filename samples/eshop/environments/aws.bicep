@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 @description('Account ID of the AWS account resources should be deployed in')
 param awsAccountId string

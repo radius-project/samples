@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 param location string = resourceGroup().location
 param environment string
@@ -44,8 +44,12 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/dapr-frontend:latest'
       env: {
-        CONNECTION_BACKEND_APPID: backend.name
-        ASPNETCORE_URLS: 'http://*:8080'
+        CONNECTION_BACKEND_APPID: {
+          value: backend.name
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://*:8080'
+        }
       }
       ports: {
         ui: {
@@ -93,9 +97,15 @@ resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
       { id: account::tableServices::table.id }
     ]
     metadata: {
-      accountName: account.name
-      accountKey: account.listKeys().keys[0].value
-      tableName: account::tableServices::table.name
+      accountName: {
+        value: account.name
+      }
+      accountKey: {
+        value: account.listKeys().keys[0].value
+      }
+      tableName: {
+        value: account::tableServices::table.name
+      }
     }
     type: 'state.azure.tablestorage'
     version: 'v1'

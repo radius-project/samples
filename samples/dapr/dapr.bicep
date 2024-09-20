@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('Specifies the environment for resources.')
 param environment string
@@ -50,8 +50,12 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: frontendImage
       env: {
-        CONNECTION_BACKEND_APPID: backend.name
-        ASPNETCORE_URLS: 'http://*:8080'
+        CONNECTION_BACKEND_APPID: {
+          value: backend.name
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://*:8080'
+        }
       }
       ports: {
         ui: {
@@ -77,16 +81,20 @@ resource stateStore 'Applications.Dapr/stateStores@2023-10-01-preview' = {
     type: 'state.redis'
     version: 'v1'
     metadata: {
-      redisHost: '${service.metadata.name}.${namespace}.svc.cluster.local:${service.spec.ports[0].port}'
-      redisPassword: ''
+      redisHost: {
+        value: '${service.metadata.name}.${namespace}.svc.cluster.local:${service.spec.ports[0].port}'
+      }
+      redisPassword: {
+        value: ''
+      }
     }
   }
 }
 
-import kubernetes as kubernetes{
+extension kubernetes with {
   kubeConfig: ''
   namespace: namespace
-}
+} as kubernetes
 
 resource statefulset 'apps/StatefulSet@v1' = {
   metadata: {

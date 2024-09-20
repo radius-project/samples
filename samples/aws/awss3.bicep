@@ -1,5 +1,5 @@
-import aws as aws
-import radius as radius
+extension aws
+extension radius
 
 param environment string
 
@@ -36,10 +36,18 @@ resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
     application: app.id
     container: {
       env: {
-        BUCKET_NAME: s3.properties.BucketName
-        AWS_ACCESS_KEY_ID: aws_access_key_id
-        AWS_SECRET_ACCESS_KEY: aws_secret_access_key
-        AWS_DEFAULT_REGION: aws_region
+        BUCKET_NAME: {
+          value: s3.properties.BucketName
+        }
+        AWS_ACCESS_KEY_ID: {
+          value: aws_access_key_id
+        }
+        AWS_SECRET_ACCESS_KEY: {
+          value: aws_secret_access_key
+        }
+        AWS_DEFAULT_REGION: {
+          value: aws_region
+        }
       }
       image: image
     }

@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge). Defaults to edge."
+        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge)."
         required: false
-        default: "edge"
         type: string
   push:
     branches:
@@ -93,7 +92,6 @@ jobs:
             credential: aws
             enableDapr: false
     env:
-      BRANCH: ${{ github.base_ref || github.ref_name }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AZURE_LOCATION: westus3
       AWS_REGION: us-west-2
@@ -123,6 +121,49 @@ jobs:
           echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
           echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
+      - name: Generate Radius version variables
+        id: gen-radius-version
+        if: steps.gen-id.outputs.RUN_TEST == 'true'
+        run: |
+          RADIUS_VERSION=edge
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            RADIUS_VERSION=${{ github.event.inputs.version }}
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Get the target branch of the push event
+            TARGET_BRANCH=${{ github.ref }}
+            if [[ "$TARGET_BRANCH" == "refs/heads/edge" ]]; then
+              RADIUS_VERSION=edge
+            elif [[ "$TARGET_BRANCH" =~ ^refs/heads/v[0-9]+\.[0-9]+$ ]]; then
+              # Example: refs/heads/v0.1 -> 0.1
+              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
+            fi
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Get the target branch of the pull request
+            TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
+            if [[ "$TARGET_BRANCH" == "edge" ]]; then
+              RADIUS_VERSION=edge
+            elif [[ "$TARGET_BRANCH" =~ ^refs/pull/v[0-9]+\.[0-9]+/merge$ ]]; then
+              # Example: refs/pull/v0.1/merge -> 0.1
+              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
+            fi
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Get the branch of the schedule event
+            TARGET_BRANCH=${{ github.ref }}
+            if [[ "$TARGET_BRANCH" == "refs/heads/edge" ]]; then
+              RADIUS_VERSION=edge
+            elif [[ "$TARGET_BRANCH" =~ ^refs/heads/v[0-9]+\.[0-9]+$ ]]; then
+              # Example: refs/heads/v0.1 -> 0.1
+              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
+            else
+              echo "Invalid branch name: $TARGET_BRANCH"
+              exit 1
+            fi
+          else
+            echo "Invalid event name: ${{ github.event_name }}"
+            exit 1
+          fi
+
+          echo "RADIUS_VERSION=$RADIUS_VERSION" >> $GITHUB_OUTPUT
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v4
@@ -154,7 +195,8 @@ jobs:
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:0" --registry-create sampleregistry:51351
+        # Map localhost port 80 on the external load balancer, and disable traefik and the internal load balancer.
+        run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:*" --k3s-arg "--disable=servicelb@server:*" --registry-create sampleregistry:51351
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
@@ -212,11 +254,7 @@ jobs:
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          RADIUS_VERSION="${{ inputs.version }}"
-          if [[ -z "${{ inputs.version }}" ]]; then
-            RADIUS_VERSION=edge
-          fi
-          ./.github/scripts/install-radius.sh $RADIUS_VERSION
+          ./.github/scripts/install-radius.sh ${{ steps.gen-radius-version.outputs.RADIUS_VERSION }}
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -230,10 +268,10 @@ jobs:
           rad group switch default
           rad env create default
           rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:latest --resource-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:latest --resource-type Applications.Datastores/mongoDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:latest --resource-type Applications.Datastores/sqlDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:latest --resource-type Applications.Messaging/rabbitMQQueues
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
+          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
       - name: Configure cloud credentials
         if: steps.gen-id.outputs.RUN_TEST == 'true' && ( matrix.credential == 'azure' || matrix.credential == 'aws')
         run: |
@@ -243,7 +281,7 @@ jobs:
           fi
           if [[ "${{ matrix.credential }}" == "aws" ]]; then
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-            rad credential register aws --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            rad credential register aws access-key --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
       ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
       - name: Initialize eShop environments

@@ -1,4 +1,4 @@
-import radius as rad
+extension radius
 
 // PARAMETERS ---------------------------------------------------------
 
@@ -30,21 +30,51 @@ resource identity 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: '${imageRegistry}/identity.api:${imageTag}'
       env: {
-        PATH_BASE: '/identity-api'
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        OrchestratorType: 'K8S'
-        IsClusterEnv: 'True'
-        DPConnectionString: redisKeystore.connectionString()
-        EnableDevspaces: 'False'
-        ConnectionString: sqlIdentityDb.connectionString()
-        MvcClient: '${gateway.properties.url}/webmvc'
-        SpaClient: gateway.properties.url
-        BasketApiClient: '${gateway.properties.url}/basket-api'
-        OrderingApiClient: '${gateway.properties.url}/ordering-api'
-        WebShoppingAggClient: '${gateway.properties.url}/webshoppingagg'
-        WebhooksApiClient: '${gateway.properties.url}/webhooks-api'
-        WebhooksWebClient: '${gateway.properties.url}/webhooks-client'
+        PATH_BASE: {
+          value: '/identity-api'
+        }
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        OrchestratorType: {
+          value: 'K8S'
+        }
+        IsClusterEnv: {
+          value: 'True'
+        }
+        DPConnectionString: {
+          value: redisKeystore.listSecrets().connectionString
+        }
+        EnableDevspaces: {
+          value: 'False'
+        }
+        ConnectionString: {
+          value: sqlIdentityDb.listSecrets().connectionString
+        }
+        MvcClient: {
+          value: '${gateway.properties.url}/webmvc'
+        }
+        SpaClient: {
+          value: gateway.properties.url
+        }
+        BasketApiClient: {
+          value: '${gateway.properties.url}/basket-api'
+        }
+        OrderingApiClient: {
+          value: '${gateway.properties.url}/ordering-api'
+        }
+        WebShoppingAggClient: {
+          value: '${gateway.properties.url}/webshoppingagg'
+        }
+        WebhooksApiClient: {
+          value: '${gateway.properties.url}/webhooks-api'
+        }
+        WebhooksWebClient: {
+          value: '${gateway.properties.url}/webhooks-client'
+        }
       }
       ports: {
         http: {

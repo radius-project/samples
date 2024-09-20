@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -14,7 +14,9 @@ resource seq 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'datalust/seq:latest'
       env: {
-        ACCEPT_EULA: 'Y'
+        ACCEPT_EULA: {
+          value: 'Y'
+        }
       }
       ports: {
         http: {

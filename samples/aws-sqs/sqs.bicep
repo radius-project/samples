@@ -1,5 +1,5 @@
-import aws as aws
-import radius as radius
+extension aws
+extension radius
 
 param environment string
 param queue_name string
@@ -41,8 +41,12 @@ resource producer 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       env: union(
         {
-          SQS_QUEUE_URL: queue.properties.QueueUrl
-          HTTP_SERVER_PORT: '3000'
+          SQS_QUEUE_URL: {
+            value: queue.properties.QueueUrl
+          }
+          HTTP_SERVER_PORT: {
+            value: '3000'
+          }
         },
         aws_credential
       )
@@ -58,8 +62,12 @@ resource consumer 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       env: union(
         {
-          SQS_QUEUE_URL: queue.properties.QueueUrl
-          HTTP_SERVER_PORT: '4000'
+          SQS_QUEUE_URL: {
+            value: queue.properties.QueueUrl
+          }
+          HTTP_SERVER_PORT: {
+            value: '4000'
+          }
         },
         aws_credential
       )

@@ -1,4 +1,4 @@
-import radius as radius
+extension radius
 
 @description('The Radius application ID.')
 param appId string
@@ -49,13 +49,27 @@ resource identityApi 'Applications.Core/containers@2023-10-01-preview' = {
     container: {
       image: 'ghcr.io/radius-project/samples/eshopdapr/identity.api:rad-latest'
       env: {
-        ASPNETCORE_ENVIRONMENT: 'Development'
-        ASPNETCORE_URLS: 'http://0.0.0.0:80'
-        PATH_BASE: '/identity/'
-        BlazorClientUrlExternal: gateway.properties.url
-        IssuerUrl: '${gateway.properties.url}/identity/'
-        RetryMigrations: 'true'
-        SeqServerUrl: 'http://seq:5340'
+        ASPNETCORE_ENVIRONMENT: {
+          value: 'Development'
+        }
+        ASPNETCORE_URLS: {
+          value: 'http://0.0.0.0:80'
+        }
+        PATH_BASE: {
+          value: '/identity/'
+        }
+        BlazorClientUrlExternal: {
+          value: gateway.properties.url
+        }
+        IssuerUrl: {
+          value: '${gateway.properties.url}/identity/'
+        }
+        RetryMigrations: {
+          value: 'true'
+        }
+        SeqServerUrl: {
+          value: 'http://seq:5340'
+        }
       }
       ports: {
         http: {
