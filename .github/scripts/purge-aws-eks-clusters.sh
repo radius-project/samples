@@ -16,6 +16,8 @@
 
 #!/bin/bash
 
+set -ex
+
 # Current time in seconds since epoch
 current_time=$(date +%s)
 
@@ -24,15 +26,31 @@ age_limit=$((6 * 3600))
 
 echo "Starting cluster purge script."
 
-# List clusters and their creation times, filter and delete those older than 6 hours and starting with 'eks-samplestest-'
-aws eks list-clusters --query "clusters[]" --output text | xargs -I {} aws eks describe-cluster --name {} --query "cluster.{name: name, createdAt: createdAt}" --output text | while read -r created_at name; do
-    # Convert creation time to seconds since the epoch
-    # Remove milliseconds and adjust timezone format from "-07:00" to "-0700"
-    formatted_created_at="${created_at%.*}${created_at##*.}"
-    formatted_created_at="${formatted_created_at%:*}${formatted_created_at##*:}"
+# List clusters
+clusters=$(aws eks list-clusters --query "clusters[]" --output text)
 
-    # Convert creation time to seconds
-    created_at_seconds=$(date -d "$formatted_created_at" +%s)
+# Loop through each cluster
+for cluster in $clusters; do
+    # Get the creation time and name of the cluster
+    cluster_info=$(aws eks describe-cluster --name "$cluster" --query "cluster.{name: name, createdAt: createdAt}" --output text)
+    created_at=$(echo "$cluster_info" | awk '{print $1}')
+    name=$(echo "$cluster_info" | awk '{print $2}')
+
+    # Ensure created_at is in the correct format
+    created_at=$(echo "$created_at" | sed 's/\.[0-9]*Z//')
+
+    # Convert creation time to seconds since the epoch using date
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        if ! command -v gdate &> /dev/null; then
+            echo "gdate could not be found. Please install coreutils: brew install coreutils"
+            exit 1
+        fi
+        created_at_seconds=$(gdate -d "$created_at" +%s)
+    else
+        # Linux
+        created_at_seconds=$(date -d "$created_at" +%s)
+    fi
 
     # Calculate age in seconds
     age=$((current_time - created_at_seconds))
