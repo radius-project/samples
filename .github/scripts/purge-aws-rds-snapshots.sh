@@ -16,7 +16,18 @@
 
 set -xe
 
-aws rds describe-db-snapshots --query 'DBSnapshots[].DBSnapshotIdentifier' --output text >snapshots.txt
-for rds_snapshot_identifier in $(cat ./snapshots.txt); do
-    aws rds delete-db-snapshot --db-snapshot-identifier $rds_snapshot_identifier
-done
+# Get the list of snapshots IDs and their states
+aws rds describe-db-snapshots --query 'DBSnapshots[*].[DBSnapshotIdentifier,Status]' --output text > snapshots.txt
+
+# Delete snapshots that are in 'available' or 'failed' state
+while read -r rds_snapshot_identifier rds_snapshot_status; do
+    if [[ "$rds_snapshot_status" == "available" || "$rds_snapshot_status" == "failed" ]]; then
+        echo "Deleting snapshot: $rds_snapshot_identifier"
+        aws rds delete-db-snapshot --db-snapshot-identifier "$rds_snapshot_identifier"
+    else
+        echo "Skipping snapshot $rds_snapshot_identifier (status: $rds_snapshot_status)"
+    fi
+done < snapshots.txt
+
+# Delete the temporary snapshots file
+rm snapshots.txt
