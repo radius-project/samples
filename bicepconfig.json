@@ -5,10 +5,7 @@
         "dynamicTypeLoading": true
     },
     "extensions": {
-        "radius": "br:biceptypes.azurecr.io/radius:0.38",
-        "aws": "br:biceptypes.azurecr.io/aws:0.38"
-    },
-    "cloud": {
-        "credentialPrecedence": [ "Environment" ]
+        "radius": "br:biceptypes.azurecr.io/radius:latest",
+        "aws": "br:biceptypes.azurecr.io/aws:latest"
     }
 }
