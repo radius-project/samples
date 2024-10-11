@@ -49,8 +49,12 @@ mv bicepconfig_updated.json bicepconfig.json
 BICEPCONFIG_AWS_STRING_REPLACEMENT="br:biceptypes.azurecr.io/aws:${CHANNEL}"
 awk -v REPLACEMENT="${BICEPCONFIG_AWS_STRING_REPLACEMENT}" '{gsub(/br:biceptypes\.azurecr\.io\/aws:latest/, REPLACEMENT); print}' bicepconfig.json > bicepconfig_updated.json
 mv bicepconfig_updated.json bicepconfig.json
+echo "View updated bicepconfig..."
+cat bicepconfig.json
 
 # Push changes to GitHub
+echo "Running git diff..."
+git diff
 git add --all
 git commit -m "Update samples for ${CHANNEL_VERSION}"
 git push origin "${CHANNEL_VERSION}"
