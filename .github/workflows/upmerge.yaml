@@ -57,6 +57,7 @@ jobs:
       # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
       # branch is assumed to be the current release branch, but could be any branch.
       # If there are no changes, stop the workflow.
+      # We ignore the bicepconfig.json file because we don't want to overwrite the version in the edge branch.
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
