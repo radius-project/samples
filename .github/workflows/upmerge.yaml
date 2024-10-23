@@ -62,7 +62,9 @@ jobs:
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
           echo "Upmerging samples from $SOURCE_BRANCH to edge"
           git fetch origin $SOURCE_BRANCH
-          git merge -m "Upmerge to edge" origin/$SOURCE_BRANCH
+          git merge --no-commit origin/$SOURCE_BRANCH
+          git checkout edge -- bicepconfig.json
+          git commit -m "Upmerge to edge"
           
           if git diff --quiet edge; then
               echo "No changes to merge from $SOURCE_BRANCH to edge"
