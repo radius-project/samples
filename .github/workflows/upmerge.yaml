@@ -57,12 +57,15 @@ jobs:
       # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
       # branch is assumed to be the current release branch, but could be any branch.
       # If there are no changes, stop the workflow.
+      # We ignore the bicepconfig.json file because we don't want to overwrite the version in the edge branch.
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
           echo "Upmerging samples from $SOURCE_BRANCH to edge"
           git fetch origin $SOURCE_BRANCH
-          git merge -m "Upmerge to edge" origin/$SOURCE_BRANCH
+          git merge --no-commit origin/$SOURCE_BRANCH
+          git checkout edge -- bicepconfig.json
+          git commit -m "Upmerge to edge"
           
           if git diff --quiet edge; then
               echo "No changes to merge from $SOURCE_BRANCH to edge"
