@@ -22,7 +22,6 @@ resource s3 'AWS.S3/Bucket@default' = {
   }
 }
 
-// get a radius container which uses the s3 bucket
 resource app 'Applications.Core/applications@2023-10-01-preview' = {
   name: 'webapp'
   properties: {
@@ -30,6 +29,7 @@ resource app 'Applications.Core/applications@2023-10-01-preview' = {
   }
 }
 
+// Create a radius container which uses the s3 bucket
 resource frontend 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'frontend'
   properties: {
