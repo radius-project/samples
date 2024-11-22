@@ -1,4 +1,2 @@
-#  https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
-
-# Default rule: anything that doesn't match a more specific rule goes here
-* @radius-project/radius-pm
+# These owners are the maintainers and approvers of this repo
+*       @radius-project/maintainers-samples @radius-project/approvers-samples
