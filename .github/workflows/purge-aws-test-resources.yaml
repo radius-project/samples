@@ -1,6 +1,8 @@
 name: Purge AWS Test Resources
 
 on:
+  workflow_dispatch:
+    # Allows manual triggering of the workflow
   schedule:
     # Runs every day at 5 AM
     - cron: "0 5 * * *"
