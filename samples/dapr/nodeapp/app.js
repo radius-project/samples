@@ -7,21 +7,21 @@ const app = express();
 app.use(bodyParser.json());
 
 // These ports are injected automatically into the container.
-const daprPort = process.env.DAPR_HTTP_PORT; 
+const daprPort = process.env.DAPR_HTTP_PORT;
 const daprGRPCPort = process.env.DAPR_GRPC_PORT;
 
-const stateStoreName =  process.env.CONNECTION_ORDERS_COMPONENTNAME;
+const stateStoreName = process.env.CONNECTION_ORDERS_COMPONENTNAME;
 const stateUrl = `http://localhost:${daprPort}/v1.0/state/${stateStoreName}`;
 const port = 3000;
 
 app.get('/order', (_req, res) => {
     if (!process.env.DAPR_HTTP_PORT) {
-        res.status(400).send({message: "The container is running, but Dapr has not been configured."});
+        res.status(400).send({ message: "The container is running, but Dapr has not been configured." });
         return;
     }
 
     if (!process.env.CONNECTION_ORDERS_COMPONENTNAME) {
-        res.status(400).send({message: "The container is running, but the state store name is not set."});
+        res.status(400).send({ message: "The container is running, but the state store name is not set." });
         return;
     }
 
@@ -37,13 +37,13 @@ app.get('/order', (_req, res) => {
             return response.json();
         }).then((orders) => {
             if (orders.length === 0) {
-                res.send({  message: "no orders yet" })
+                res.send({ message: "no orders yet" })
             } else {
                 res.send({ items: orders })
             }
         }).catch((error) => {
             console.log(error);
-            res.status(500).send({message: error});
+            res.status(500).send({ message: error });
         });
 });
 
@@ -87,14 +87,14 @@ app.post('/neworder', (req, res) => {
         res.status(200).send();
     }).catch((error) => {
         console.log(error);
-        res.status(500).send({message: error});
+        res.status(500).send({ message: error });
     });
 });
 
 app.get('/ports', (_req, res) => {
     console.log("DAPR_HTTP_PORT: " + daprPort);
     console.log("DAPR_GRPC_PORT: " + daprGRPCPort);
-    res.status(200).send({DAPR_HTTP_PORT: daprPort, DAPR_GRPC_PORT: daprGRPCPort })
+    res.status(200).send({ DAPR_HTTP_PORT: daprPort, DAPR_GRPC_PORT: daprGRPCPort })
 });
 
 app.listen(port, () => console.log(`Node App listening on port ${port}!`));
