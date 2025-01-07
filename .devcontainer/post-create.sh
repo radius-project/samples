@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## Create a k3d cluster
-while (! kubectl cluster-info ); do
+while (! kubectl cluster-info); do
   # Docker takes a few seconds to initialize
   echo "Waiting for Docker to launch..."
   k3d cluster delete
