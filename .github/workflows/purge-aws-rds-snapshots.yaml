@@ -1,5 +1,7 @@
 name: Purge AWS RDS DBInstance snapshots
 on:
+  workflow_dispatch:
+    # Allows manual triggering of the workflow
   schedule:
     # Runs at 00:30 and 12:30
     - cron: "30 0,12 * * *"
