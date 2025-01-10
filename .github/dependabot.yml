@@ -9,8 +9,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "gomod"
-    directories: 
-      - "/samples/aws-sqs"
+    directory: "/samples/aws-sqs"
     schedule:
       interval: "weekly"
     groups:
