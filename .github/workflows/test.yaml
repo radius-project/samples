@@ -251,26 +251,20 @@ jobs:
       - name: Configure EKS for Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
-          # Fetch the node group name dynamically
-          NODEGROUP_NAME=$(eksctl get nodegroup \
-            --cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
+          # Fetch the security group ID for the EKS cluster
+          SECURITY_GROUP_ID=$(aws eks describe-cluster \
+            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
+            --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' \
             --region ${{ env.AWS_REGION }} \
-            -o json | jq -r '.[0].Name')
-
-          # Fetch the security group ID for the EKS worker nodes
-          NODE_SECURITY_GROUP_ID=$(eksctl get nodegroup \
-            --cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --name $NODEGROUP_NAME \
-            --region ${{ env.AWS_REGION }} \
-            -o json | jq -r '.[0].Resources.SecurityGroup.ID')
+            --output text)
 
           # Authorize port 4000 for Dapr sidecar communication within the same security group
           # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#add-dapr-requirements-for-sidecar-access-and-default-storage-class
           aws ec2 authorize-security-group-ingress \
-            --group-id $NODE_SECURITY_GROUP_ID \
+            --group-id $SECURITY_GROUP_ID \
             --protocol tcp \
             --port 4000 \
-            --source-group $NODE_SECURITY_GROUP_ID
+            --source-group $SECURITY_GROUP_ID
 
           # Add a default storage class
           kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
@@ -292,6 +286,51 @@ jobs:
           else
             rad install kubernetes --set rp.publicEndpointOverride=localhost
           fi
+          
+          echo "*** Verify manifests are registered ***"
+          rm -f registermanifest_logs.txt
+          # Find the pod with container "ucp"
+          POD_NAME=$(
+            kubectl get pods -n radius-system \
+              -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' \
+            | grep "ucp" \
+            | head -n1 \
+            | cut -d" " -f1
+          )
+          echo "Found ucp pod: $POD_NAME"
+
+          if [ -z "$POD_NAME" ]; then
+            echo "No pod with container 'ucp' found in namespace radius-system."
+            exit 1
+          fi
+
+          # Poll logs for up to  iterations, 30 seconds each (upto 3 minutes total)
+          for i in {1..6}; do
+            kubectl logs "$POD_NAME" -n radius-system | tee registermanifest_logs.txt > /dev/null
+
+            # Exit on error
+            if grep -qi "Service initializer terminated with error" registermanifest_logs.txt; then
+              echo "Error found in ucp logs."
+              grep -i "Service initializer terminated with error" registermanifest_logs.txt
+              exit 1
+            fi
+
+            # Check for success
+            if grep -q "Successfully registered manifests" registermanifest_logs.txt; then
+              echo "Successfully registered manifests - message found."
+              break
+            fi
+
+            echo "Logs not ready, waiting 30 seconds..."
+            sleep 30
+          done
+
+          # Final check to ensure success message was found
+          if ! grep -q "Successfully registered manifests" registermanifest_logs.txt; then
+            echo "Manifests not registered after 3 minutes."
+            exit 1
+          fi
+
           rad group create default
           rad workspace create kubernetes default --group default
           rad group switch default
