@@ -14,6 +14,12 @@ param imageTag string
 @description('Name of the Gateway')
 param gatewayName string
 
+@description('Envoy image name')
+param envoyImageName string
+
+@description('Envoy image tag')
+param envoyImageTag string
+
 // Based on https://github.com/dotnet-architecture/eShopOnContainers/tree/dev/deploy/k8s/helm/webshoppingagg
 resource webshoppingagg 'Applications.Core/containers@2023-10-01-preview' = {
   name: 'webshoppingagg'
@@ -121,7 +127,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: '${imageRegistry}/eshop-envoy:0.1.0'
+      image: '${imageRegistry}/${envoyImageName}:${envoyImageTag}'
       ports: {
         http: {
           containerPort: 80

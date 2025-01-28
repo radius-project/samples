@@ -1,3 +1,3 @@
-FROM envoyproxy/envoy:v1.11.1
+FROM envoyproxy/envoy:v1.32.3
 COPY envoy.yaml /etc/envoy/envoy.yaml
 CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy/envoy.yaml"]
