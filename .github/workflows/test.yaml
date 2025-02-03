@@ -111,18 +111,11 @@ jobs:
             RUN_TEST=true
           fi
 
-          if [[ "${{ matrix.enableDapr }}" == "true" ]]; then
-            ENABLE_DAPR=true
-          else
-            ENABLE_DAPR=false
-          fi
-
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
-          echo "ENABLE_DAPR=${ENABLE_DAPR}" >> $GITHUB_OUTPUT
       - name: Generate Radius version variables
         id: gen-radius-version
         if: steps.gen-id.outputs.RUN_TEST == 'true'
@@ -233,26 +226,50 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
         run: |
+          # Install eksctl
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
+
+          # Create EKS cluster
           eksctl create cluster \
             --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
             --nodes-min 1 --nodes-max 2 --node-type t3.large \
             --zones ${{ env.AWS_ZONES }} \
             --managed \
             --region ${{ env.AWS_REGION }}
+
+          # Wait for the EKS cluster to be active
           while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
             sleep 60
           done
+
+          # Update kubeconfig
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
-      - name: Install Dapr
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.gen-id.outputs.ENABLE_DAPR == 'true'
+      - name: Configure EKS for Dapr
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
-          helm repo add dapr https://dapr.github.io/helm-charts/
-          helm install dapr dapr/dapr --version=1.6 --namespace dapr-system --create-namespace --wait
+          # Fetch the security group ID for the EKS cluster
+          SECURITY_GROUP_ID=$(aws eks describe-cluster \
+            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
+            --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' \
+            --region ${{ env.AWS_REGION }} \
+            --output text)
+
+          # Authorize port 4000 for Dapr sidecar communication within the same security group
+          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#add-dapr-requirements-for-sidecar-access-and-default-storage-class
+          aws ec2 authorize-security-group-ingress \
+            --group-id $SECURITY_GROUP_ID \
+            --protocol tcp \
+            --port 4000 \
+            --source-group $SECURITY_GROUP_ID
+
+          # Add a default storage class
+          kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+        timeout-minutes: 30
+        continue-on-error: false
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
@@ -269,6 +286,51 @@ jobs:
           else
             rad install kubernetes --set rp.publicEndpointOverride=localhost
           fi
+          
+          echo "*** Verify manifests are registered ***"
+          rm -f registermanifest_logs.txt
+          # Find the pod with container "ucp"
+          POD_NAME=$(
+            kubectl get pods -n radius-system \
+              -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.spec.containers[*].name}{"\n"}{end}' \
+            | grep "ucp" \
+            | head -n1 \
+            | cut -d" " -f1
+          )
+          echo "Found ucp pod: $POD_NAME"
+
+          if [ -z "$POD_NAME" ]; then
+            echo "No pod with container 'ucp' found in namespace radius-system."
+            exit 1
+          fi
+
+          # Poll logs for up to  iterations, 30 seconds each (upto 3 minutes total)
+          for i in {1..6}; do
+            kubectl logs "$POD_NAME" -n radius-system | tee registermanifest_logs.txt > /dev/null
+
+            # Exit on error
+            if grep -qi "Service initializer terminated with error" registermanifest_logs.txt; then
+              echo "Error found in ucp logs."
+              grep -i "Service initializer terminated with error" registermanifest_logs.txt
+              exit 1
+            fi
+
+            # Check for success
+            if grep -q "Successfully registered manifests" registermanifest_logs.txt; then
+              echo "Successfully registered manifests - message found."
+              break
+            fi
+
+            echo "Logs not ready, waiting 30 seconds..."
+            sleep 30
+          done
+
+          # Final check to ensure success message was found
+          if ! grep -q "Successfully registered manifests" registermanifest_logs.txt; then
+            echo "Manifests not registered after 3 minutes."
+            exit 1
+          fi
+
           rad group create default
           rad workspace create kubernetes default --group default
           rad group switch default
