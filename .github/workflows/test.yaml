@@ -233,7 +233,7 @@ jobs:
           # Create EKS cluster
           eksctl create cluster \
             --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --nodes-min 1 --nodes-max 2 --node-type t3.large \
+            --nodes-min 1 --nodes-max 2 --node-type t3.xlarge \
             --zones ${{ env.AWS_ZONES }} \
             --managed \
             --region ${{ env.AWS_REGION }}
