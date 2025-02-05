@@ -226,18 +226,44 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
         run: |
+          # Create cluster-config.yaml file
+          cat <<EOF > cluster-config.yaml
+          apiVersion: eksctl.io/v1alpha5
+          kind: ClusterConfig
+          metadata:
+            name: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+            region: ${{ env.AWS_REGION }}
+            version: '1.30'
+            tags:
+              karpenter.sh/discovery: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
+          iam:
+            withOIDC: true
+          managedNodeGroups:
+            - name: mng-od-4vcpu-8gb
+              desiredCapacity: 2
+              minSize: 1
+              maxSize: 5
+              instanceType: c5.xlarge
+              privateNetworking: true
+          addons:
+            - name: vpc-cni 
+              attachPolicyARNs:
+                - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+            - name: coredns
+              version: latest 
+            - name: kube-proxy
+              version: latest
+            - name: aws-ebs-csi-driver
+              wellKnownPolicies: 
+                ebsCSIController: true
+
           # Install eksctl
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin
+          sudo mv /tmp/eksctl /usr/local/bin  
 
           # Create EKS cluster
-          eksctl create cluster \
-            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --nodes-min 1 --nodes-max 2 --node-type t3.xlarge \
-            --zones ${{ env.AWS_ZONES }} \
-            --managed \
-            --region ${{ env.AWS_REGION }}
-
+          eksctl create cluster -f cluster-config.yaml
+          
           # Wait for the EKS cluster to be active
           while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
             echo "Waiting for EKS cluster to be created..."
@@ -248,28 +274,7 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
-      - name: Configure EKS for Dapr
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        run: |
-          # Fetch the security group ID for the EKS cluster
-          SECURITY_GROUP_ID=$(aws eks describe-cluster \
-            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' \
-            --region ${{ env.AWS_REGION }} \
-            --output text)
-
-          # Authorize port 4000 for Dapr sidecar communication within the same security group
-          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#add-dapr-requirements-for-sidecar-access-and-default-storage-class
-          aws ec2 authorize-security-group-ingress \
-            --group-id $SECURITY_GROUP_ID \
-            --protocol tcp \
-            --port 4000 \
-            --source-group $SECURITY_GROUP_ID
-
-          # Add a default storage class
-          kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-        timeout-minutes: 30
-        continue-on-error: false
+      
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
