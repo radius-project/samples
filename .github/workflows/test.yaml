@@ -227,6 +227,8 @@ jobs:
         id: create-eks
         run: |
           # Create cluster-config.yaml file
+          # Dapr has specific requirements for EKS clusters
+          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#deploy-an-eks-cluster
           cat <<EOF > cluster-config.yaml
           apiVersion: eksctl.io/v1alpha5
           kind: ClusterConfig
@@ -294,7 +296,6 @@ jobs:
           kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
         timeout-minutes: 30
         continue-on-error: false
-        
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
