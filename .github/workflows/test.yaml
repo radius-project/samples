@@ -258,6 +258,7 @@ jobs:
             - name: aws-ebs-csi-driver
               wellKnownPolicies: 
                 ebsCSIController: true
+          EOF 
 
           # Install eksctl
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
@@ -296,6 +297,7 @@ jobs:
           kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
         timeout-minutes: 30
         continue-on-error: false
+      
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
