@@ -274,7 +274,27 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
-      
+      - name: Configure EKS for Dapr
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
+        run: |
+          # Fetch the security group ID for the EKS cluster
+          SECURITY_GROUP_ID=$(aws eks describe-cluster \
+            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
+            --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' \
+            --region ${{ env.AWS_REGION }} \
+            --output text)
+          # Authorize port 4000 for Dapr sidecar communication within the same security group
+          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#add-dapr-requirements-for-sidecar-access-and-default-storage-class
+          aws ec2 authorize-security-group-ingress \
+            --group-id $SECURITY_GROUP_ID \
+            --protocol tcp \
+            --port 4000 \
+            --source-group $SECURITY_GROUP_ID
+          # Add a default storage class
+          kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+        timeout-minutes: 30
+        continue-on-error: false
+        
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
