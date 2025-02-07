@@ -245,7 +245,7 @@ jobs:
               desiredCapacity: 2
               minSize: 1
               maxSize: 5
-              instanceType: c5.xlarge
+              instanceType: t3.xlarge
               privateNetworking: true
           addons:
             - name: vpc-cni 
