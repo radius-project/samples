@@ -1,29 +1,10 @@
-name: Test Samples (k3d and EKS)
+name: Test Samples (k3d and EKS) - Edge
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge)."
-        required: false
-        type: string
-  push:
-    branches:
-      - v*.*
-      - edge
-    paths:
-      - "samples/**"
-      - ".github/workflows/**"
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - v*.*
-      - edge
   schedule: # Run every day at 12 PM
     - cron: "0 12 * * *"
 env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
-  # ORAS (OCI Registry As Storage) CLI version
   ORAS_VERSION: 1.1.0
 jobs:
   test:
@@ -99,78 +80,40 @@ jobs:
       AWS_REGION: us-west-2
       AWS_ZONES: us-west-2a,us-west-2b,us-west-2c
     steps:
-      # Setup the test assets and configuration
       - name: Generate output variables
         id: gen-id
         run: |
           RUN_IDENTIFIER=${{ env.RUN_IDENTIFIER }}-${{ matrix.name }}
-
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.runOnPullRequest }}" == "false" ]]; then
-            RUN_TEST=false
-          else
-            RUN_TEST=true
-          fi
+          RUN_TEST=true
 
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
+
       - name: Generate Radius version variables
         id: gen-radius-version
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           RADIUS_VERSION=edge
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            RADIUS_VERSION=${{ github.event.inputs.version }}
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            # Get the target branch of the push event
-            TARGET_BRANCH=${{ github.ref }}
-            if [[ "$TARGET_BRANCH" == "refs/heads/edge" ]]; then
-              RADIUS_VERSION=edge
-            elif [[ "$TARGET_BRANCH" =~ ^refs/heads/v[0-9]+\.[0-9]+$ ]]; then
-              # Example: refs/heads/v0.1 -> 0.1
-              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
-            fi
-          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # Get the target branch of the pull request
-            TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
-            if [[ "$TARGET_BRANCH" == "edge" ]]; then
-              RADIUS_VERSION=edge
-            elif [[ "$TARGET_BRANCH" =~ ^refs/pull/v[0-9]+\.[0-9]+/merge$ ]]; then
-              # Example: refs/pull/v0.1/merge -> 0.1
-              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
-            fi
-          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
-            # Get the branch of the schedule event
-            TARGET_BRANCH=${{ github.ref }}
-            if [[ "$TARGET_BRANCH" == "refs/heads/edge" ]]; then
-              RADIUS_VERSION=edge
-            elif [[ "$TARGET_BRANCH" =~ ^refs/heads/v[0-9]+\.[0-9]+$ ]]; then
-              # Example: refs/heads/v0.1 -> 0.1
-              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
-            else
-              echo "Invalid branch name: $TARGET_BRANCH"
-              exit 1
-            fi
-          else
-            echo "Invalid event name: ${{ github.event_name }}"
-            exit 1
-          fi
-
           echo "RADIUS_VERSION=$RADIUS_VERSION" >> $GITHUB_OUTPUT
+
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v4
+
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
+
       - name: Setup Node
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
       - name: az CLI login
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         run: |
@@ -178,6 +121,7 @@ jobs:
             --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
             --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
             --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
+
       - name: Configure AWS
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
@@ -185,13 +129,16 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ env.AWS_REGION }}
           aws configure set output json
+
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         # Map localhost port 80 on the external load balancer, and disable traefik and the internal load balancer.
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:*" --k3s-arg "--disable=servicelb@server:*" --registry-create sampleregistry:51351
+
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
@@ -207,7 +154,7 @@ jobs:
             docker build -t localhost:51351/$image:latest $directory
             docker push localhost:51351/$image:latest
           done
-      # Create and install test environment
+
       - name: Create Azure resource group
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
         id: create-azure-resource-group
@@ -222,6 +169,7 @@ jobs:
             echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
             sleep 5
           done
+
       - name: Create EKS Cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         id: create-eks
@@ -278,6 +226,7 @@ jobs:
           aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         timeout-minutes: 60
         continue-on-error: false
+
       - name: Configure EKS for Dapr
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
         run: |
@@ -298,14 +247,17 @@ jobs:
           kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
         timeout-minutes: 30
         continue-on-error: false
+
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
           version: ${{ env.ORAS_VERSION }}
+
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           ./.github/scripts/install-radius.sh ${{ steps.gen-radius-version.outputs.RADIUS_VERSION }}
+
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
@@ -368,6 +320,7 @@ jobs:
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+
       - name: Configure cloud credentials
         if: steps.gen-id.outputs.RUN_TEST == 'true' && ( matrix.credential == 'azure' || matrix.credential == 'aws')
         run: |
@@ -379,7 +332,7 @@ jobs:
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
             rad credential register aws access-key --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
-      ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
+
       - name: Initialize eShop environments
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
         run: |
@@ -389,8 +342,7 @@ jobs:
             rad deploy ./samples/eshop/environments/aws.bicep -p awsAccountId=${{ secrets.AWS_ACCOUNT_ID }} -p awsRegion=${{ env.AWS_REGION }} -p eksClusterName=${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
           fi
           rad env switch ${{ matrix.env }}
-      # Deploy application and run tests
-      # Retry the deployment step in case of transient failures
+
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         id: deploy-app
@@ -400,6 +352,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
@@ -417,6 +370,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
+
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v4
         if: always() && (steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure')
@@ -425,6 +379,7 @@ jobs:
           path: playwright/playwright-report/
           retention-days: 30
           if-no-files-found: error
+
       - name: Upload Playwright Videos
         uses: actions/upload-artifact@v4
         if: always() && steps.run-playwright-test.outcome == 'failure'
@@ -433,7 +388,7 @@ jobs:
           path: playwright/test-results/
           retention-days: 30
           if-no-files-found: error
-      # Handle failures
+
       - name: Get Pod logs for failed tests
         id: get-pod-logs
         if: failure() && (steps.run-playwright-test.outcome == 'failure' || steps.deploy-app.outcome == 'failure')
@@ -450,6 +405,7 @@ jobs:
           echo "Pod logs saved to playwright/pod-logs/${{ matrix.name }}/"
           # Get kubernetes events and save to file
           kubectl get events -n $namespace > playwright/pod-logs/${{ matrix.name }}/events.txt
+
       - name: Upload Pod logs for failed tests
         uses: actions/upload-artifact@v4
         if: failure() && steps.get-pod-logs.outcome == 'success'
@@ -458,16 +414,18 @@ jobs:
           path: playwright/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
+
       - name: Create GitHub issue on failure
         if: failure() && github.event_name == 'schedule'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
-      # Cleanup
+        run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" on Edge --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
             rad app delete ${{ matrix.app }} -y
           fi
+
       - name: Delete Azure resource group
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
         run: |
@@ -477,11 +435,13 @@ jobs:
             --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
+
       - name: Delete AWS Resources
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && steps.deploy-app.outcome == 'success'
         run: |
           # Delete all AWS resources created by the test
           ./.github/scripts/delete-aws-resources.sh '/planes/radius/local/resourcegroups/default/providers/Applications.Core/applications/${{ matrix.app }}'
+
       - name: Delete EKS Cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
         if: steps.create-eks.outcome == 'success'
         run: |
