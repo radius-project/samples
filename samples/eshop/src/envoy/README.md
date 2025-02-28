@@ -11,10 +11,9 @@ The routing configuration is in [envoy.yaml](envoy.yaml). See the `route_config`
 ## Building
 
 To build and push the image, run the following commands:
-> Note: Replace `<TAG>` with the tag you want to use. By convention, we use the same tag as the external eshop image.
+> Note: Replace `<TAG>` with the tag you want to use. By convention, we use the same tag as the external envoy image.
 ```bash
 cd samples/eshop/src/envoy
 export TAG=<TAG>
-docker build . -t ghcr.io/radius-project/samples/eshop/eshop-envoy:$TAG
-docker push ghcr.io/radius-project/samples/eshop/eshop-envoy:$TAG
+docker buildx build . --push --platform linux/amd64,linux/arm64 --tag ghcr.io/radius-project/samples/eshop/eshop-envoy:$TAG
 ```
