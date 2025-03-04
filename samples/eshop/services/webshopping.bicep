@@ -127,7 +127,7 @@ resource webshoppingapigw 'Applications.Core/containers@2023-10-01-preview' = {
   properties: {
     application: application
     container: {
-      image: '${imageRegistry}/${envoyImageName}:${envoyImageTag}'
+      image: 'ghcr.io/willdavsmith/${envoyImageName}:${envoyImageTag}'
       ports: {
         http: {
           containerPort: 80
