@@ -405,7 +405,7 @@ jobs:
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+            rad resource expose Applications.Core/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
             export ENDPOINT="http://localhost:3000/"
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
