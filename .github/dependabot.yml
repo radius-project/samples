@@ -4,6 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
@@ -12,6 +13,7 @@ updates:
     directory: "/samples/aws-sqs"
     schedule:
       interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
@@ -19,29 +21,32 @@ updates:
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
           - "*"
   - package-ecosystem: "npm"
-    directories: 
+    directories:
       - "/playwright"
       - "/samples/dapr/nodeapp"
       - "/samples/demo"
       - "/samples/demo/client"
     schedule:
       interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
           - "*"
   - package-ecosystem: "nuget"
-    directories: 
+    directories:
       - "/samples/aws"
       - "/samples/dapr/ui"
     schedule:
       interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
@@ -50,6 +55,7 @@ updates:
     directory: "/samples/volumes/src"
     schedule:
       interval: "weekly"
+    target-branch: "edge"
     groups:
       all:
         patterns:
