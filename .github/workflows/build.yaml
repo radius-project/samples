@@ -34,6 +34,8 @@ jobs:
             image: samples/aws-sqs
           - directory: samples/volumes/
             image: samples/volumes
+          - directory: samples/eshop/src/envoy/
+            image: samples/eshop/eshop-envoy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

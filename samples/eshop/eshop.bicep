@@ -158,8 +158,6 @@ module webshopping 'services/webshopping.bicep' = {
     imageRegistry: imageRegistry
     imageTag: imageTag
     gatewayName: networking.outputs.gateway
-    envoyImageName: infra.outputs.envoyImageName
-    envoyImageTag: infra.outputs.envoyImageTag
   }
 }
 

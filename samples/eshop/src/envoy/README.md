@@ -11,7 +11,7 @@ The routing configuration is in [envoy.yaml](envoy.yaml). See the `route_config`
 ## Building
 
 To build and push the image, run the following commands:
-> Note: Replace `<TAG>` with the tag you want to use. By convention, we use the same tag as the external envoy image.
+> Note: Replace `<TAG>` with the tag you want to use. By convention, we use `latest`, the same tag that the eshop images use.
 ```bash
 cd samples/eshop/src/envoy
 export TAG=<TAG>
