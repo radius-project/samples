@@ -23,10 +23,6 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "edge"
-    groups:
-      all:
-        patterns:
-          - "*"
   - package-ecosystem: "npm"
     directories:
       - "/playwright"
