@@ -67,32 +67,6 @@ jobs:
             enableDapr: false
             images: samples/volumes
             directories: samples/volumes/
-          - name: eshop-containers
-            os: ubuntu-latest-m
-            runOnPullRequest: true
-            app: eshop
-            env: default
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            enableDapr: false
-          - name: eshop-azure
-            os: ubuntu-latest-m
-            runOnPullRequest: false
-            app: eshop
-            env: azure
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            credential: azure
-            enableDapr: false
-          - name: eshop-aws
-            os: ubuntu-latest-m
-            runOnPullRequest: false
-            app: eshop
-            env: aws
-            path: ./samples/eshop/eshop.bicep
-            uiTestFile: tests/eshop/eshop.app.spec.ts
-            credential: aws
-            enableDapr: false
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       AZURE_LOCATION: westus3
@@ -379,16 +353,6 @@ jobs:
             rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
             rad credential register aws access-key --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           fi
-      ## This step is temporary until we have Recipe Packs for Azure & AWS and update the eShop sample
-      - name: Initialize eShop environments
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.app == 'eshop'
-        run: |
-          if [[ "${{ matrix.credential }}" == "azure" ]]; then
-            rad deploy ./samples/eshop/environments/azure.bicep -p azureResourceGroup=${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} -p azureSubscriptionId=${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}
-          elif [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad deploy ./samples/eshop/environments/aws.bicep -p awsAccountId=${{ secrets.AWS_ACCOUNT_ID }} -p awsRegion=${{ env.AWS_REGION }} -p eksClusterName=${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-          fi
-          rad env switch ${{ matrix.env }}
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
