@@ -1,4 +1,4 @@
-name: Test Samples (k3d and EKS)
+name: Test Samples
 
 on:
   workflow_dispatch:
@@ -88,7 +88,6 @@ jobs:
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_EKS_CLUSTER_NAME=eks-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
       - name: Generate Radius version variables
         id: gen-radius-version
@@ -145,20 +144,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: az CLI login
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
-        run: |
-          az login --service-principal \
-            --username ${{ secrets.AZURE_SP_TESTS_APPID }} \
-            --password ${{ secrets.AZURE_SP_TESTS_PASSWORD }} \
-            --tenant ${{ secrets.AZURE_SP_TESTS_TENANTID }}
-      - name: Configure AWS
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region ${{ env.AWS_REGION }}
-          aws configure set output json
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -182,96 +167,6 @@ jobs:
             docker push localhost:51351/$image:latest
           done
       # Create and install test environment
-      - name: Create Azure resource group
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'azure'
-        id: create-azure-resource-group
-        run: |
-          current_time=$(date +%s)
-          az group create \
-            --location ${{ env.AZURE_LOCATION }} \
-            --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
-            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
-            --tags creationTime=$current_time
-          while [ $(az group exists --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }}) = false ]; do
-            echo "Waiting for resource group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} to be created..."
-            sleep 5
-          done
-      - name: Create EKS Cluster
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        id: create-eks
-        run: |
-          # Create cluster-config.yaml file
-          # Dapr has specific requirements for EKS clusters
-          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#deploy-an-eks-cluster
-          cat <<EOF > cluster-config.yaml
-          apiVersion: eksctl.io/v1alpha5
-          kind: ClusterConfig
-          metadata:
-            name: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-            region: ${{ env.AWS_REGION }}
-            version: '1.30'
-            tags:
-              karpenter.sh/discovery: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-          iam:
-            withOIDC: true
-          managedNodeGroups:
-            - name: mng-od-4vcpu-8gb
-              desiredCapacity: 2
-              minSize: 1
-              maxSize: 5
-              instanceType: c5.xlarge
-              privateNetworking: true
-          addons:
-            - name: vpc-cni 
-              attachPolicyARNs:
-                - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
-            - name: coredns
-              version: latest 
-            - name: kube-proxy
-              version: latest
-            - name: aws-ebs-csi-driver
-              wellKnownPolicies: 
-                ebsCSIController: true
-          EOF
-
-          cat cluster-config.yaml
-          # Install eksctl
-          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-          sudo mv /tmp/eksctl /usr/local/bin  
-
-          # Create EKS cluster
-          eksctl create cluster -f cluster-config.yaml
-          
-          # Wait for the EKS cluster to be active
-          while [[ "$(eksctl get cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} -o json | jq -r .[0].Status)" != "ACTIVE" ]]; do
-            echo "Waiting for EKS cluster to be created..."
-            sleep 60
-          done
-
-          # Update kubeconfig
-          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-        timeout-minutes: 60
-        continue-on-error: false
-      - name: Configure EKS for Dapr
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws'
-        run: |
-          # Fetch the security group ID for the EKS cluster
-          SECURITY_GROUP_ID=$(aws eks describe-cluster \
-            --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} \
-            --query 'cluster.resourcesVpcConfig.clusterSecurityGroupId' \
-            --region ${{ env.AWS_REGION }} \
-            --output text)
-          # Authorize port 4000 for Dapr sidecar communication within the same security group
-          # https://docs.dapr.io/operations/hosting/kubernetes/cluster/setup-eks/#add-dapr-requirements-for-sidecar-access-and-default-storage-class
-          aws ec2 authorize-security-group-ingress \
-            --group-id $SECURITY_GROUP_ID \
-            --protocol tcp \
-            --port 4000 \
-            --source-group $SECURITY_GROUP_ID
-          # Add a default storage class
-          kubectl patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-        timeout-minutes: 30
-        continue-on-error: false
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
@@ -283,11 +178,7 @@ jobs:
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad install kubernetes
-          else
-            rad install kubernetes --set rp.publicEndpointOverride=localhost
-          fi
+          rad install kubernetes --set rp.publicEndpointOverride=localhost
           
           echo "*** Verify manifests are registered ***"
           rm -f registermanifest_logs.txt
@@ -342,17 +233,6 @@ jobs:
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
-      - name: Configure cloud credentials
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && ( matrix.credential == 'azure' || matrix.credential == 'aws')
-        run: |
-          if [[ "${{ matrix.credential }}" == "azure" ]]; then
-            rad env update default --azure-subscription-id ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} --azure-resource-group ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }}
-            rad credential register azure sp --client-id ${{ secrets.AZURE_SP_TESTS_APPID }} --client-secret ${{ secrets.AZURE_SP_TESTS_PASSWORD }} --tenant-id ${{ secrets.AZURE_SP_TESTS_TENANTID }}
-          fi
-          if [[ "${{ matrix.credential }}" == "aws" ]]; then
-            rad env update default --aws-region ${{ env.AWS_REGION }} --aws-account-id ${{ secrets.AWS_ACCOUNT_ID }}
-            rad credential register aws access-key --access-key-id ${{ secrets.AWS_ACCESS_KEY_ID }} --secret-access-key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          fi
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
@@ -441,13 +321,3 @@ jobs:
             --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
             --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
             --yes
-      - name: Delete AWS Resources
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.credential == 'aws' && steps.deploy-app.outcome == 'success'
-        run: |
-          # Delete all AWS resources created by the test
-          ./.github/scripts/delete-aws-resources.sh '/planes/radius/local/resourcegroups/default/providers/Applications.Core/applications/${{ matrix.app }}'
-      - name: Delete EKS Cluster ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}
-        if: steps.create-eks.outcome == 'success'
-        run: |
-          echo "Deleting EKS cluster: ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }}"
-          eksctl delete cluster --name ${{ steps.gen-id.outputs.TEST_EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --wait --force
