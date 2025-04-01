@@ -27,13 +27,16 @@
     "@dapr/dapr": "^3.3.1",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.9",
+    "@types/pg": "^8.11.11",
+    "@types/redis": "^4.0.11",
     "@types/uuid": "^9.0.8",
     "bootstrap": "^5.3.3",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "mongodb": "^6.5.0",
     "morgan": "^1.10.0",
-    "redis": "^4.6.13",
+    "pg": "^8.14.0",
+    "redis": "^4.7.0",
     "uuid": "^9.0.1"
   }
 }
