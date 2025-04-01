@@ -44,18 +44,23 @@ test("To-Do App Basic UI Checks", async ({ page }) => {
   // Make sure important environment variables are visible
   await expect(
     page
-      .getByRole("cell", { name: "CONNECTION_REDIS_CONNECTIONSTRING" })
-      .getByText("CONNECTION_REDIS_CONNECTIONSTRING")
+      .getByRole("cell", { name: "CONNECTION_POSTGRES_HOST" })
+      .getByText("CONNECTION_POSTGRES_HOST")
   ).toBeVisible();
   await expect(
     page
-      .getByRole("cell", { name: "CONNECTION_REDIS_HOST" })
-      .getByText("CONNECTION_REDIS_HOST")
+      .getByRole("cell", { name: "CONNECTION_POSTGRES_PORT" })
+      .getByText("CONNECTION_POSTGRES_PORT")
   ).toBeVisible();
   await expect(
     page
-      .getByRole("cell", { name: "CONNECTION_REDIS_PORT" })
-      .getByText("CONNECTION_REDIS_PORT")
+      .getByRole("cell", { name: "CONNECTION_POSTGRES_USERNAME" })
+      .getByText("CONNECTION_POSTGRES_USERNAME")
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("cell", { name: "CONNECTION_POSTGRES_DATABASE" })
+      .getByText("CONNECTION_POSTGRES_DATABASE")
   ).toBeVisible();
 });
 
