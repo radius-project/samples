@@ -74,7 +74,6 @@ export function createFactory(): RepositoryFactory {
             database: process.env.CONNECTION_POSTGRES_DATABASE || '',
         }
         const url = `postgresql://${connection.username}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`
-        console.log(`Postgres URL: ${url}`);
         return new PostgresFactory(url);
     }
 
