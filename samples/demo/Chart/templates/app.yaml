@@ -16,18 +16,10 @@ spec:
       - name: webapp
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         env: 
-        - name: CONNECTION_POSTGRES_HOST
-          value: {{ .Values.datastore.postgres.host }}
-        - name: CONNECTION_POSTGRES_PORT
-          value: {{ .Values.datastore.postgres.port }}
-        - name: CONNECTION_POSTGRES_USER
-          value: {{ .Values.datastore.postgres.username }}
-        - name: CONNECTION_POSTGRES_DB
-          value: {{ .Values.datastore.postgres.database }}
-        - name: CONNECTION_POSTGRES_PASSWORD
+        - name: CONNECTION_REDIS_URL
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
-              key: password
+              name: redis-secret
+              key: url
         ports:
         - containerPort: 3000
