@@ -2,3 +2,10 @@ image:
   repository: ghcr.io/radius-project/samples/demo
   tag: latest
 environment: default
+datastore:
+  postgres:
+    host: postgres
+    port: 5432
+    username: postgres
+    database: demo
+  
