@@ -1,4 +1,4 @@
-name: Test Samples
+name: Test Samples (K3D)
 
 on:
   workflow_dispatch:
