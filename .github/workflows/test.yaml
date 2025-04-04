@@ -69,9 +69,6 @@ jobs:
             directories: samples/volumes/
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AZURE_LOCATION: westus3
-      AWS_REGION: us-west-2
-      AWS_ZONES: us-west-2a,us-west-2b,us-west-2c
     steps:
       # Setup the test assets and configuration
       - name: Generate output variables
@@ -87,7 +84,6 @@ jobs:
 
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "TEST_AZURE_RESOURCE_GROUP=rg-${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
       - name: Generate Radius version variables
         id: gen-radius-version
@@ -312,12 +308,3 @@ jobs:
           if command -v rad &> /dev/null; then
             rad app delete ${{ matrix.app }} -y
           fi
-      - name: Delete Azure resource group
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.create-azure-resource-group.outcome == 'success'
-        run: |
-          # Delete Azure resources created by the test
-          # if deletion fails, purge workflow will purge the resource group and its resources later
-          az group delete \
-            --subscription ${{ secrets.AZURE_SUBSCRIPTIONID_TESTS }} \
-            --name ${{ steps.gen-id.outputs.TEST_AZURE_RESOURCE_GROUP }} \
-            --yes
