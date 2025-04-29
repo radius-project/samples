@@ -25,6 +25,12 @@ env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
   # ORAS (OCI Registry As Storage) CLI version
   ORAS_VERSION: 1.1.0
+  # Dapr CLI version
+  DAPR_CLI_VER: "1.15.1"
+  # Dapr runtime version
+  DAPR_RUNTIME_VER: "1.15.4"
+  # Dapr dashboard version
+  DAPR_DASHBOARD_VER: "0.15.0"
 jobs:
   test:
     name: Sample tests
@@ -85,6 +91,7 @@ jobs:
           # Set output variables to be used in the other jobs
           echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
           echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
+
       - name: Generate Radius version variables
         id: gen-radius-version
         if: steps.gen-id.outputs.RUN_TEST == 'true'
@@ -128,25 +135,31 @@ jobs:
           fi
 
           echo "RADIUS_VERSION=$RADIUS_VERSION" >> $GITHUB_OUTPUT
+
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@v4
+
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
         run: |
           python ./.github/scripts/validate_semver.py ${{ inputs.version }}
+
       - name: Setup Node
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         # Map localhost port 80 on the external load balancer, and disable traefik and the internal load balancer.
         run: k3d cluster create --agents 2 -p "80:80@loadbalancer" --k3s-arg "--disable=traefik@server:*" --k3s-arg "--disable=servicelb@server:*" --registry-create sampleregistry:51351
+
       - name: Build images
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.images != ''
         run: |
@@ -162,20 +175,29 @@ jobs:
             docker build -t localhost:51351/$image:latest $directory
             docker push localhost:51351/$image:latest
           done
+
       # Create and install test environment
       - uses: oras-project/setup-oras@main
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
           oras-version: ${{ env.ORAS_VERSION }}
+
+      - name: Install Dapr CLI and control plane
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.enableDapr == true
+        run: |
+          wget -q https://raw.githubusercontent.com/dapr/cli/master/install/install.sh -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
+          dapr init -k --wait --timeout 600 --runtime-version ${{ env.DAPR_RUNTIME_VER }} --dashboard-version ${{ env.DAPR_DASHBOARD_VER }}
+
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           ./.github/scripts/install-radius.sh ${{ steps.gen-radius-version.outputs.RADIUS_VERSION }}
+
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
           rad install kubernetes --set rp.publicEndpointOverride=localhost
-          
+
           echo "*** Verify manifests are registered ***"
           rm -f registermanifest_logs.txt
           # Find the pod with container "ucp"
@@ -229,6 +251,7 @@ jobs:
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
           rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
@@ -240,6 +263,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
@@ -257,6 +281,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
+
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v4
         if: always() && (steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure')
@@ -265,6 +290,7 @@ jobs:
           path: playwright/playwright-report/
           retention-days: 30
           if-no-files-found: error
+
       - name: Upload Playwright Videos
         uses: actions/upload-artifact@v4
         if: always() && steps.run-playwright-test.outcome == 'failure'
@@ -273,6 +299,7 @@ jobs:
           path: playwright/test-results/
           retention-days: 30
           if-no-files-found: error
+
       # Handle failures
       - name: Get Pod logs for failed tests
         id: get-pod-logs
@@ -290,6 +317,7 @@ jobs:
           echo "Pod logs saved to playwright/pod-logs/${{ matrix.name }}/"
           # Get kubernetes events and save to file
           kubectl get events -n $namespace > playwright/pod-logs/${{ matrix.name }}/events.txt
+
       - name: Upload Pod logs for failed tests
         uses: actions/upload-artifact@v4
         if: failure() && steps.get-pod-logs.outcome == 'success'
@@ -298,9 +326,11 @@ jobs:
           path: playwright/pod-logs/${{ matrix.name }}
           retention-days: 30
           if-no-files-found: error
+
       - name: Create GitHub issue on failure
         if: failure() && github.event_name == 'schedule'
         run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+
       # Cleanup
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
