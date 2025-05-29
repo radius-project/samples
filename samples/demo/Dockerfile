@@ -9,7 +9,7 @@ RUN cd client && npm ci && npm cache clean --force
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /usr/src/app
 
 COPY --from=build /usr/src/app/dist ./dist
