@@ -5,7 +5,6 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import "./index.css";
-import './index.css';
 import Root from './Root';
 import ErrorPage from './ErrorPage';
 import reportWebVitals from './reportWebVitals';
@@ -45,4 +44,5 @@ root.render(
   </React.StrictMode>
 );
 
+reportWebVitals();
 reportWebVitals();
