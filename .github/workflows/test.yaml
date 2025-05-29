@@ -276,8 +276,14 @@ jobs:
             echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
-          
-          wget -q --spider $ENDPOINT
+
+          if wget -q --spider $ENDPOINT; then
+            echo "Endpoint $ENDPOINT is reachable"
+            exit 0
+          else
+            echo "Endpoint $ENDPOINT is not reachable"
+            exit 1
+          fi
 
           cd playwright/
           npm ci
@@ -286,7 +292,7 @@ jobs:
 
       - name: Upload Playwright Results
         uses: actions/upload-artifact@v4
-        if: always() && (steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure')
+        if: steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure'
         with:
           name: playwright-report-${{ matrix.name }}
           path: playwright/playwright-report/
@@ -295,7 +301,7 @@ jobs:
 
       - name: Upload Playwright Videos
         uses: actions/upload-artifact@v4
-        if: always() && steps.run-playwright-test.outcome == 'failure'
+        if: steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure'
         with:
           name: playwright-video-${{ matrix.name }}
           path: playwright/test-results/
