@@ -2,7 +2,7 @@ import * as express from "express";
 import { Item, RepositoryFactory } from "../db/repository";
 
 export const register = (app: express.Application, factory: RepositoryFactory) => {
-    app.get(`/api/todos`, async (req, res) => {
+    app.get('/api/todos', async (req, res) => {
         const respository = await factory.create()
         try {
             const items = await respository.list()
@@ -19,7 +19,7 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
         }
     });
 
-    app.get(`/api/todos/:id`, async (req, res) => {
+    app.get('/api/todos/:id', async (req, res) => {
         const respository = await factory.create()
         try {
             const id = req.params.id;
@@ -37,7 +37,7 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
         }
     });
 
-    app.delete(`/api/todos/:id`, async (req, res) => {
+    app.delete('/api/todos/:id', async (req, res) => {
         const respository = await factory.create()
         try {
             const id = req.params.id;
@@ -50,7 +50,7 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
         }
     });
 
-    app.put(`/api/todos/:id`, async (req, res) => {
+    app.put('/api/todos/:id', async (req, res) => {
         const respository = await factory.create()
         try {
             const item = req.body as Item;
@@ -76,7 +76,7 @@ export const register = (app: express.Application, factory: RepositoryFactory) =
     // Environment variable that controls if the failure simulation is enabled. Defaults to 0 (disabled).
     const radiusDemoFailureEnabled = parseInt(process.env.RADIUS_DEMO_FAILURE_ENABLED || '0');
 
-    app.post(`/api/todos`, async (req, res) => {
+    app.post('/api/todos', async (req, res) => {
         const respository = await factory.create()
         try {
             const item = req.body as Item;
