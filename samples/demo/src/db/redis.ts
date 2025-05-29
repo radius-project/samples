@@ -12,12 +12,22 @@ export class RedisFactory implements RedisFactory {
     readonly connectionString: string;
 
     async create(): Promise<Repository> {
-        let client = createClient({
-            url: this.connectionString,
-        });
+        // Validate Redis URL format
+        if (!this.connectionString.startsWith('redis://') && !this.connectionString.startsWith('rediss://')) {
+            throw new Error(`Invalid Redis URL format: ${this.connectionString}. Must start with redis:// or rediss://`);
+        }
+
+        let client;
+        try {
+            client = createClient({
+                url: this.connectionString,
+            });
+        } catch (error) {
+            throw new Error(`Failed to create Redis client with URL: ${this.connectionString}. Error: ${error}`);
+        }
 
         client.on('error', (err) => console.log('Redis Error', err));
-        client.connect();
+        await client.connect();
 
         await client.ping();
         return new RedisRepository(client)

@@ -38,7 +38,16 @@ export function createFactory(): RepositoryFactory {
 
     if (process.env.CONNECTION_REDIS_URL) {
         console.log("Using Redis: found url in environment variable CONNECTION_REDIS_URL");
-        return new RedisFactory(process.env.CONNECTION_REDIS_URL);
+        const redisUrl = process.env.CONNECTION_REDIS_URL;
+        
+        // Validate the Redis URL format
+        if (!redisUrl.startsWith('redis://') && !redisUrl.startsWith('rediss://')) {
+            console.error(`Invalid Redis URL format: ${redisUrl}. Must start with redis:// or rediss://`);
+            console.log("Using in-memory store: invalid Redis URL");
+            return new InMemoryFactory();
+        }
+        
+        return new RedisFactory(redisUrl);
     }
 
     if (process.env.CONNECTION_REDIS_HOST) {
@@ -48,6 +57,13 @@ export function createFactory(): RepositoryFactory {
             port: process.env.CONNECTION_REDIS_PORT!,
             username: process.env.CONNECTION_REDIS_USERNAME || '',
             password: process.env.CONNECTION_REDIS_PASSWORD || '',
+        }
+
+        // Validate required fields
+        if (!connection.host || !connection.port) {
+            console.error("Invalid Redis configuration: missing host or port");
+            console.log("Using in-memory store: invalid Redis configuration");
+            return new InMemoryFactory();
         }
 
         let scheme = "redis"
