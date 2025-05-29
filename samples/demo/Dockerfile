@@ -1,4 +1,4 @@
-FROM node:18-buster as BUILD
+FROM node:18-buster AS build
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
@@ -12,8 +12,8 @@ RUN npm run build
 FROM node:18-alpine
 WORKDIR /usr/src/app
 
-COPY --from=BUILD /usr/src/app/dist ./dist
-COPY --from=BUILD /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/node_modules ./node_modules
 
 EXPOSE 3000
 ENV PORT=3000

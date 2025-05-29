@@ -172,15 +172,15 @@ jobs:
             image=${images[$index]}
             directory=${directories[$index]}
             echo "Building image $image from directory $directory"
-            docker build -t localhost:51351/$image:latest $directory
-            docker push localhost:51351/$image:latest
+            docker build -t sampleregistry:5000/$image:latest $directory
+            docker push sampleregistry:5000/$image:latest
           done
 
       # Create and install test environment
-      - uses: oras-project/setup-oras@main
+      - uses: oras-project/setup-oras@v1
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
-          oras-version: ${{ env.ORAS_VERSION }}
+          version: ${{ env.ORAS_VERSION }}
 
       - name: Install Dapr CLI and control plane
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.enableDapr == true
