@@ -43,7 +43,7 @@ container.register(app);
 health.register(app, factory);
 todo.register(app, factory);
 
-app.get('*', (req: express.Request, res: express.Response) => {
+app.get('/', (req: express.Request, res: express.Response) => {
     // Pass through unhandled requests to React.
     res.sendFile(path.resolve(__dirname, "www", 'index.html'));
 });

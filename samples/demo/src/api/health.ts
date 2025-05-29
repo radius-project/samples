@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { RepositoryFactory } from "../db/repository";
 
 export const register = (app: express.Application, factory: RepositoryFactory) => {

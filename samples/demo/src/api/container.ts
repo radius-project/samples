@@ -1,5 +1,5 @@
 import os from 'os'
-import * as express from "express";
+import express from "express";
 
 export const register = (app: express.Application) => {
   app.get('/api/container-info', async (req: express.Request, res: express.Response) => {
