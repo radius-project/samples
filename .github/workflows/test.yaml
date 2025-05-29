@@ -277,14 +277,6 @@ jobs:
             export ENDPOINT=$endpoint
           fi
 
-          if wget -q --spider $ENDPOINT; then
-            echo "Endpoint $ENDPOINT is reachable"
-            exit 0
-          else
-            echo "Endpoint $ENDPOINT is not reachable"
-            exit 1
-          fi
-
           cd playwright/
           npm ci
           npx playwright install --with-deps
