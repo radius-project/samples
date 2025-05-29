@@ -12,8 +12,16 @@ interface ItemResponse {
 }
 
 const listItems = async (): Promise<ItemResponse> => {
-  const response = await fetch("/api/todos");
-  return await response.json() as ItemResponse;
+  try {
+    const response = await fetch("/api/todos");
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}`);
+    }
+    return await response.json() as ItemResponse;
+  } catch (error: any) {
+    console.error("Error fetching todos:", error);
+    return { message: `Error: ${error.message || "Failed to connect to server"}`, items: [] };
+  }
 }
 
 const createItem = async (item: Item) => {
@@ -45,15 +53,29 @@ const deleteItem = async (item: Item) => {
 export default function Todo() {
   const [reloadCount, setReloadCount] = React.useState(0);
   const [response, setResponse] = React.useState<ItemResponse | null>(null)
+  const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
   const [title, setTitle] = React.useState("");
 
   React.useEffect(() => {
     let mounted = true;
+    setLoading(true);
     const worker = async () => {
-      const response = await listItems();
-      if (mounted) {
-        setResponse(response);
+      try {
+        const response = await listItems();
+        if (mounted) {
+          setResponse(response);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (mounted) {
+          setError(err.message || "Failed to load todos");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     worker();
@@ -84,11 +106,16 @@ export default function Todo() {
     updateItem(item).then(() => setReloadCount(reloadCount + 1));
   }
 
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
   return <>
     <div className="row">
       <div className="col-8 p-4">
         <div className="container">
           <h3>Todo list</h3>
+          {error && <h6 className="text-danger">{error}</h6>}
           {response?.message !== "" && <h6 className="text-secondary">{response?.message}</h6>}
           {response?.items && response.items.length > 0 ?
             <table className="table">

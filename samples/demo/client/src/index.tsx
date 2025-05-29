@@ -7,7 +7,6 @@ import {
 import "./index.css";
 import Root from './Root';
 import ErrorPage from './ErrorPage';
-import reportWebVitals from './reportWebVitals';
 import { Index, loader as indexLoader } from './routes/Index';
 import Todo from './routes/Todo';
 import Request from './routes/Request';
@@ -43,6 +42,3 @@ root.render(
     <RouterProvider router={router} />
   </React.StrictMode>
 );
-
-reportWebVitals();
-reportWebVitals();
