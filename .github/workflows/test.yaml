@@ -177,10 +177,10 @@ jobs:
           done
 
       # Create and install test environment
-      - uses: oras-project/setup-oras@main
+      - uses: oras-project/setup-oras@v1
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
-          oras-version: ${{ env.ORAS_VERSION }}
+          version: ${{ env.ORAS_VERSION }}
 
       - name: Install Dapr CLI and control plane
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.enableDapr == true
@@ -276,6 +276,8 @@ jobs:
             echo "Endpoint: $endpoint"
             export ENDPOINT=$endpoint
           fi
+          
+          wget -q --spider $ENDPOINT
 
           cd playwright/
           npm ci
