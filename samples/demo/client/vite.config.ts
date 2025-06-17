@@ -10,6 +10,6 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'build' // Keep CRA compatibility for parent build script
+    outDir: 'build'
   }
 })
