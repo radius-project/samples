@@ -1,4 +1,4 @@
-FROM node:18-buster as BUILD
+FROM node:18-buster AS build
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
