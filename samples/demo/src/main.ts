@@ -1,16 +1,13 @@
-const { useAzureMonitor, AzureMonitorOpenTelemetryOptions } = require("@azure/monitor-opentelemetry");
-const { Resource } = require("@opentelemetry/resources");
-const { SemanticResourceAttributes } = require("@opentelemetry/semantic-conventions");
+import { useAzureMonitor, AzureMonitorOpenTelemetryOptions } from "@azure/monitor-opentelemetry";
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 
-const customResource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: "radius-demo-application",
-    [SemanticResourceAttributes.SERVICE_NAMESPACE]: "radius-demo-application-ns",
-    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: "radius-demo-application-node2",
-  });
-
-const options: typeof AzureMonitorOpenTelemetryOptions = {
-resource: customResource
-};
+const options: AzureMonitorOpenTelemetryOptions = {
+resource: resourceFromAttributes({
+        [ATTR_SERVICE_NAME]: "radius-demo-application",
+        ["service.namespace"]: "radius-demo-application-ns",
+        ["service.instance.id"]: "radius-demo-application-node2",
+})};
 
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
     useAzureMonitor(options);      // Must be called before importing any packages
