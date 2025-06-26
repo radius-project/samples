@@ -64,14 +64,14 @@ export function createFactory(): RepositoryFactory {
         return new RedisFactory(url);
     }
 
-    if (process.env.CONNECTION_POSTGRES_HOST) {
-        console.log("Using PostgreSQL: found hostname in environment variable CONNECTION_POSTGRES_HOST");
+    if (process.env.CONNECTION_POSTGRESQL_HOST) {
+        console.log("Using PostgreSQL: found hostname in environment variable CONNECTION_POSTGRESQL_HOST");
         const connection = {
-            host: process.env.CONNECTION_POSTGRES_HOST!,
-            port: process.env.CONNECTION_POSTGRES_PORT!,
-            username: process.env.CONNECTION_POSTGRES_USERNAME || '',
-            password: process.env.CONNECTION_POSTGRES_PASSWORD || '',
-            database: process.env.CONNECTION_POSTGRES_DATABASE || '',
+            host: process.env.CONNECTION_POSTGRESQL_HOST!,
+            port: process.env.CONNECTION_POSTGRESQL_PORT!,
+            username: process.env.CONNECTION_POSTGRESQL_USERNAME || '',
+            password: process.env.CONNECTION_POSTGRESQL_PASSWORD || '',
+            database: process.env.CONNECTION_POSTGRESQL_DATABASE || '',
         }
         const url = `postgresql://${connection.username}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`
         return new PostgresFactory(url);
