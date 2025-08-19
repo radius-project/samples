@@ -15,28 +15,28 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.3",
-    "@types/node": "^24.0.3",
+    "@types/node": "^24.3.0",
     "concurrently": "^9.2.0",
     "nodemon": "^3.1.10",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.11.1",
+    "@azure/monitor-opentelemetry": "^1.12.0",
     "@dapr/dapr": "^3.5.2",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
-    "@types/pg": "^8.15.4",
+    "@types/pg": "^8.15.5",
     "@types/redis": "^4.0.11",
     "@types/uuid": "^10.0.0",
     "bootstrap": "^5.3.7",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "mongodb": "^6.17.0",
-    "morgan": "^1.10.0",
-    "pg": "^8.16.2",
-    "redis": "^5.5.6",
+    "mongodb": "^6.18.0",
+    "morgan": "^1.10.1",
+    "pg": "^8.16.3",
+    "redis": "^5.8.1",
     "uuid": "^11.1.0"
   }
 }
