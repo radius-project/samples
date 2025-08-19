@@ -138,7 +138,7 @@ jobs:
 
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
