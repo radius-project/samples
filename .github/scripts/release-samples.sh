@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # ------------------------------------------------------------
 # Copyright 2023 The Radius Authors.
 #
@@ -56,7 +58,7 @@ cat bicepconfig.json
 echo "Running git diff..."
 git diff
 git add --all
-git commit -m "Update samples for ${CHANNEL_VERSION}"
+git commit --signoff --message "Update samples for ${CHANNEL_VERSION}"
 git push origin "${CHANNEL_VERSION}"
 
 popd
