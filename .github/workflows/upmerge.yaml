@@ -34,7 +34,7 @@ jobs:
     steps:
       
       # Check out the edge branch
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: edge
           # https://github.com/actions/checkout/issues/125#issuecomment-570254411
