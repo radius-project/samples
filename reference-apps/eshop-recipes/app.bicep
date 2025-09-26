@@ -1,4 +1,5 @@
-import radius as radius
+extension radius
+
 param application string
 
 resource demo 'Applications.Core/containers@2023-10-01-preview' = {
