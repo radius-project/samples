@@ -1,10 +1,25 @@
 version: 2
+
+multi-ecosystem-groups:
+  weekly-all-deps:
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
     groups:
       all:
         patterns:
@@ -13,7 +28,13 @@ updates:
     directory: "/samples/aws-sqs"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
     groups:
       all:
         patterns:
@@ -22,7 +43,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
   - package-ecosystem: "npm"
     directories:
       - "/playwright"
@@ -31,7 +58,13 @@ updates:
       - "/samples/demo/client"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
     groups:
       all:
         patterns:
@@ -42,7 +75,13 @@ updates:
       - "/samples/dapr/ui"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
     groups:
       all:
         patterns:
@@ -51,7 +90,13 @@ updates:
     directory: "/samples/volumes/src"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Los_Angeles"
     target-branch: "edge"
+    multi-ecosystem-group: "weekly-all-deps"
+    patterns:
+      - "*"
     groups:
       all:
         patterns:
