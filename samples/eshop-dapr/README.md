@@ -1,6 +1,6 @@
 # eShop on Dapr reference application
 
-Visit the [Radius docs](https://radapp.dev/getting-started/reference-apps/eshop-dapr/) to learn more.
+Visit the [Radius docs](https://docs.radapp.io/tutorials/eshop/) to learn more.
 
 ## Source
 
@@ -27,9 +27,9 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
    helm install dapr dapr/dapr --namespace dapr-system --version 1.11.0-rc.4
    ```
 
-1. [Install the rad CLI](https://radapp.dev/getting-started/)
+1. [Install the rad CLI](https://docs.radapp.io/getting-started/)
 
-1. [Initialize a new Radius environment](https://radapp.dev/getting-started/)
+1. [Initialize a new Radius environment](https://docs.radapp.io/getting-started/)
 
 1. Clone the repository and switch to the app directory:
 
