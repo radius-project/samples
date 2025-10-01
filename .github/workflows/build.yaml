@@ -6,6 +6,13 @@ on:
     branches:
       - edge
       - v*.*
+  pull_request:
+    branches:
+      - edge
+      - v*.*
+    paths:
+      - 'samples/**'
+      - '.github/workflows/build.yaml'
 
 env:
   VERSION: 'latest'
