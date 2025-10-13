@@ -1,7 +1,8 @@
 version: 2
 
 multi-ecosystem-groups:
-  weekly-all-deps:
+  edge-weekly:
+    target-branch: "edge"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -11,93 +12,53 @@ multi-ecosystem-groups:
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
-    groups:
-      all:
-        patterns:
-          - "*"
+
   - package-ecosystem: "gomod"
     directory: "/samples/aws-sqs"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
-    groups:
-      all:
-        patterns:
-          - "*"
+
   - package-ecosystem: "devcontainers"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
+
   - package-ecosystem: "npm"
     directories:
       - "/playwright"
       - "/samples/dapr/nodeapp"
       - "/samples/demo"
       - "/samples/demo/client"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
-    groups:
-      all:
-        patterns:
-          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-major"
+
   - package-ecosystem: "nuget"
     directories:
       - "/samples/aws"
       - "/samples/dapr/ui"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
-    groups:
-      all:
-        patterns:
-          - "*"
+
   - package-ecosystem: "pip"
     directory: "/samples/volumes/src"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "07:00"
-      timezone: "America/Los_Angeles"
-    target-branch: "edge"
-    multi-ecosystem-group: "weekly-all-deps"
+    multi-ecosystem-group: "edge-weekly"
     patterns:
       - "*"
-    groups:
-      all:
-        patterns:
-          - "*"
+
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    multi-ecosystem-group: "edge-weekly"
+    patterns:
+      - "*"
