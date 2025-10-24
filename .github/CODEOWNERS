@@ -3,19 +3,19 @@
 
 # Dependency files typically updated by dependabot
 # Node.js dependencies
-**/package.json        @radius-project/on-call
-**/package-lock.json   @radius-project/on-call
+**/package.json        @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+**/package-lock.json   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
 
 # Go dependencies
-**/go.mod              @radius-project/on-call
-**/go.sum              @radius-project/on-call
+**/go.mod              @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+**/go.sum              @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
 
 # .NET dependencies
-**/*.csproj            @radius-project/on-call
+**/*.csproj            @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
 
 # Python dependencies
-**/requirements.txt    @radius-project/on-call
+**/requirements.txt    @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
 
 # GitHub Actions workflows
-.github/workflows/*.yml   @radius-project/on-call
-.github/workflows/*.yaml  @radius-project/on-call
+.github/workflows/*.yml   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+.github/workflows/*.yaml  @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
