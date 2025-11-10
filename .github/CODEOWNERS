@@ -1,2 +1,21 @@
 # These owners are the maintainers and approvers of this repo
 *       @radius-project/maintainers-samples @radius-project/approvers-samples
+
+# Dependency files typically updated by dependabot
+# Node.js dependencies
+**/package.json        @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+**/package-lock.json   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+# Go dependencies
+**/go.mod              @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+**/go.sum              @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+# .NET dependencies
+**/*.csproj            @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+# Python dependencies
+**/requirements.txt    @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+# GitHub Actions workflows
+.github/workflows/*.yml   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+.github/workflows/*.yaml  @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
