@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
 name: Test Samples (K3D)
 
 on:
@@ -138,7 +140,7 @@ jobs:
 
       - name: Checkout code
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
@@ -147,7 +149,7 @@ jobs:
 
       - name: Setup Node
         if: steps.gen-id.outputs.RUN_TEST == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
         with:
           node-version: 20
 
@@ -177,7 +179,7 @@ jobs:
           done
 
       # Create and install test environment
-      - uses: oras-project/setup-oras@main
+      - uses: oras-project/setup-oras@22ce207df3b08e061f537244349aac6ae1d214f6 # v1.2.4
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
           oras-version: ${{ env.ORAS_VERSION }}
@@ -257,7 +259,7 @@ jobs:
       - name: Deploy app
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         id: deploy-app
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@ce71cc2ab81d554ebbe88c79ab5975992d79ba08 # v3.0.2
         with:
           timeout_minutes: 30
           max_attempts: 3
@@ -283,7 +285,7 @@ jobs:
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
 
       - name: Upload Playwright Results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always() && (steps.run-playwright-test.outcome == 'success' || steps.run-playwright-test.outcome == 'failure')
         with:
           name: playwright-report-${{ matrix.name }}
@@ -292,7 +294,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Playwright Videos
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always() && steps.run-playwright-test.outcome == 'failure'
         with:
           name: playwright-video-${{ matrix.name }}
@@ -319,7 +321,7 @@ jobs:
           kubectl get events -n $namespace > playwright/pod-logs/${{ matrix.name }}/events.txt
 
       - name: Upload Pod logs for failed tests
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: failure() && steps.get-pod-logs.outcome == 'success'
         with:
           name: ${{ matrix.name }}-pod-logs
