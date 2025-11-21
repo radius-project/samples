@@ -27,7 +27,7 @@ updates:
       - "*"
 
   - package-ecosystem: devcontainers
-    directory: "/"
+    directory: /
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
