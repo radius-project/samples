@@ -14,16 +14,16 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/express": "^5.0.5",
-    "@types/node": "^24.10.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.1",
     "concurrently": "^9.2.1",
-    "nodemon": "^3.1.10",
-    "rimraf": "^6.1.0",
+    "nodemon": "^3.1.11",
+    "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.14.0",
+    "@azure/monitor-opentelemetry": "^1.14.2",
     "@dapr/dapr": "^3.6.1",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
@@ -32,11 +32,11 @@
     "@types/uuid": "^11.0.0",
     "bootstrap": "^5.3.8",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0",
+    "express": "^5.2.1",
     "mongodb": "^7.0.0",
     "morgan": "^1.10.1",
     "pg": "^8.16.3",
-    "redis": "^5.9.0",
+    "redis": "^5.10.0",
     "uuid": "^13.0.0"
   }
 }
