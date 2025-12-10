@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge)."
+        description: Radius version number to use (e.g. 0.1.0, 0.1.0-rc1, edge).
         required: false
         type: string
   push:
@@ -14,35 +14,42 @@ on:
       - v*.*
       - edge
     paths:
-      - "samples/**"
-      - ".github/workflows/**"
+      - samples/**
+      - .github/workflows/**
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - v*.*
       - edge
   schedule: # Run every day at 12 PM
-    - cron: "0 12 * * *"
+    - cron: 0 12 * * *
+
+permissions: {}
+
 env:
   RUN_IDENTIFIER: samplestest-${{ github.run_id }}-${{ github.run_attempt }}
   # ORAS (OCI Registry As Storage) CLI version
   ORAS_VERSION: 1.1.0
   # Dapr CLI version
-  DAPR_CLI_VER: "1.15.1"
+  DAPR_CLI_VER: 1.15.1
   # Dapr runtime version
-  DAPR_RUNTIME_VER: "1.15.4"
+  DAPR_RUNTIME_VER: 1.15.4
   # Dapr dashboard version
-  DAPR_DASHBOARD_VER: "0.15.0"
+  DAPR_DASHBOARD_VER: 0.15.0
+
 jobs:
   test:
     name: Sample tests
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: demo
-            os: ubuntu-latest
+            os: ubuntu-24.04
             runOnPullRequest: true
             app: demo
             env: default
@@ -55,8 +62,9 @@ jobs:
             enableDapr: false
             images: samples/demo
             directories: samples/demo/
+
           - name: dapr
-            os: ubuntu-latest-m
+            os: ubuntu-24.04
             runOnPullRequest: true
             app: dapr
             env: default
@@ -65,8 +73,9 @@ jobs:
             enableDapr: true
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
+
           - name: volumes
-            os: ubuntu-latest
+            os: ubuntu-24.04
             runOnPullRequest: true
             app: myapp
             env: default
@@ -75,8 +84,6 @@ jobs:
             enableDapr: false
             images: samples/volumes
             directories: samples/volumes/
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       # Setup the test assets and configuration
       - name: Generate output variables
@@ -91,8 +98,8 @@ jobs:
           fi
 
           # Set output variables to be used in the other jobs
-          echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> $GITHUB_OUTPUT
-          echo "RUN_TEST=${RUN_TEST}" >> $GITHUB_OUTPUT
+          echo "RUN_IDENTIFIER=${RUN_IDENTIFIER}" >> "${GITHUB_OUTPUT}"
+          echo "RUN_TEST=${RUN_TEST}" >> "${GITHUB_OUTPUT}"
 
       - name: Generate Radius version variables
         id: gen-radius-version
@@ -136,11 +143,13 @@ jobs:
             exit 1
           fi
 
-          echo "RADIUS_VERSION=$RADIUS_VERSION" >> $GITHUB_OUTPUT
+          echo "RADIUS_VERSION=$RADIUS_VERSION" >> "${GITHUB_OUTPUT}"
 
-      - name: Checkout code
+      - name: Checkout
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
 
       - name: Ensure inputs.version is valid semver
         if: steps.gen-id.outputs.RUN_TEST == 'true' && inputs.version != ''
@@ -174,15 +183,15 @@ jobs:
             image=${images[$index]}
             directory=${directories[$index]}
             echo "Building image $image from directory $directory"
-            docker build -t localhost:51351/$image:latest $directory
-            docker push localhost:51351/$image:latest
+            docker build -t "localhost:51351/$image:latest" "$directory"
+            docker push "localhost:51351/$image:latest"
           done
 
       # Create and install test environment
       - uses: oras-project/setup-oras@22ce207df3b08e061f537244349aac6ae1d214f6 # v1.2.4
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         with:
-          oras-version: ${{ env.ORAS_VERSION }}
+          version: ${{ env.ORAS_VERSION }}
 
       - name: Install Dapr CLI and control plane
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.enableDapr == true
@@ -331,7 +340,10 @@ jobs:
 
       - name: Create GitHub issue on failure
         if: failure() && github.event_name == 'schedule'
-        run: gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+        run: |
+          gh issue create --title "Samples deployment failed for ${{ matrix.name }}" --body "Test failed on ${{ github.repository }}. See [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details." --repo ${{ github.repository }} --label test-failure
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       # Cleanup
       - name: Delete app

@@ -6,25 +6,30 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Radius version number to use (e.g. 0.1.0, 0.1.0-rc1)"
+        description: Radius version number to use (e.g. 0.1.0, 0.1.0-rc1)
         required: true
         default: ""
         type: string
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
-  GITHUB_EMAIL: "radiuscoreteam@service.microsoft.com"
-  GITHUB_USER: "Radius CI Bot"
+permissions: {}
 
 jobs:
   release-samples:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+      GITHUB_EMAIL: radiuscoreteam@service.microsoft.com
+      GITHUB_USER: Radius CI Bot
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
           ref: edge
           path: samples
+          persist-credentials: true
 
       - name: Configure git
         run: |
@@ -40,7 +45,7 @@ jobs:
         run: |
           # CHANNEL is the major and minor version of the VERSION_NUMBER (e.g. 0.1)
           CHANNEL="$(echo ${{ inputs.version }} | cut -d '.' -f 1,2)"
-          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
+          echo "channel=$CHANNEL" >> "${GITHUB_OUTPUT}"
 
       - name: Release samples
         run: |
