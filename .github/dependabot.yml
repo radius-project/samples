@@ -17,21 +17,18 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: devcontainers
     directory: /
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
 
@@ -42,7 +39,6 @@ updates:
       - /samples/demo
       - /samples/demo/client
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
     ignore:
@@ -56,20 +52,17 @@ updates:
       - /samples/aws
       - /samples/dapr/ui
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
     multi-ecosystem-group: edge-weekly
-    target-branch: edge
     patterns:
       - "*"
