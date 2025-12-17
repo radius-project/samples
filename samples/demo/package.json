@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.0.3",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "rimraf": "^6.1.2",
@@ -27,7 +27,7 @@
     "@dapr/dapr": "^3.6.1",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
-    "@types/pg": "^8.15.6",
+    "@types/pg": "^8.16.0",
     "@types/redis": "^4.0.11",
     "@types/uuid": "^11.0.0",
     "bootstrap": "^5.3.8",
