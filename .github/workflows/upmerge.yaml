@@ -29,17 +29,24 @@ name: Upmerge samples to edge
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   upmerge:
     name: Upmerge samples to edge
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
     steps:
       # Check out the edge branch
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: edge
           # https://github.com/actions/checkout/issues/125#issuecomment-570254411
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Configure git
         run: |
@@ -51,9 +58,9 @@ jobs:
         run: |
           export DATE=$(date +%Y-%m-%d)
           export RAND=$(openssl rand -hex 2)
-          export BRANCH_NAME=upmerge/$DATE-$RAND
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          git checkout -b $BRANCH_NAME
+          export BRANCH_NAME="upmerge/$DATE-$RAND"
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> "${GITHUB_ENV}"
+          git checkout -b "${BRANCH_NAME}"
 
       # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
       # branch is assumed to be the current release branch, but could be any branch.
@@ -62,18 +69,18 @@ jobs:
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
-          echo "Upmerging samples from $SOURCE_BRANCH to edge"
-          git fetch origin $SOURCE_BRANCH
-          git merge --no-commit origin/$SOURCE_BRANCH
+          echo "Upmerging samples from ${SOURCE_BRANCH} to edge"
+          git fetch origin "${SOURCE_BRANCH}"
+          git merge --no-commit "origin/${SOURCE_BRANCH}"
           git checkout edge -- bicepconfig.json
           git commit --signoff --message "Upmerge to edge"
 
           if git diff --quiet edge; then
               echo "No changes to merge from $SOURCE_BRANCH to edge"
-              echo "NO_CHANGES=true" >> $GITHUB_ENV
+              echo "NO_CHANGES=true" >> "${GITHUB_ENV}"
           else
-              echo "Pushing $BRANCH_NAME for PR to edge"
-              git push --set-upstream origin $BRANCH_NAME
+              echo "Pushing ${BRANCH_NAME} for PR to edge"
+              git push --set-upstream origin "${BRANCH_NAME}"
           fi
 
       # Create a PR from the new branch to edge
@@ -81,4 +88,5 @@ jobs:
         if: env.NO_CHANGES != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT}}
-        run: gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head $BRANCH_NAME
+        run: |
+          gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head "${BRANCH_NAME}"

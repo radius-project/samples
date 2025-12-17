@@ -17,52 +17,59 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: devcontainers
     directory: /
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
 
-  - package-ecosystem: "npm"
+  - package-ecosystem: npm
     directories:
-      - "/playwright"
-      - "/samples/dapr/nodeapp"
-      - "/samples/demo"
-      - "/samples/demo/client"
+      - /playwright
+      - /samples/dapr/nodeapp
+      - /samples/demo
+      - /samples/demo/client
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
     ignore:
       - dependency-name: "*"
         update-types:
-          - "version-update:semver-minor"
-          - "version-update:semver-major"
+          - version-update:semver-minor
+          - version-update:semver-major
 
   - package-ecosystem: nuget
     directories:
-      - "/samples/aws"
-      - "/samples/dapr/ui"
+      - /samples/aws
+      - /samples/dapr/ui
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
     multi-ecosystem-group: edge-weekly
+    target-branch: edge
     patterns:
       - "*"
