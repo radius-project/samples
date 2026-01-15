@@ -38,9 +38,9 @@ jobs:
 
       - name: Setup and verify bicep CLI
         run: |
-          curl -Lo rad-bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
-          chmod +x ./rad-bicep
-          ./rad-bicep --version
+          curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicep
+          ./bicep --version
 
       - name: Verify Bicep files
         run: python ./.github/scripts/validate_bicep.py
