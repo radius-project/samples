@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^25.0.8",
+    "@types/node": "^25.0.9",
     "concurrently": "^9.2.1",
     "nodemon": "^3.1.11",
     "rimraf": "^6.1.2",
@@ -23,7 +23,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.14.2",
+    "@azure/monitor-opentelemetry": "^1.15.1",
     "@dapr/dapr": "^3.6.1",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
@@ -35,7 +35,7 @@
     "express": "^5.2.1",
     "mongodb": "^7.0.0",
     "morgan": "^1.10.1",
-    "pg": "^8.16.3",
+    "pg": "^8.17.1",
     "redis": "^5.10.0",
     "uuid": "^13.0.0"
   }
