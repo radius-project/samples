@@ -16,21 +16,18 @@ multi-ecosystem-groups:
 updates:
   - package-ecosystem: github-actions
     directory: /
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
 
   - package-ecosystem: devcontainers
     directory: /
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
@@ -41,7 +38,6 @@ updates:
       - "/samples/dapr/nodeapp"
       - "/samples/demo"
       - "/samples/demo/client"
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
@@ -55,21 +51,18 @@ updates:
     directories:
       - "/samples/aws"
       - "/samples/dapr/ui"
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
-    target-branch: edge
     multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
