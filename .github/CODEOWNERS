@@ -19,3 +19,9 @@
 # GitHub Actions workflows
 .github/workflows/*.yml   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
 .github/workflows/*.yaml  @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+# GitHub configs
+.github/*.yml   @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+.github/*.yaml  @radius-project/maintainers-samples @radius-project/approvers-samples @radius-project/on-call
+
+.devcontainer/**    @radius-project/on-call @radius-project/maintainers-samples @radius-project/approvers-samples
