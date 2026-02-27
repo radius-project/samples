@@ -35,6 +35,8 @@ jobs:
   upmerge:
     name: Upmerge samples to edge
     runs-on: ubuntu-24.04
+    env:
+      NO_CHANGES: 'false'
     timeout-minutes: 5
     permissions:
       contents: write
@@ -66,19 +68,36 @@ jobs:
       # branch is assumed to be the current release branch, but could be any branch.
       # If there are no changes, stop the workflow.
       # We ignore the bicepconfig.json file because we don't want to overwrite the version in the edge branch.
+      # Manual recovery (local):
+      #   git fetch origin
+      #   git checkout -b upmerge/manual-<date> origin/edge
+      #   git merge --no-commit origin/<source-branch>
+      #   git status && git diff --name-only --diff-filter=U
+      #   # resolve conflicts, then:
+      #   git checkout origin/edge -- bicepconfig.json
+      #   git add -A && git commit --signoff -m "Upmerge to edge"
+      #   git push -u origin upmerge/manual-<date>
       - name: Upmerge samples
         run: |
           export SOURCE_BRANCH=$(basename ${{ github.ref }})
           echo "Upmerging samples from ${SOURCE_BRANCH} to edge"
           git fetch origin "${SOURCE_BRANCH}"
-          git merge --no-commit "origin/${SOURCE_BRANCH}"
+
+          if ! git merge --no-commit "origin/${SOURCE_BRANCH}"; then
+            echo "::error::Merge conflicts detected while upmerging ${SOURCE_BRANCH} into edge."
+            echo "Conflicted files:"
+            git diff --name-only --diff-filter=U
+            git merge --abort
+            exit 1
+          fi
+
           git checkout edge -- bicepconfig.json
-          git commit --signoff --message "Upmerge to edge"
 
           if git diff --quiet edge; then
-              echo "No changes to merge from $SOURCE_BRANCH to edge"
+            echo "No changes to merge from ${SOURCE_BRANCH} to edge"
               echo "NO_CHANGES=true" >> "${GITHUB_ENV}"
           else
+            git commit --signoff --message "Upmerge to edge"
               echo "Pushing ${BRANCH_NAME} for PR to edge"
               git push --set-upstream origin "${BRANCH_NAME}"
           fi

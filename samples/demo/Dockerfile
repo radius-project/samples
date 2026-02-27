@@ -1,4 +1,4 @@
-FROM node:20-bookworm AS build
+FROM node:22-bookworm AS build
 WORKDIR /usr/src/app
 
 COPY package.json package-lock.json ./
@@ -9,7 +9,7 @@ RUN cd client && npm ci && npm cache clean --force
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /usr/src/app
 
 COPY --from=BUILD /usr/src/app/dist ./dist

@@ -6,10 +6,10 @@ num_workers = 5
 
 # set the bicep binary name based on the OS
 if os.name == 'nt':
-    bicep_bin = 'rad-bicep.exe'
+    bicep_bin = 'bicep.exe'
     home_path = os.environ['USERPROFILE']
 else:
-    bicep_bin = 'rad-bicep'
+    bicep_bin = 'bicep'
     home_path = os.environ['HOME']
 
 # set the default Bicep path based on the runner
