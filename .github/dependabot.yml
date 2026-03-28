@@ -6,6 +6,9 @@ version: 2
 
 multi-ecosystem-groups:
   edge-weekly:
+    # target-branch must be set here on the group, NOT on individual update
+    # entries below. Dependabot will error if individual updates that belong
+    # to a multi-ecosystem group also specify target-branch.
     target-branch: edge
     schedule:
       interval: weekly
