@@ -20,20 +20,20 @@
     "nodemon": "^3.1.11",
     "rimraf": "^6.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "@azure/monitor-opentelemetry": "^1.15.1",
     "@dapr/dapr": "^3.6.1",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
-    "@types/pg": "^8.18.0",
+    "@types/pg": "^8.20.0",
     "@types/redis": "^4.0.11",
     "@types/uuid": "^11.0.0",
     "bootstrap": "^5.3.8",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
-    "mongodb": "^7.1.0",
+    "mongodb": "^7.1.1",
     "morgan": "^1.10.1",
     "pg": "^8.20.0",
     "redis": "^5.10.0",
