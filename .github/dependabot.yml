@@ -39,10 +39,6 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    groups:
-      devcontainers:
-        patterns:
-          - "*"
 
   - package-ecosystem: npm
     directories:
