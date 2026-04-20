@@ -13,8 +13,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
@@ -24,8 +26,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      gomod:
+        patterns:
+          - "*"
 
   - package-ecosystem: devcontainers
     directory: /
@@ -35,8 +39,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      devcontainers:
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directories:
@@ -50,8 +56,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      npm:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
@@ -68,8 +76,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      nuget:
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
@@ -79,8 +89,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
@@ -90,5 +102,7 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
-    patterns:
-      - "*"
+    groups:
+      gitsubmodule:
+        patterns:
+          - "*"
