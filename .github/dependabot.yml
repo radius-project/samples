@@ -4,31 +4,37 @@
 ---
 version: 2
 
-multi-ecosystem-groups:
-  edge-weekly:
+updates:
+  - package-ecosystem: github-actions
+    directory: /
     target-branch: edge
     schedule:
       interval: weekly
       day: monday
-      time: 07:00
+      time: "07:00"
       timezone: America/Los_Angeles
-
-updates:
-  - package-ecosystem: github-actions
-    directory: /
-    multi-ecosystem-group: edge-weekly
     patterns:
       - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
 
   - package-ecosystem: devcontainers
     directory: /
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
 
@@ -38,7 +44,12 @@ updates:
       - /samples/dapr/nodeapp
       - /samples/demo
       - /samples/demo/client
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
     ignore:
@@ -51,18 +62,33 @@ updates:
     directories:
       - /samples/aws
       - /samples/dapr/ui
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
-    multi-ecosystem-group: edge-weekly
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
     patterns:
       - "*"
