@@ -3,6 +3,6 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Dapr.Client" Version="1.17.7" />
+    <PackageReference Include="Dapr.Client" Version="1.17.9" />
   </ItemGroup>
 </Project>
