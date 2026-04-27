@@ -4,33 +4,41 @@
 ---
 version: 2
 
-multi-ecosystem-groups:
-  edge-weekly:
+updates:
+  - package-ecosystem: github-actions
+    directory: /
     target-branch: edge
     schedule:
       interval: weekly
       day: monday
-      time: 07:00
+      time: "07:00"
       timezone: America/Los_Angeles
-
-updates:
-  - package-ecosystem: github-actions
-    directory: /
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: gomod
     directory: /samples/aws-sqs
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
+    groups:
+      gomod:
+        patterns:
+          - "*"
 
   - package-ecosystem: devcontainers
     directory: /
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
 
   - package-ecosystem: npm
     directories:
@@ -38,9 +46,16 @@ updates:
       - /samples/dapr/nodeapp
       - /samples/demo
       - /samples/demo/client
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
+    groups:
+      npm:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
@@ -51,18 +66,39 @@ updates:
     directories:
       - /samples/aws
       - /samples/dapr/ui
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
+    groups:
+      nuget:
+        patterns:
+          - "*"
 
   - package-ecosystem: pip
     directory: /samples/volumes/src
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
+    groups:
+      pip:
+        patterns:
+          - "*"
 
   - package-ecosystem: gitsubmodule
     directory: /
-    multi-ecosystem-group: edge-weekly
-    patterns:
-      - "*"
+    target-branch: edge
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: America/Los_Angeles
+    groups:
+      gitsubmodule:
+        patterns:
+          - "*"
