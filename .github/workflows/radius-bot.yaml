@@ -14,8 +14,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: read # Required for actions/checkout
     steps:
+      # Generate a short-lived installation token scoped to this repository.
+      # Requires the RADIUS_TRIAGE_BOT App installed on radius-project/samples with:
+      #   Issues: Read & Write
+      - name: Get App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RADIUS_TRIAGE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RADIUS_TRIAGE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-issues: write
+          repositories: samples
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -27,7 +40,7 @@ jobs:
       - name: Comment analyzer
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
-          github-token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+          github-token: ${{ steps.app-token.outputs.token }}
           script: |
             const script = require('./.github/scripts/radius-bot.js')
             await script({github, context})

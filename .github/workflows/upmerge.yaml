@@ -36,24 +36,50 @@ jobs:
     name: Upmerge samples to edge
     runs-on: ubuntu-24.04
     env:
-      NO_CHANGES: 'false'
+      NO_CHANGES: "false"
     timeout-minutes: 5
     permissions:
-      contents: write
+      contents: read # required by actions/create-github-app-token
     steps:
+      # Generate a short-lived installation token scoped to this repository.
+      # Requires the RADIUS_RELEASE_BOT App installed on radius-project/samples with:
+      #   Contents: Read & Write, Pull requests: Read & Write
+      - name: Get App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: write
+          permission-pull-requests: write
+          repositories: samples
+
+      # Resolve the bot's GitHub-formatted name and email dynamically from the app slug
+      # so commits are attributed to the bot identity rather than hardcoded values.
+      - name: Get bot details
+        id: bot-details
+        uses: raven-actions/bot-details@ee8966a9ff6e7e42cbfc4a56b4ddb60a9d1b40a6 # v1.2.0
+        with:
+          bot-slug-name: ${{ steps.app-token.outputs.app-slug }}
+
       # Check out the edge branch
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: edge
+          token: ${{ steps.app-token.outputs.token }}
           # https://github.com/actions/checkout/issues/125#issuecomment-570254411
           fetch-depth: 0
           persist-credentials: true
 
       - name: Configure git
         run: |
-          git config --global user.email "radiuscoreteam@service.microsoft.com"
-          git config --global user.name "Radius CI Bot"
+          git config --global user.name "${GIT_USER_NAME}"
+          git config --global user.email "${GIT_USER_EMAIL}"
+        env:
+          GIT_USER_NAME: ${{ steps.bot-details.outputs.name }}
+          GIT_USER_EMAIL: ${{ steps.bot-details.outputs.email }}
 
       # Create a new branch from edge. This branch will be used to PR back into edge.
       - name: Create new branch from edge
@@ -106,6 +132,6 @@ jobs:
       - name: Create pull request
         if: env.NO_CHANGES != 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT}}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head "${BRANCH_NAME}"
