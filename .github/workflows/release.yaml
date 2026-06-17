@@ -18,23 +18,44 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
-      contents: write
-    env:
-      GITHUB_TOKEN: ${{ secrets.GH_RAD_CI_BOT_PAT }}
-      GITHUB_EMAIL: radiuscoreteam@service.microsoft.com
-      GITHUB_USER: Radius CI Bot
+      contents: read # required by actions/create-github-app-token
     steps:
+      # Generate a short-lived installation token scoped to this repository.
+      # Requires the RADIUS_RELEASE_BOT App installed on radius-project/samples with:
+      #   Contents: Read & Write, Administration: Read & Write
+      - name: Get App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: write
+          permission-administration: write
+          repositories: samples
+
+      # Resolve the bot's GitHub-formatted name and email dynamically from the app slug
+      # so commits are attributed to the bot identity rather than hardcoded values.
+      - name: Get bot details
+        id: bot-details
+        uses: raven-actions/bot-details@ee8966a9ff6e7e42cbfc4a56b4ddb60a9d1b40a6 # v1.2.0
+        with:
+          bot-slug-name: ${{ steps.app-token.outputs.app-slug }}
+
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          token: ${{ secrets.GH_RAD_CI_BOT_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           ref: edge
           path: samples
           persist-credentials: true
 
       - name: Configure git
         run: |
-          git config --global user.email "${{ env.GITHUB_EMAIL }}"
-          git config --global user.name "${{ env.GITHUB_USER }}"
+          git config --global user.name "${GIT_USER_NAME}"
+          git config --global user.email "${GIT_USER_EMAIL}"
+        env:
+          GIT_USER_NAME: ${{ steps.bot-details.outputs.name }}
+          GIT_USER_EMAIL: ${{ steps.bot-details.outputs.email }}
 
       - name: Ensure inputs.version is valid semver
         run: |
@@ -59,3 +80,5 @@ jobs:
           -H "X-GitHub-Api-Version: 2022-11-28" \
           repos/radius-project/samples \
           -f default_branch='v${{ steps.parse_release_channel.outputs.channel }}'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
