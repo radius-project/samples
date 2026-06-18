@@ -1,118 +1,161 @@
 # yaml-language-server: $schema=https://www.schemastore.org/dependabot-2.0.json
-# See GitHub's documentation for more information on this file:
-# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+# ------------------------------------------------------------------------------
+# This file is synced from the radius-project/.github repository.
+# DO NOT EDIT MANUALLY - changes will be overwritten by the next sync.
+# Source: https://github.com/radius-project/.github
+# Reference: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+# ------------------------------------------------------------------------------
 ---
 version: 2
 
 updates:
   - package-ecosystem: github-actions
-    directory: /
-    target-branch: edge
+    directory: "/"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
     groups:
-      github-actions:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
 
   - package-ecosystem: gomod
-    directory: /samples/aws-sqs
-    target-branch: edge
+    directory: "/samples/aws-sqs"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
     groups:
-      gomod:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
 
   - package-ecosystem: devcontainers
-    directory: /
-    target-branch: edge
+    directory: "/"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
+    groups:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: gitsubmodule
+    directory: "/"
+    target-branch: "edge"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
+    groups:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directories:
-      - /playwright
-      - /samples/dapr/nodeapp
-      - /samples/demo
-      - /samples/demo/client
-    target-branch: edge
+      - "/playwright"
+      - "/samples/dapr/nodeapp"
+      - "/samples/demo"
+      - "/samples/demo/client"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
     groups:
-      npm:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
     ignore:
       - dependency-name: "*"
         update-types:
-          - version-update:semver-minor
-          - version-update:semver-major
+          - "version-update:semver-minor"
+          - "version-update:semver-major"
 
   - package-ecosystem: nuget
     directories:
-      - /samples/aws
-      - /samples/dapr/ui
-    target-branch: edge
+      - "/samples/aws"
+      - "/samples/dapr/ui"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
     groups:
-      nuget:
+      all:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
 
   - package-ecosystem: pip
-    directory: /samples/volumes/src
-    target-branch: edge
+    directory: "/samples/volumes/src"
+    target-branch: "edge"
     schedule:
       interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: deps
+      include: scope
     groups:
-      pip:
+      all:
+        applies-to: version-updates
         patterns:
           - "*"
-
-  - package-ecosystem: gitsubmodule
-    directory: /
-    target-branch: edge
-    schedule:
-      interval: weekly
-      day: monday
-      time: "07:00"
-      timezone: America/Los_Angeles
-    cooldown:
-      default-days: 7
-    groups:
-      gitsubmodule:
+      security:
+        applies-to: security-updates
         patterns:
           - "*"
