@@ -13,6 +13,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:
@@ -26,6 +28,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       gomod:
         patterns:
@@ -39,6 +43,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: npm
     directories:
@@ -52,6 +58,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       npm:
         patterns:
@@ -72,6 +80,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       nuget:
         patterns:
@@ -85,6 +95,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       pip:
         patterns:
@@ -98,6 +110,8 @@ updates:
       day: monday
       time: "07:00"
       timezone: America/Los_Angeles
+    cooldown:
+      default-days: 7
     groups:
       gitsubmodule:
         patterns:
