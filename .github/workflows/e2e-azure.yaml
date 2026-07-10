@@ -443,7 +443,7 @@ jobs:
             params+=(-p "clientIpAddress=$client_ip")
           fi
           rad deploy "$SAMPLE_PATH/env-azure.bicep" --group default "${params[@]}"
-          rad env switch azure
+          rad env switch azure --preview
 
       - name: Deploy application
         env:
