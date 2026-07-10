@@ -1,0 +1,505 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
+name: Azure resource type samples E2E
+
+# Manual-only by design: this workflow handles long-lived Azure credentials and
+# must never execute untrusted pull request code automatically.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: Sample to run.
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - kafka-ui
+          - berriai-litellm
+          - mongo-express-mongo-express
+          - dockersamples-todo-list-app
+          - sosedoff-pgweb
+          - warpstreamlabs-bento
+          - radius-project-samples-demo
+          - sqlpad-sqlpad
+          - azure-search-api
+          - drakkan-sftpgo
+      # TODO(radius-project/radius#12344): switch to main only after its runtime
+      # and synced contrib pin both contain the nested-secret implementation.
+      radius_ref:
+        description: Radius git ref used to build the CLI, extension, and control plane.
+        required: true
+        default: ffc2344fc42366581090539346d68a831862cb7d
+        type: string
+      contrib_ref:
+        description: Immutable resource-types-contrib commit overlaid into the Radius checkout.
+        required: true
+        default: cf57799dfa1cf3ff64db767555d78d0bb3266eb3
+        type: string
+      location:
+        description: Azure location for the resource groups.
+        required: true
+        default: westus3
+        type: string
+      keep_resources:
+        description: Retain Azure resource groups for diagnosis.
+        required: true
+        default: false
+        type: boolean
+
+permissions: {}
+
+concurrency:
+  group: azure-samples-e2e-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  METADATA_FILE: .github/e2e/azure-samples.json
+
+jobs:
+  prepare:
+    name: Prepare sample matrix
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout samples
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Validate metadata and select samples
+        id: matrix
+        env:
+          SAMPLE: ${{ inputs.sample }}
+        run: |
+          matrix="$(.github/scripts/e2e-azure/prepare-matrix.sh "$METADATA_FILE" "$SAMPLE")"
+          echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
+
+  build-radius:
+    name: Build Radius once
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      radius_sha: ${{ steps.metadata.outputs.radius_sha }}
+      contrib_sha: ${{ steps.metadata.outputs.contrib_sha }}
+      control_plane_registry: ${{ steps.metadata.outputs.control_plane_registry }}
+      control_plane_tag: ${{ steps.metadata.outputs.control_plane_tag }}
+      sample_image_registry: ${{ steps.metadata.outputs.sample_image_registry }}
+    steps:
+      # Always build from source: an image tag cannot prove which contrib
+      # schemas were embedded, while the local overlay is deterministic.
+      - name: Checkout Radius
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: radius-project/radius
+          ref: ${{ inputs.radius_ref }}
+          path: radius
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        with:
+          go-version-file: radius/go.mod
+          cache-dependency-path: radius/go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: radius/.node-version
+
+      # sync-resource-types hard-requires yq, so bootstrap Radius's pinned
+      # version before the authoritative contrib overlay sequence.
+      - name: Bootstrap pinned yq for resource type sync
+        working-directory: radius
+        run: |
+          make install-yq
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+          yq --version
+
+      - name: Overlay immutable contrib schemas
+        id: contrib
+        working-directory: radius
+        env:
+          CONTRIB_REF: ${{ inputs.contrib_ref }}
+        run: |
+          if [[ ! "$CONTRIB_REF" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "contrib_ref must be a full immutable 40-character commit SHA." >&2
+            exit 1
+          fi
+          go get "github.com/radius-project/resource-types-contrib@$CONTRIB_REF"
+          go mod tidy
+          make sync-resource-types
+          contrib_version="$(go list -m -f '{{.Version}}' github.com/radius-project/resource-types-contrib)"
+          if [[ "${contrib_version##*-}" != "${CONTRIB_REF:0:12}" ]]; then
+            echo "Resolved contrib module $contrib_version does not match $CONTRIB_REF." >&2
+            exit 1
+          fi
+          echo "contrib_sha=$CONTRIB_REF" >>"$GITHUB_OUTPUT"
+
+      - name: Verify the overlaid schemas contain nested secrets
+        working-directory: radius
+        run: |
+          secret_types=(kafka models mongoDatabases rabbitMQ redisCaches search objectStorage)
+          for type in "${secret_types[@]}"; do
+            manifest="deploy/manifest/built-in-providers/self-hosted/$type.yaml"
+            if ! yq -e \
+              '.types[].apiVersions[].schema.properties.secrets.type == "object"' \
+              "$manifest" >/dev/null; then
+              echo "$manifest does not contain the nested properties.secrets schema." >&2
+              echo "The selected contrib_ref is not compatible with nested recipe secrets." >&2
+              exit 1
+            fi
+          done
+
+      - name: Install pinned yq for type generation
+        working-directory: radius
+        run: |
+          make install-yq
+          yq --version
+
+      - name: Resolve immutable build metadata
+        id: metadata
+        working-directory: radius
+        env:
+          CONTRIB_SHA: ${{ steps.contrib.outputs.contrib_sha }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          radius_sha="$(git rev-parse HEAD)"
+          owner="${OWNER,,}"
+          # Keep application image pushes isolated from control-plane packages.
+          control_plane_registry="ghcr.io/$owner/radius-e2e-control-plane-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          control_plane_tag="e2e-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          sample_image_registry="ghcr.io/$owner/radius-e2e-samples-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          {
+            echo "radius_sha=$radius_sha"
+            echo "contrib_sha=$CONTRIB_SHA"
+            echo "control_plane_registry=$control_plane_registry"
+            echo "control_plane_tag=$control_plane_tag"
+            echo "sample_image_registry=$sample_image_registry"
+          } >>"$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_USER: ${{ github.actor }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "$GH_USER" --password-stdin
+
+      - name: Build rad and unified extension
+        working-directory: radius
+        env:
+          REL_VERSION: e2e-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          make generate-bicep-types VERSION="$REL_VERSION"
+          make build-rad
+          make install-bicep
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+          bicep publish-extension hack/bicep-types-radius/generated/index.json \
+            --target radius-extension.tgz --force
+          test -x dist/linux_amd64/release/rad
+          test -s radius-extension.tgz
+
+      - name: Build and push run-scoped Radius images
+        working-directory: radius
+        env:
+          CONTROL_PLANE_REGISTRY: ${{ steps.metadata.outputs.control_plane_registry }}
+          REL_VERSION: ${{ steps.metadata.outputs.control_plane_tag }}
+        run: |
+          images=(applications-rp dynamic-rp ucpd controller bicep pre-upgrade)
+          make copy-manifests
+          for image in "${images[@]}"; do
+            make "docker-build-$image" \
+              DOCKER_REGISTRY="$CONTROL_PLANE_REGISTRY" \
+              DOCKER_TAG_VERSION="$REL_VERSION"
+            docker push "$CONTROL_PLANE_REGISTRY/$image:$REL_VERSION"
+          done
+
+      - name: Write artifact metadata
+        working-directory: radius
+        env:
+          RADIUS_SHA: ${{ steps.metadata.outputs.radius_sha }}
+          CONTRIB_SHA: ${{ steps.metadata.outputs.contrib_sha }}
+          CONTROL_PLANE_REGISTRY: ${{ steps.metadata.outputs.control_plane_registry }}
+          CONTROL_PLANE_TAG: ${{ steps.metadata.outputs.control_plane_tag }}
+          SAMPLE_IMAGE_REGISTRY: ${{ steps.metadata.outputs.sample_image_registry }}
+        run: |
+          jq -n \
+            --arg radiusSha "$RADIUS_SHA" \
+            --arg contribSha "$CONTRIB_SHA" \
+            --arg controlPlaneRegistry "$CONTROL_PLANE_REGISTRY" \
+            --arg controlPlaneTag "$CONTROL_PLANE_TAG" \
+            --arg sampleImageRegistry "$SAMPLE_IMAGE_REGISTRY" \
+            '{radiusSha: $radiusSha, contribSha: $contribSha,
+              controlPlaneRegistry: $controlPlaneRegistry,
+              controlPlaneTag: $controlPlaneTag,
+              sampleImageRegistry: $sampleImageRegistry,
+              controlPlaneImages: {
+                applicationsRp: ($controlPlaneRegistry + "/applications-rp:" + $controlPlaneTag),
+                dynamicRp: ($controlPlaneRegistry + "/dynamic-rp:" + $controlPlaneTag),
+                ucpd: ($controlPlaneRegistry + "/ucpd:" + $controlPlaneTag),
+                controller: ($controlPlaneRegistry + "/controller:" + $controlPlaneTag),
+                bicep: ($controlPlaneRegistry + "/bicep:" + $controlPlaneTag),
+                preUpgrade: ($controlPlaneRegistry + "/pre-upgrade:" + $controlPlaneTag)
+              }}' \
+            >build-metadata.json
+
+      - name: Upload Radius build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: radius-e2e-build
+          path: |
+            radius/dist/linux_amd64/release/rad
+            radius/radius-extension.tgz
+            radius/build-metadata.json
+          if-no-files-found: error
+          retention-days: 2
+
+  e2e:
+    name: E2E (${{ matrix.name }})
+    needs: [prepare, build-radius]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      SAMPLE: ${{ matrix.name }}
+      SAMPLE_PATH: ${{ matrix.path }}
+      RADIUS_SHA: ${{ needs.build-radius.outputs.radius_sha }}
+      CONTRIB_SHA: ${{ needs.build-radius.outputs.contrib_sha }}
+      CONTROL_PLANE_REGISTRY: ${{ needs.build-radius.outputs.control_plane_registry }}
+      CONTROL_PLANE_TAG: ${{ needs.build-radius.outputs.control_plane_tag }}
+      SAMPLE_IMAGE_REGISTRY: ${{ needs.build-radius.outputs.sample_image_registry }}
+      CLUSTER_NAME: radius-${{ github.run_id }}-${{ strategy.job-index }}
+      CONTROL_PLANE_PULL_SECRET: radius-control-plane-pull
+      SAMPLE_IMAGE_PUSH_SECRET: sample-images-push
+      SAMPLE_IMAGE_PULL_SECRET: sample-images-pull
+    steps:
+      - name: Checkout samples
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Checkout resolved Radius source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: radius-project/radius
+          ref: ${{ needs.build-radius.outputs.radius_sha }}
+          path: radius
+          persist-credentials: false
+
+      - name: Download Radius build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: radius-e2e-build
+          path: radius-build
+
+      - name: Configure sample
+        id: sample
+        run: |
+          .github/scripts/e2e-azure/configure-sample.sh \
+            "$METADATA_FILE" "$SAMPLE" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" \
+            >>"$GITHUB_OUTPUT"
+
+      - name: Install local tools
+        run: |
+          sudo install -m 0755 radius-build/dist/linux_amd64/release/rad /usr/local/bin/rad
+          sudo apt-get update
+          sudo apt-get install --yes sshpass
+          rad version
+
+      - name: Install kind
+        uses: helm/kind-action@92086f6be054225fa813e0a4b13787fc9088faab # v1.13.0
+        with:
+          install_only: true
+
+      - name: Create kind cluster and registry credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_USER: ${{ github.actor }}
+        run: |
+          kind create cluster --name "$CLUSTER_NAME" --wait 180s
+          kubectl create namespace radius-system
+          kubectl label namespace radius-system \
+            pod-security.kubernetes.io/enforce=privileged --overwrite
+          kubectl -n radius-system create secret docker-registry "$CONTROL_PLANE_PULL_SECRET" \
+            --docker-server=ghcr.io --docker-username="$GH_USER" --docker-password="$GH_TOKEN"
+          kubectl -n default create secret docker-registry "$SAMPLE_IMAGE_PULL_SECRET" \
+            --docker-server=ghcr.io --docker-username="$GH_USER" --docker-password="$GH_TOKEN"
+          kubectl -n default patch serviceaccount default --type merge \
+            -p "{\"imagePullSecrets\":[{\"name\":\"$SAMPLE_IMAGE_PULL_SECRET\"}]}"
+          kubectl -n default create secret generic "$SAMPLE_IMAGE_PUSH_SECRET" \
+            --from-literal=username="$GH_USER" \
+            --from-literal=password="$GH_TOKEN"
+
+      - name: Install Radius from coherent source-built images
+        run: |
+          rad install kubernetes \
+            --reinstall \
+            --chart radius/deploy/Chart \
+            --set "global.imagePullSecrets[0].name=$CONTROL_PLANE_PULL_SECRET" \
+            --set "rp.image=$CONTROL_PLANE_REGISTRY/applications-rp" \
+            --set "rp.tag=$CONTROL_PLANE_TAG" \
+            --set "dynamicrp.image=$CONTROL_PLANE_REGISTRY/dynamic-rp" \
+            --set "dynamicrp.tag=$CONTROL_PLANE_TAG" \
+            --set "controller.image=$CONTROL_PLANE_REGISTRY/controller" \
+            --set "controller.tag=$CONTROL_PLANE_TAG" \
+            --set "ucp.image=$CONTROL_PLANE_REGISTRY/ucpd" \
+            --set "ucp.tag=$CONTROL_PLANE_TAG" \
+            --set "bicep.image=$CONTROL_PLANE_REGISTRY/bicep" \
+            --set "bicep.tag=$CONTROL_PLANE_TAG" \
+            --set "preupgrade.image=$CONTROL_PLANE_REGISTRY/pre-upgrade" \
+            --set "preupgrade.tag=$CONTROL_PLANE_TAG" \
+            --set "de.image=ghcr.io/radius-project/deployment-engine" \
+            --set "de.tag=latest" \
+            --set "dynamicrp.buildkit.enabled=true"
+          kubectl wait --for=condition=available deployment --all \
+            -n radius-system --timeout=10m
+
+      - name: Bootstrap Radius and register Azure credentials
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          rad group create default
+          rad workspace create kubernetes default \
+            --context "$(kubectl config current-context)" --group default
+          rad group switch default
+          rad workspace switch default
+          rad credential register azure sp \
+            --client-id "$AZURE_CLIENT_ID" \
+            --client-secret "$AZURE_CLIENT_SECRET" \
+            --tenant-id "$AZURE_TENANT_ID"
+          types="$(rad resource-type list)"
+          while IFS= read -r type; do
+            grep -Fq "$type" <<<"$types"
+          done < <(jq -r '.samples[].resourceType' "$METADATA_FILE" | sort -u)
+
+      - name: Use and compile the local unified extension
+        run: |
+          cp radius-build/radius-extension.tgz "$SAMPLE_PATH/radius-extension.tgz"
+          jq '.extensions.radius = "radius-extension.tgz"' \
+            "$SAMPLE_PATH/bicepconfig.json" >"$SAMPLE_PATH/bicepconfig.json.tmp"
+          mv "$SAMPLE_PATH/bicepconfig.json.tmp" "$SAMPLE_PATH/bicepconfig.json"
+          rad bicep download
+          "$HOME/.rad/bin/bicep" build "$SAMPLE_PATH/env-azure.bicep" --stdout >/dev/null
+          "$HOME/.rad/bin/bicep" build "$SAMPLE_PATH/app.bicep" --stdout >/dev/null
+
+      - name: Log in to Azure
+        uses: azure/login@eec3c95657c1536435858eda1f3ff5437fee8474 # v2.3.0
+        with:
+          creds: >-
+            {"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}
+
+      - name: Register provider and create tagged resource group
+        env:
+          PROVIDER: ${{ steps.sample.outputs.provider }}
+          RESOURCE_GROUP: ${{ steps.sample.outputs.resource_group }}
+          LOCATION: ${{ inputs.location }}
+        run: |
+          az provider register --namespace "$PROVIDER" --wait
+          az group create --name "$RESOURCE_GROUP" --location "$LOCATION" --tags \
+            "repository=$GITHUB_REPOSITORY" \
+            "run=$GITHUB_RUN_ID" \
+            "attempt=$GITHUB_RUN_ATTEMPT" \
+            "sample=$SAMPLE" \
+            "radius-samples-e2e=true"
+
+      - name: Deploy environment
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          RESOURCE_GROUP: ${{ steps.sample.outputs.resource_group }}
+          UNIQUE_NAME_PARAMETER: ${{ steps.sample.outputs.unique_name_parameter }}
+          UNIQUE_NAME: ${{ steps.sample.outputs.unique_name }}
+          NEEDS_CLIENT_IP: ${{ steps.sample.outputs.needs_client_ip }}
+        run: |
+          params=(
+            -p "azureSubscriptionId=$AZURE_SUBSCRIPTION_ID"
+            -p "azureResourceGroup=$RESOURCE_GROUP"
+            -p "$UNIQUE_NAME_PARAMETER=$UNIQUE_NAME"
+          )
+          if [[ "$SAMPLE" != "kafka-ui" ]]; then
+            recipe="git::https://github.com/radius-project/resource-types-contrib.git//Compute/containerImages/recipes/kubernetes/terraform?ref=$CONTRIB_SHA"
+            params+=(
+              -p "containerImagesRegistry=$SAMPLE_IMAGE_REGISTRY"
+              -p "containerImagesRegistrySecretName=$SAMPLE_IMAGE_PUSH_SECRET"
+              -p "containerImagesRecipe=$recipe"
+            )
+          fi
+          if [[ "$NEEDS_CLIENT_IP" == "true" ]]; then
+            client_ip="$(curl --fail --silent --show-error https://api.ipify.org)"
+            params+=(-p "clientIpAddress=$client_ip")
+          fi
+          rad deploy "$SAMPLE_PATH/env-azure.bicep" --group default "${params[@]}"
+          rad env switch azure --group default
+
+      - name: Deploy application
+        env:
+          APP_PARAMETERS: ${{ steps.sample.outputs.app_parameters }}
+          UNIQUE_NAME: ${{ steps.sample.outputs.unique_name }}
+        run: |
+          params=()
+          if jq -e 'index("password") != null' <<<"$APP_PARAMETERS" >/dev/null; then
+            password="Aa1!$(openssl rand -hex 16)"
+            params+=(-p "password=$password")
+          fi
+          if jq -e 'index("accountName") != null' <<<"$APP_PARAMETERS" >/dev/null; then
+            params+=(-p "accountName=$UNIQUE_NAME")
+          fi
+          if jq -e 'index("source") != null' <<<"$APP_PARAMETERS" >/dev/null; then
+            source="git::https://github.com/${GITHUB_REPOSITORY}.git//samples/azure-search-api/src?ref=${GITHUB_SHA}"
+            params+=(-p "source=$source")
+          fi
+          rad deploy "$SAMPLE_PATH/app.bicep" --environment azure "${params[@]}"
+
+      - name: Verify Radius, Azure, and application data path
+        env:
+          RESOURCE_GROUP: ${{ steps.sample.outputs.resource_group }}
+          UNIQUE_NAME: ${{ steps.sample.outputs.unique_name }}
+        run: |
+          .github/scripts/e2e-azure/smoke-test.sh \
+            "$METADATA_FILE" "$SAMPLE" "$RESOURCE_GROUP" "$UNIQUE_NAME"
+
+      - name: Capture diagnostics
+        if: failure()
+        env:
+          RESOURCE_GROUP: ${{ steps.sample.outputs.resource_group }}
+        run: |
+          .github/scripts/e2e-azure/diagnostics.sh \
+            "$RESOURCE_GROUP" "$SAMPLE" diagnostics
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: azure-e2e-diagnostics-${{ matrix.name }}
+          path: diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Cleanup
+        if: always()
+        env:
+          KEEP_RESOURCES: ${{ inputs.keep_resources }}
+          RESOURCE_GROUP: ${{ steps.sample.outputs.resource_group }}
+        run: |
+          cleanup_command="az group delete --name '$RESOURCE_GROUP' --yes --no-wait"
+          echo "Azure cleanup command: $cleanup_command"
+          if [[ "$KEEP_RESOURCES" == "true" ]]; then
+            echo "Resources retained by request."
+          else
+            az group delete --name "$RESOURCE_GROUP" --yes --no-wait || true
+          fi
+          kind delete cluster --name "$CLUSTER_NAME" || true

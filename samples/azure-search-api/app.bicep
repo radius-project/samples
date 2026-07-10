@@ -3,6 +3,9 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+@description('Git source for the search API image. Override this when validating an unmerged samples branch.')
+param source string = 'git::https://github.com/radius-project/samples.git//samples/azure-search-api/src?ref=edge'
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
   name: 'search-azure-app-test'
   properties: {
@@ -25,7 +28,7 @@ resource searchApiImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
     application: app.id
     tag: 'v1'
     build: {
-      source: 'git::https://github.com/radius-project/samples.git//samples/azure-search-api/src?ref=edge'
+      source: source
     }
   }
 }

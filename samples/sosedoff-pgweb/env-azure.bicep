@@ -21,6 +21,9 @@ param containerImagesRegistrySecretName string
 @description('OCI ref for the Radius.Compute/containers recipe. Override to a custom build if needed; defaults to the released public recipe.')
 param containersRecipe string = 'ghcr.io/radius-project/kube-recipes/containers:latest'
 
+@description('Git source for the containerImages Terraform recipe. Defaults to a reproducible upstream revision.')
+param containerImagesRecipe string = 'git::https://github.com/radius-project/resource-types-contrib.git//Compute/containerImages/recipes/kubernetes/terraform?ref=b9e0fad536a53349b98f94c5be961db84845e1b7'
+
 resource recipes 'Radius.Core/recipePacks@2025-08-01-preview' = {
   name: 'postgresql-azure-app-avm'
   properties: {
@@ -87,7 +90,7 @@ resource recipes 'Radius.Core/recipePacks@2025-08-01-preview' = {
 
       'Radius.Compute/containerImages': {
         kind: 'terraform'
-        source: 'git::https://github.com/radius-project/resource-types-contrib.git//Compute/containerImages/recipes/kubernetes/terraform'
+        source: containerImagesRecipe
         parameters: {
           registry: containerImagesRegistry
           registrySecretName: containerImagesRegistrySecretName

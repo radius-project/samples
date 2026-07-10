@@ -18,6 +18,9 @@ param containerImagesRegistry string
 @description('Kubernetes Secret (in the environment namespace) holding the push registry `username`/`password`.')
 param containerImagesRegistrySecretName string
 
+@description('Git source for the containerImages Terraform recipe. Defaults to a reproducible upstream revision.')
+param containerImagesRecipe string = 'git::https://github.com/radius-project/resource-types-contrib.git//Compute/containerImages/recipes/kubernetes/terraform?ref=7f5375bf89305d7641ff645336841618b305daf8'
+
 resource recipes 'Radius.Core/recipePacks@2025-08-01-preview' = {
   name: 'redis-azure-avm'
   properties: {
@@ -64,7 +67,7 @@ resource recipes 'Radius.Core/recipePacks@2025-08-01-preview' = {
 
       'Radius.Compute/containerImages': {
         kind: 'terraform'
-        source: 'git::https://github.com/radius-project/resource-types-contrib.git//Compute/containerImages/recipes/kubernetes/terraform?ref=7f5375bf89305d7641ff645336841618b305daf8'
+        source: containerImagesRecipe
         parameters: {
           registry: containerImagesRegistry
           registrySecretName: containerImagesRegistrySecretName

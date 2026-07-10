@@ -6,7 +6,7 @@ This sample provisions an Azure Managed Redis (Redis Enterprise) cache through `
 - **Resource type:** `Radius.Data/redisCaches`
 - **Cloud backing (Azure):** Azure Managed Redis via the AVM `mcr.microsoft.com/bicep/avm/res/cache/redis-enterprise:0.5.1` module (`env-azure.bicep`).
 - **Application:** Radius samples demo app `demo-e2e` from commit `190d9c4c84278980d9fae402330bd5ead76b31a5`, built from source via `Radius.Compute/containerImages` and run via `imageReference`.
-- **Credential model:** The recipe exposes the Redis connection string under nested `outputs.secrets.url`. The app declares `connections.redis` and consumes the secret explicitly as `CONNECTION_REDIS_URL` via a `secretKeyRef` backed by `redis.properties.secrets`.
+- **Credential model:** The recipe exposes the Redis connection string under nested `outputs.secrets.connectionString`. Radius materializes it in a managed secret, and the app explicitly binds that key to `CONNECTION_REDIS_URL` with a `secretKeyRef` backed by `redis.properties.secrets`.
 
 ## Files
 | File | Role |
@@ -27,7 +27,7 @@ Image **pull** auth is separate: the `containerImages` recipe does not configure
 ## Notes
 The Redis recipe maps size `S` to the `Balanced_B0` Azure Managed Redis SKU and enables access-key authentication on the default database. The demo container listens on port 3000.
 
-The environment recipe outputs the Redis host, port, and primary connection string as the Radius resource properties. The app relies on Radius connection injection rather than manually wiring those values.
+The environment recipe maps the Redis host and port to ordinary Radius properties and materializes the primary connection string only in the managed secret. The app explicitly binds the secret key; it does not rely on plain connection auto-injection for the credential.
 
 Additional deployment details:
 - The app declares a `connections.redis` relationship to the cache.
