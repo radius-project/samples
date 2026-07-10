@@ -44,6 +44,17 @@ smoke_sqlpad() {
   return 1
 }
 
+sqlpad_connection_id() {
+  jq -er '
+    (if type == "array" then .
+     elif (.connections? | type) == "array" then .connections
+     elif (.data? | type) == "array" then .data
+     else error("unexpected SQLPad connections response")
+     end)
+    | map(select(.name == "Azure SQL"))[0].id
+  '
+}
+
 if [[ "${E2E_AZURE_SMOKE_TEST_SOURCE_ONLY:-false}" == "true" ]]; then
   return 0
 fi
@@ -156,7 +167,7 @@ case "$smoke" in
     ;;
   sqlpad)
     connection_id="$(curl --fail --silent "$base_url/api/connections" |
-      jq -r '(.connections // .)[] | select(.name == "Azure SQL") | .id' | head -1)"
+      sqlpad_connection_id)"
     test -n "$connection_id"
     smoke_sqlpad "$base_url" "$connection_id"
     ;;

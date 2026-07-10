@@ -44,6 +44,14 @@ export E2E_AZURE_SMOKE_TEST_SOURCE_ONLY=true
 source "$scripts/smoke-test.sh"
 unset E2E_AZURE_SMOKE_TEST_SOURCE_ONLY
 
+[[ "$(sqlpad_connection_id <<<'[{"id":"connection-1","name":"Azure SQL"}]')" == "connection-1" ]]
+[[ "$(sqlpad_connection_id <<<'{"connections":[{"id":"connection-2","name":"Azure SQL"}]}')" == "connection-2" ]]
+[[ "$(sqlpad_connection_id <<<'{"data":[{"id":"connection-3","name":"Azure SQL"}]}')" == "connection-3" ]]
+if sqlpad_connection_id <<<'{"unexpected":[]}' >/dev/null 2>&1; then
+  echo "SQLPad connection parser accepted an unexpected response shape" >&2
+  exit 1
+fi
+
 # shellcheck disable=SC2329
 curl() {
   local arg payload="" url=""
