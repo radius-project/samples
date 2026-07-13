@@ -162,8 +162,13 @@ case "$smoke" in
     curl --fail-with-body --silent --show-error "$base_url/v1/chat/completions" \
       -H 'Authorization: Bearer sk-radius-verify' \
       -H 'Content-Type: application/json' \
-      -d '{"model":"chat","messages":[{"role":"user","content":"Reply with radius"}],"max_completion_tokens":16}' |
-      jq -e '.choices[0].message.content | length > 0' >/dev/null
+      -d '{"model":"chat","messages":[{"role":"user","content":"Reply with radius"}],"max_completion_tokens":256}' |
+      tee /tmp/litellm-chat-response.json |
+      jq -e '.choices[0].message.content | length > 0' >/dev/null || {
+        echo "LiteLLM returned no visible completion content:" >&2
+        cat /tmp/litellm-chat-response.json >&2
+        exit 1
+      }
     ;;
   mongo-express)
     curl --fail --silent "$base_url/status" |
