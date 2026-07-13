@@ -38,3 +38,6 @@ Each of these samples connects a real third-party application to a cloud resourc
 | **sqlpad-sqlpad** | `Radius.Data/sqlServerDatabases` (Azure SQL) | SQLPad SQL client UI, built from source |
 | **azure-search-api** | `Radius.AI/search` (Azure AI Search) | Go search API service, built from source |
 | **drakkan-sftpgo** | `Radius.Storage/objectStorage` (Azure Blob Storage) | SFTPGo |
+| **spring-projects-spring-petclinic** | `Radius.Data/postgreSqlDatabases` (Azure PostgreSQL) | Spring PetClinic, built from source |
+| **dotnet-eshop** | `Radius.Data/postgreSqlDatabases` (Azure PostgreSQL) | .NET eShop microservices, built from source |
+| **finos-traderx** | `Radius.Data/postgreSqlDatabases` (Azure PostgreSQL) | FINOS TraderX trading platform, built from source |
