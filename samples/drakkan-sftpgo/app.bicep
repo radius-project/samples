@@ -2,6 +2,9 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+@description('Optional image build platform. Empty uses the containerImages recipe default.')
+param buildPlatform string = ''
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
   name: 'storage-azure-app-test'
   properties: {
@@ -16,9 +19,18 @@ resource sftpgoImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
     application: app.id
 
     tag: 'v2.7.4'
-    build: {
-      source: 'git::https://github.com/drakkan/sftpgo.git//?ref=v2.7.4'
-    }
+    build: union(
+      {
+        source: 'git::https://github.com/drakkan/sftpgo.git//?ref=v2.7.4'
+      },
+      empty(buildPlatform)
+        ? {}
+        : {
+            platforms: [
+              buildPlatform
+            ]
+          }
+    )
   }
 }
 

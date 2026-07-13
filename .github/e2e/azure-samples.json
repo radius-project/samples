@@ -160,7 +160,7 @@
       "uniqueNameMaxLength": 24,
       "uniqueNameNoHyphens": true,
       "appName": "storage-azure-app-test",
-      "appParameters": [],
+      "appParameters": ["buildPlatform"],
       "containerResource": "sftpgoctr",
       "containerPort": 8080,
       "smoke": "sftpgo"
