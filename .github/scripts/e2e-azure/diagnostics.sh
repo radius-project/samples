@@ -17,8 +17,12 @@ mkdir -p "$output_dir"
   kubectl logs -n radius-system --all-containers --prefix \
     -l app.kubernetes.io/part-of=radius --tail=-1 || true
   echo "=== Application logs ==="
-  kubectl logs -A --all-containers --prefix \
-    -l "radapp.io/application" --tail=-1 || true
+  while IFS=$'\t' read -r namespace pod; do
+    [[ -n "$namespace" && -n "$pod" ]] || continue
+    kubectl logs -n "$namespace" "$pod" --all-containers --prefix --tail=-1 || true
+  done < <(kubectl get pods -A -l radapp.io/application \
+    -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}' \
+    2>/dev/null || true)
   echo "=== Azure resources ==="
   az resource list --resource-group "$resource_group" -o json || true
   echo "=== ARM deployments ==="

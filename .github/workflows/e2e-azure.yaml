@@ -462,6 +462,9 @@ jobs:
             source="git::https://github.com/${GITHUB_REPOSITORY}.git//samples/azure-search-api/src?ref=${GITHUB_SHA}"
             params+=(-p "source=$source")
           fi
+          if jq -e 'index("buildPlatform") != null' <<<"$APP_PARAMETERS" >/dev/null; then
+            params+=(-p "buildPlatform=linux/amd64")
+          fi
           rad deploy "$SAMPLE_PATH/app.bicep" --environment azure "${params[@]}"
 
       - name: Verify Radius, Azure, and application data path

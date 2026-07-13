@@ -50,7 +50,7 @@ resource recipes 'Radius.Core/recipePacks@2025-08-01-preview' = {
           host: 'hostName'
           port: 'port'
           secrets: {
-            connectionString: 'primaryConnectionString'
+            url: 'primaryConnectionString'
           }
         }
       }

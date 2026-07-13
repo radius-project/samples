@@ -6,7 +6,7 @@ This sample provisions an Azure Managed Redis (Redis Enterprise) cache through `
 - **Resource type:** `Radius.Data/redisCaches`
 - **Cloud backing (Azure):** Azure Managed Redis via the AVM `mcr.microsoft.com/bicep/avm/res/cache/redis-enterprise:0.5.1` module (`env-azure.bicep`).
 - **Application:** Radius samples demo app `demo-e2e` from commit `190d9c4c84278980d9fae402330bd5ead76b31a5`, built from source via `Radius.Compute/containerImages` and run via `imageReference`.
-- **Credential model:** The recipe exposes the Redis connection string under nested `outputs.secrets.connectionString`. Radius materializes it in a managed secret, and the app explicitly binds that key to `CONNECTION_REDIS_URL` with a `secretKeyRef` backed by `redis.properties.secrets`.
+- **Credential model:** The recipe exposes the Redis connection string under nested `outputs.secrets.url`. Radius materializes it in a managed secret, and the app explicitly binds that key to `CONNECTION_REDIS_URL` with a `secretKeyRef` backed by `redis.properties.secrets`.
 
 ## Files
 | File | Role |

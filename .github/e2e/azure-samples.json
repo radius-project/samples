@@ -94,7 +94,7 @@
       "uniqueNamePrefix": "radbento",
       "uniqueNameMaxLength": 50,
       "appName": "rabbitmq-azure-app-test",
-      "appParameters": [],
+      "appParameters": ["buildPlatform"],
       "containerResource": "bentoctr",
       "containerPort": 0,
       "smoke": "bento"

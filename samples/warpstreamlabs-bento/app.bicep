@@ -3,6 +3,9 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+@description('Optional image build platform. Empty uses the containerImages recipe default.')
+param buildPlatform string = ''
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
   name: 'rabbitmq-azure-app-test'
   properties: {
@@ -16,10 +19,19 @@ resource bentoImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
     environment: environment
     application: app.id
     tag: 'v1.18.1'
-    build: {
-      source: 'git::https://github.com/warpstreamlabs/bento.git//?ref=v1.18.1'
-      dockerfile: 'resources/docker/Dockerfile'
-    }
+    build: union(
+      {
+        source: 'git::https://github.com/warpstreamlabs/bento.git//?ref=v1.18.1'
+        dockerfile: 'resources/docker/Dockerfile'
+      },
+      empty(buildPlatform)
+        ? {}
+        : {
+            platforms: [
+              buildPlatform
+            ]
+          }
+    )
   }
 }
 

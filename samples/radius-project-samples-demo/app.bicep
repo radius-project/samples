@@ -50,7 +50,7 @@ resource democtr 'Radius.Compute/containers@2025-08-01-preview' = {
             valueFrom: {
               secretKeyRef: {
                 secretName: redis.properties.secrets.name
-                key: 'connectionString'
+                key: 'url'
               }
             }
           }

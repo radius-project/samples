@@ -123,10 +123,25 @@ port_forward_pid=$!
 trap 'kill "$port_forward_pid" 2>/dev/null || true' EXIT
 
 base_url="http://127.0.0.1:${port}"
+readiness_path="/"
+case "$smoke" in
+  litellm) readiness_path="/health/liveliness" ;;
+  mongo-express) readiness_path="/status" ;;
+esac
+ready=false
 for _ in {1..60}; do
-  curl --fail --silent --show-error "$base_url" >/dev/null 2>&1 && break
+  if curl --fail --silent --show-error "$base_url$readiness_path" >/dev/null 2>&1; then
+    ready=true
+    break
+  fi
   sleep 2
 done
+if [[ "$ready" != "true" ]]; then
+  echo "Application did not become ready at $base_url$readiness_path" >&2
+  cat "/tmp/${sample}-port-forward.log" >&2 || true
+  kubectl logs -n "$namespace" "$pod" --all-containers --prefix --tail=200 >&2 || true
+  exit 1
+fi
 
 case "$smoke" in
   kafka-ui)
@@ -135,17 +150,17 @@ case "$smoke" in
     curl --fail --silent "$base_url/api/clusters/event-hubs/topics" | grep -q events
     ;;
   litellm)
-    curl --fail --silent "$base_url/v1/chat/completions" \
+    curl --fail-with-body --silent --show-error "$base_url/v1/chat/completions" \
       -H 'Authorization: Bearer sk-radius-verify' \
       -H 'Content-Type: application/json' \
       -d '{"model":"chat","messages":[{"role":"user","content":"Reply with radius"}],"max_tokens":16}' |
       jq -e '.choices[0].message.content | length > 0' >/dev/null
     ;;
   mongo-express)
-    page="$(curl --fail --location --silent "$base_url")"
-    grep -qi mongo <<<"$page"
-    ! grep -Eqi 'connection (error|failed)|ECONNREFUSED' <<<"$page"
-    grep -q mongo_db <<<"$page"
+    curl --fail --silent "$base_url/status" |
+      jq -e '.status == "ok"' >/dev/null
+    ! kubectl logs -n "$namespace" "$pod" --all-containers --tail=200 |
+      grep -Eqi 'connection (error|failed)|ECONNREFUSED|MongoServerSelectionError'
     ;;
   todo)
     marker="radius-${GITHUB_RUN_ID:-local}"
