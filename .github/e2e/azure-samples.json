@@ -27,6 +27,7 @@
       "uniqueNamePrefix": "radllm",
       "uniqueNameMaxLength": 64,
       "appName": "llm-azure-app-test",
+      "appDeployAttempts": 3,
       "appParameters": [],
       "containerResource": "litellmctr",
       "containerPort": 4000,

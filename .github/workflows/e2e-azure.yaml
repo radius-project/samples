@@ -450,6 +450,7 @@ jobs:
       - name: Deploy application
         env:
           APP_PARAMETERS: ${{ steps.sample.outputs.app_parameters }}
+          APP_DEPLOY_ATTEMPTS: ${{ steps.sample.outputs.app_deploy_attempts }}
           UNIQUE_NAME: ${{ steps.sample.outputs.unique_name }}
         run: |
           params=()
@@ -467,7 +468,18 @@ jobs:
           if jq -e 'index("buildPlatform") != null' <<<"$APP_PARAMETERS" >/dev/null; then
             params+=(-p "buildPlatform=linux/amd64")
           fi
-          rad deploy "$SAMPLE_PATH/app.bicep" --environment azure "${params[@]}"
+          deployed=false
+          for attempt in $(seq 1 "$APP_DEPLOY_ATTEMPTS"); do
+            if rad deploy "$SAMPLE_PATH/app.bicep" --environment azure "${params[@]}"; then
+              deployed=true
+              break
+            fi
+            if (( attempt < APP_DEPLOY_ATTEMPTS )); then
+              echo "Application deployment attempt $attempt failed; retrying in 45 seconds..."
+              sleep 45
+            fi
+          done
+          [[ "$deployed" == "true" ]]
 
       - name: Verify Radius, Azure, and application data path
         env:

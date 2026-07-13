@@ -25,6 +25,11 @@ unique="$(sed -n 's/^unique_name=//p' <<<"$config")"
 resource="$(sed -n 's/^resource_name=//p' <<<"$config")"
 [[ "$unique" == "$resource" ]]
 
+config="$("$scripts/configure-sample.sh" "$metadata" berriai-litellm 123 2)"
+[[ "$(sed -n 's/^app_deploy_attempts=//p' <<<"$config")" == "3" ]]
+config="$("$scripts/configure-sample.sh" "$metadata" kafka-ui 123 2)"
+[[ "$(sed -n 's/^app_deploy_attempts=//p' <<<"$config")" == "1" ]]
+
 grep -Fq 'default: ffc2344fc42366581090539346d68a831862cb7d' "$workflow"
 grep -Fq 'default: cf57799dfa1cf3ff64db767555d78d0bb3266eb3' "$workflow"
 if grep -Eq 'build_radius_images|radius_image_(registry|tag|contrib_ref)|prebuilt' "$workflow"; then
