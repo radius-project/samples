@@ -118,18 +118,27 @@ namespace="$(kubectl get pods -A -l "radapp.io/application=$app_name" \
 pod="$(kubectl get pods -n "$namespace" -l "radapp.io/application=$app_name" \
   -o jsonpath='{.items[0].metadata.name}')"
 kubectl wait -n "$namespace" --for=condition=Ready "pod/$pod" --timeout=10m
-kubectl port-forward -n "$namespace" "pod/$pod" "${port}:${port}" >"/tmp/${sample}-port-forward.log" 2>&1 &
-port_forward_pid=$!
-trap 'kill "$port_forward_pid" 2>/dev/null || true' EXIT
+port_forward_pid=""
+start_port_forward() {
+  kubectl port-forward -n "$namespace" "pod/$pod" "${port}:${port}" \
+    >"/tmp/${sample}-port-forward.log" 2>&1 &
+  port_forward_pid=$!
+}
+start_port_forward
+trap '[[ -n "${port_forward_pid:-}" ]] && kill "$port_forward_pid" 2>/dev/null || true' EXIT
 
 base_url="http://127.0.0.1:${port}"
 readiness_path="/"
 case "$smoke" in
   litellm) readiness_path="/health/liveliness" ;;
   mongo-express) readiness_path="/status" ;;
+  search-api) readiness_path="/healthz" ;;
 esac
 ready=false
 for _ in {1..60}; do
+  if ! kill -0 "$port_forward_pid" 2>/dev/null; then
+    start_port_forward
+  fi
   if curl --fail --silent --show-error "$base_url$readiness_path" >/dev/null 2>&1; then
     ready=true
     break

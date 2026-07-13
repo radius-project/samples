@@ -363,7 +363,9 @@ jobs:
             --set "preupgrade.tag=$CONTROL_PLANE_TAG" \
             --set "de.image=ghcr.io/radius-project/deployment-engine" \
             --set "de.tag=latest" \
-            --set "dynamicrp.buildkit.enabled=true"
+            --set "dynamicrp.buildkit.enabled=true" \
+            --set "dynamicrp.buildkit.resources.requests.memory=1Gi" \
+            --set "dynamicrp.buildkit.resources.limits.memory=8Gi"
           kubectl wait --for=condition=available deployment --all \
             -n radius-system --timeout=10m
 

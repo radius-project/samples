@@ -13,9 +13,19 @@ mkdir -p "$output_dir"
   kubectl get pods -A -o wide || true
   echo "=== Kubernetes events ==="
   kubectl get events -A --sort-by=.lastTimestamp || true
+  echo "=== Kubernetes pod details ==="
+  kubectl describe pods -A || true
   echo "=== Radius control-plane logs ==="
   kubectl logs -n radius-system --all-containers --prefix \
     -l app.kubernetes.io/part-of=radius --tail=-1 || true
+  echo "=== Previous Radius container logs ==="
+  while IFS=$'\t' read -r pod container restarts; do
+    [[ "${restarts:-0}" -gt 0 ]] || continue
+    kubectl logs -n radius-system "$pod" -c "$container" --previous --prefix --tail=-1 || true
+  done < <(kubectl get pods -n radius-system -o json |
+    jq -r '.items[] | .metadata.name as $pod |
+      (.status.containerStatuses // [])[] |
+      [$pod, .name, .restartCount] | @tsv' 2>/dev/null || true)
   echo "=== Application logs ==="
   while IFS=$'\t' read -r namespace pod; do
     [[ -n "$namespace" && -n "$pod" ]] || continue

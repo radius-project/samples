@@ -7,6 +7,9 @@ param environment string
 @secure()
 param password string
 
+@description('Optional image build platform. Empty uses the containerImages recipe default.')
+param buildPlatform string = ''
+
 var databaseName = 'appdb'
 
 var databaseUsername = 'radadmin'
@@ -38,12 +41,21 @@ resource pgwebImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
     application: app.id
 
     tag: 'v0.17.0'
-    build: {
-      source: 'git::https://github.com/sosedoff/pgweb.git//?ref=v0.17.0'
-      args: {
-        BUILDKIT_CONTEXT_KEEP_GIT_DIR: '1'
-      }
-    }
+    build: union(
+      {
+        source: 'git::https://github.com/sosedoff/pgweb.git//?ref=v0.17.0'
+        args: {
+          BUILDKIT_CONTEXT_KEEP_GIT_DIR: '1'
+        }
+      },
+      empty(buildPlatform)
+        ? {}
+        : {
+            platforms: [
+              buildPlatform
+            ]
+          }
+    )
   }
 }
 

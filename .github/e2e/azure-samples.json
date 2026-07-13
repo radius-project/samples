@@ -78,7 +78,7 @@
       "uniqueNameMaxLength": 63,
       "needsClientIp": true,
       "appName": "postgresql-pgweb-test",
-      "appParameters": ["password"],
+      "appParameters": ["password", "buildPlatform"],
       "containerResource": "pgwebctr",
       "containerPort": 8081,
       "smoke": "pgweb"
