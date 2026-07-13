@@ -23,7 +23,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.18.1",
+    "@azure/monitor-opentelemetry": "^1.18.2",
     "@dapr/dapr": "^3.17.0",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
