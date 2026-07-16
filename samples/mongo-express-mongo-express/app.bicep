@@ -1,26 +1,23 @@
 extension radius
 
-@description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
-@description('The Radius resource name. The workflow passes the same globally-unique value used for the Cosmos DB account so verification can use one name for both Radius and Azure.')
+@description('Globally-unique Cosmos DB account name shared with the environment so Radius and Azure use the same value.')
 param accountName string
 
-var databaseName = 'mongo_db'
-
-resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'mongodb-azure-app-test'
+resource mongoExpressApp 'Radius.Core/applications@2025-08-01-preview' = {
+  name: 'mongo-express'
   properties: {
     environment: environment
   }
 }
 
-resource mongo 'Radius.Data/mongoDatabases@2025-08-01-preview' = {
+resource mongoDb 'Radius.Data/mongoDatabases@2025-08-01-preview' = {
   name: accountName
   properties: {
     environment: environment
-    application: app.id
-    database: databaseName
+    application: mongoExpressApp.id
+    database: 'mongo_db'
   }
 }
 
@@ -28,22 +25,21 @@ resource mongoExpressImage 'Radius.Compute/containerImages@2025-08-01-preview' =
   name: 'mongo-express-image'
   properties: {
     environment: environment
-    application: app.id
-
+    application: mongoExpressApp.id
     tag: 'v1.0.2'
     build: {
-      source: 'git::https://github.com/mongo-express/mongo-express.git//?ref=v1.0.2'
+      source: 'git::https://github.com/mongo-express/mongo-express.git?ref=v1.0.2'
     }
   }
 }
 
-resource mectr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'mectr'
+resource mongoExpressContainer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'mongo-express'
   properties: {
     environment: environment
-    application: app.id
+    application: mongoExpressApp.id
     containers: {
-      mongoexpress: {
+      mongoExpress: {
         image: mongoExpressImage.properties.imageReference
         ports: {
           web: {
@@ -54,30 +50,26 @@ resource mectr 'Radius.Compute/containers@2025-08-01-preview' = {
           ME_CONFIG_MONGODB_URL: {
             valueFrom: {
               secretKeyRef: {
-                secretName: mongo.properties.secrets.name
+                secretName: mongoDb.properties.secrets.name
                 key: 'connectionString'
               }
             }
           }
-
           ME_CONFIG_MONGODB_SSL: {
             value: 'true'
           }
-
-          ME_CONFIG_BASICAUTH: {
-            value: 'false'
-          }
-
           ME_CONFIG_MONGODB_ENABLE_ADMIN: {
             value: 'true'
+          }
+          ME_CONFIG_BASICAUTH: {
+            value: 'false'
           }
         }
       }
     }
-
     connections: {
       mongo: {
-        source: mongo.id
+        source: mongoDb.id
       }
     }
   }
