@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+    <!-- EventSource is disabled by default for non-ASP.NET AOT'd apps, re-enable it -->
+    <EventSourceSupport>true</EventSourceSupport>
+
+    <!-- Ensure individual warnings are shown when publishing -->
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+  </PropertyGroup>
+
+</Project>
