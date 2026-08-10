@@ -4,8 +4,9 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap';
 import "./index.css";
-import './index.css';
 import Root from './Root';
 import ErrorPage from './ErrorPage';
 import reportWebVitals from './reportWebVitals';
