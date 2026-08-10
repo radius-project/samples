@@ -30,7 +30,6 @@
     "@types/pg": "^8.20.0",
     "@types/redis": "^4.0.11",
     "@types/uuid": "^11.0.0",
-    "bootstrap": "^5.3.8",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongodb": "^7.2.0",
