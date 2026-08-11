@@ -3,48 +3,50 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
-@description('The Radius resource name. The workflow passes the same globally-unique value used for the Cosmos DB account so verification can use one name for both Radius and Azure.')
-param accountName string
+param buildSource string = 'git::https://github.com/mongo-express/mongo-express.git?ref=486c162ec8bdbc8b8c1c61b36b53dee71fdf7034'
 
-var databaseName = 'mongo_db'
+@secure()
+param ME_CONFIG_SITE_COOKIESECRET string
+
+@secure()
+param ME_CONFIG_SITE_SESSIONSECRET string
 
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'mongodb-azure-app-test'
+  name: 'mongo-express'
   properties: {
     environment: environment
   }
 }
 
 resource mongo 'Radius.Data/mongoDatabases@2025-08-01-preview' = {
-  name: accountName
+  name: 'mongo'
   properties: {
     environment: environment
     application: app.id
-    database: databaseName
+    database: 'mongo_db'
   }
 }
 
-resource mongoExpressImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'mongo-express-image'
+resource image 'Radius.Compute/containerImages@2025-08-01-preview' = {
+  name: 'image'
   properties: {
     environment: environment
     application: app.id
-
-    tag: 'v1.0.2'
     build: {
-      source: 'git::https://github.com/mongo-express/mongo-express.git//?ref=v1.0.2'
+      source: buildSource
+      platforms: ['linux/amd64']
     }
   }
 }
 
-resource mectr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'mectr'
+resource web 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'web'
   properties: {
     environment: environment
     application: app.id
     containers: {
       mongoexpress: {
-        image: mongoExpressImage.properties.imageReference
+        image: image.properties.imageReference
         ports: {
           web: {
             containerPort: 8081
@@ -59,22 +61,30 @@ resource mectr 'Radius.Compute/containers@2025-08-01-preview' = {
               }
             }
           }
-
           ME_CONFIG_MONGODB_SSL: {
             value: 'true'
           }
-
+          ME_CONFIG_MONGODB_ENABLE_ADMIN: {
+            value: 'true'
+          }
           ME_CONFIG_BASICAUTH: {
             value: 'false'
           }
-
-          ME_CONFIG_MONGODB_ENABLE_ADMIN: {
-            value: 'true'
+          ME_CONFIG_SITE_COOKIESECRET: {
+            value: ME_CONFIG_SITE_COOKIESECRET
+          }
+          ME_CONFIG_SITE_SESSIONSECRET: {
+            value: ME_CONFIG_SITE_SESSIONSECRET
+          }
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/status'
+            port: 8081
           }
         }
       }
     }
-
     connections: {
       mongo: {
         source: mongo.id

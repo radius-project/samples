@@ -1,9 +1,12 @@
 extension radius
+
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+param buildSource string = 'git::https://github.com/radius-project/samples.git//samples/demo?ref=190d9c4c84278980d9fae402330bd5ead76b31a5'
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'redis-azure-app-test'
+  name: 'redis-demo'
   properties: {
     environment: environment
   }
@@ -14,32 +17,30 @@ resource redis 'Radius.Data/redisCaches@2025-08-01-preview' = {
   properties: {
     environment: environment
     application: app.id
-
     size: 'S'
   }
 }
 
-resource demoImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'redis-demo-image'
+resource image 'Radius.Compute/containerImages@2025-08-01-preview' = {
+  name: 'image'
   properties: {
     environment: environment
     application: app.id
-
-    tag: 'demo-e2e'
     build: {
-      source: 'git::https://github.com/radius-project/samples.git//samples/demo?ref=190d9c4c84278980d9fae402330bd5ead76b31a5'
+      source: buildSource
+      platforms: ['linux/amd64']
     }
   }
 }
 
-resource democtr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'democtr'
+resource web 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'web'
   properties: {
     environment: environment
     application: app.id
     containers: {
       demo: {
-        image: demoImage.properties.imageReference
+        image: image.properties.imageReference
         ports: {
           web: {
             containerPort: 3000
@@ -50,9 +51,15 @@ resource democtr 'Radius.Compute/containers@2025-08-01-preview' = {
             valueFrom: {
               secretKeyRef: {
                 secretName: redis.properties.secrets.name
-                key: 'connectionString'
+                key: 'url'
               }
             }
+          }
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/healthz'
+            port: 3000
           }
         }
       }

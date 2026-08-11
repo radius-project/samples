@@ -3,15 +3,17 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+var dollar = '$'
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'kafka-azure-test'
+  name: 'kafka-ui'
   properties: {
     environment: environment
   }
 }
 
-resource kafkaBroker 'Radius.Messaging/kafka@2025-08-01-preview' = {
-  name: 'kafka'
+resource eventHubs 'Radius.Messaging/kafka@2025-08-01-preview' = {
+  name: 'eh'
   properties: {
     environment: environment
     application: app.id
@@ -19,26 +21,31 @@ resource kafkaBroker 'Radius.Messaging/kafka@2025-08-01-preview' = {
   }
 }
 
-resource kafkauictr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'kafkauictr'
+resource ui 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'ui'
   properties: {
     environment: environment
     application: app.id
     containers: {
-      kafkaui: {
-        image: 'ghcr.io/kafbat/kafka-ui:v1.5.0'
+      'kafka-ui': {
+        image: 'ghcr.io/kafbat/kafka-ui@sha256:7cda86a33344160309fdb65146332e4da65db81a945614f2fe32e210803f6fd1'
         ports: {
-          web: {
+          http: {
             containerPort: 8080
+          }
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/actuator/health'
+            port: 8080
           }
         }
         env: {
           KAFKA_CLUSTERS_0_NAME: {
             value: 'event-hubs'
           }
-
           KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: {
-            value: '${kafkaBroker.properties.host}.servicebus.windows.net:9093'
+            value: '${eventHubs.properties.host}.servicebus.windows.net:9093'
           }
           KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: {
             value: 'SASL_SSL'
@@ -46,25 +53,23 @@ resource kafkauictr 'Radius.Compute/containers@2025-08-01-preview' = {
           KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: {
             value: 'PLAIN'
           }
-
-          RAD_SECRET_CONNECTIONSTRING: {
+          EVENT_HUBS_CONNECTION_STRING: {
             valueFrom: {
               secretKeyRef: {
-                secretName: kafkaBroker.properties.secrets.name
+                secretName: eventHubs.properties.secrets.name
                 key: 'connectionString'
               }
             }
           }
-
           KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: {
-            value: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="$(RAD_SECRET_CONNECTIONSTRING)";'
+            value: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="$ConnectionString" password="${dollar}{EVENT_HUBS_CONNECTION_STRING}";'
           }
         }
       }
     }
     connections: {
-      kafka: {
-        source: kafkaBroker.id
+      eventhubs: {
+        source: eventHubs.id
       }
     }
   }

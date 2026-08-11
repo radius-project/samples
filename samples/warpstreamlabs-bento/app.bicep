@@ -3,28 +3,34 @@ extension radius
 @description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
+// v1.18.1 resolves to the pinned source revision dae05f49a25a28367407da0cf253fb0b7d831f8c.
+param buildSource string = 'git::https://github.com/warpstreamlabs/bento.git?ref=refs/tags/v1.18.1'
+
+var serviceBusConnectionPlaceholder = join(['$', '{SERVICE_BUS_CONNECTION_STRING}'], '')
+var consumerConfigText = join([
+  'http:'
+  '  enabled: true'
+  'input:'
+  '  azure_service_bus_queue:'
+  '    connection_string: ${serviceBusConnectionPlaceholder}'
+  '    queue: jobs'
+  '    max_in_flight: 1'
+  '    auto_ack: false'
+  '    renew_lock: true'
+  'output:'
+  '  http_server:'
+  '    path: /get'
+], '\n')
+
 resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'rabbitmq-azure-app-test'
+  name: 'bento'
   properties: {
     environment: environment
   }
 }
 
-resource bentoImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'bento-image'
-  properties: {
-    environment: environment
-    application: app.id
-    tag: 'v1.18.1'
-    build: {
-      source: 'git::https://github.com/warpstreamlabs/bento.git//?ref=v1.18.1'
-      dockerfile: 'resources/docker/Dockerfile'
-    }
-  }
-}
-
-resource queue 'Radius.Messaging/rabbitMQ@2025-08-01-preview' = {
-  name: 'rabbitmq'
+resource serviceBus 'Radius.Messaging/rabbitMQ@2025-08-01-preview' = {
+  name: 'sb'
   properties: {
     environment: environment
     application: app.id
@@ -32,96 +38,159 @@ resource queue 'Radius.Messaging/rabbitMQ@2025-08-01-preview' = {
   }
 }
 
-resource bentoctr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'bentoctr'
+resource image 'Radius.Compute/containerImages@2025-08-01-preview' = {
+  name: 'img'
+  properties: {
+    environment: environment
+    application: app.id
+    tag: 'dae05f49a25a'
+    build: {
+      source: buildSource
+      dockerfile: 'resources/docker/Dockerfile'
+      platforms: [
+        'linux/amd64'
+      ]
+    }
+  }
+}
+
+resource consumerConfig 'Radius.Security/secrets@2025-08-01-preview' = {
+  name: 'consumer-config'
+  properties: {
+    environment: environment
+    application: app.id
+    data: {
+      'consumer.yaml': {
+        #disable-next-line use-secure-value-for-secure-inputs
+        value: consumerConfigText
+      }
+    }
+  }
+}
+
+resource producer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'prod'
   properties: {
     environment: environment
     application: app.id
     containers: {
       producer: {
-        image: bentoImage.properties.imageReference
-        env: {
-          RABBITMQ_HOST: {
-            value: queue.properties.host
-          }
-          RABBITMQ_CONNECTIONSTRING: {
-            valueFrom: {
-              secretKeyRef: {
-                secretName: queue.properties.secrets.name
-                key: 'connectionString'
-              }
-            }
-          }
-        }
+        image: image.properties.imageReference
+        // Bento's AMQP output needs separate SASL fields, so split the managed connection string at startup.
         command: [
           '/bin/sh'
           '-c'
+        ]
+        args: [
           '''
 set -eu
-NS="$RABBITMQ_HOST"
-KEY=$(printf '%s' "$RABBITMQ_CONNECTIONSTRING" | sed -n 's/.*SharedAccessKey=//p')
+KEY_NAME=$(printf '%s\n' "$SERVICE_BUS_CONNECTION_STRING" | tr ';' '\n' | sed -n 's/^SharedAccessKeyName=//p')
+KEY=$(printf '%s\n' "$SERVICE_BUS_CONNECTION_STRING" | tr ';' '\n' | sed -n 's/^SharedAccessKey=//p')
+test -n "$KEY_NAME"
+test -n "$KEY"
 cat > /tmp/producer.yaml <<EOF
+http:
+  enabled: true
 input:
-  generate:
-    count: 0
-    interval: 5s
-    mapping: 'root = {"message":"radius-bento","timestamp":now()}'
+  http_server:
+    path: /post
 output:
   amqp_1:
-    url: amqps://$NS.servicebus.windows.net
+    urls:
+      - amqps://$SERVICE_BUS_HOST.servicebus.windows.net
     target_address: jobs
+    max_in_flight: 1
     sasl:
       mechanism: plain
-      user: RootManageSharedAccessKey
-      password: "$KEY"
+      user: $KEY_NAME
+      password: $KEY
 EOF
 exec /bento -c /tmp/producer.yaml
 '''
         ]
-      }
-      consumer: {
-        image: bentoImage.properties.imageReference
-        env: {
-          RABBITMQ_HOST: {
-            value: queue.properties.host
+        ports: {
+          http: {
+            containerPort: 4195
           }
-          RABBITMQ_CONNECTIONSTRING: {
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/ready'
+            port: 4195
+          }
+        }
+        env: {
+          SERVICE_BUS_HOST: {
+            value: serviceBus.properties.host
+          }
+          SERVICE_BUS_CONNECTION_STRING: {
             valueFrom: {
               secretKeyRef: {
-                secretName: queue.properties.secrets.name
+                secretName: serviceBus.properties.secrets.name
                 key: 'connectionString'
               }
             }
           }
         }
-        command: [
-          '/bin/sh'
-          '-c'
-          '''
-set -eu
-NS="$RABBITMQ_HOST"
-KEY=$(printf '%s' "$RABBITMQ_CONNECTIONSTRING" | sed -n 's/.*SharedAccessKey=//p')
-cat > /tmp/consumer.yaml <<EOF
-input:
-  amqp_1:
-    url: amqps://$NS.servicebus.windows.net
-    source_address: jobs
-    azure_renew_lock: true
-    sasl:
-      mechanism: plain
-      user: RootManageSharedAccessKey
-      password: "$KEY"
-output:
-  stdout: {}
-EOF
-exec /bento -c /tmp/consumer.yaml
-'''
-        ]
       }
     }
     connections: {
-      rabbitmq: {
-        source: queue.id
+      servicebus: {
+        source: serviceBus.id
+      }
+    }
+  }
+}
+
+resource consumer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'cons'
+  properties: {
+    environment: environment
+    application: app.id
+    containers: {
+      consumer: {
+        image: image.properties.imageReference
+        args: [
+          '-c'
+          '/etc/bento/consumer.yaml'
+        ]
+        ports: {
+          http: {
+            containerPort: 4195
+          }
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/ready'
+            port: 4195
+          }
+        }
+        env: {
+          SERVICE_BUS_CONNECTION_STRING: {
+            valueFrom: {
+              secretKeyRef: {
+                secretName: serviceBus.properties.secrets.name
+                key: 'connectionString'
+              }
+            }
+          }
+        }
+        volumeMounts: [
+          {
+            volumeName: 'config'
+            mountPath: '/etc/bento'
+          }
+        ]
+      }
+    }
+    volumes: {
+      config: {
+        secretName: consumerConfig.name
+      }
+    }
+    connections: {
+      servicebus: {
+        source: serviceBus.id
       }
     }
   }

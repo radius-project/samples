@@ -1,15 +1,17 @@
 extension radius
-@description('The ID of your Radius Environment. Set automatically by the rad CLI.')
+
 param environment string
 
-@description('Database admin password. Marked @secure(); Radius encrypts it and injects it into the recipe and the container.')
+param buildSource string = 'git::https://github.com/docker/getting-started-todo-app.git?ref=55680777bc46c59d3fe0ab9ff7e79ee947d0c757'
+
 @secure()
-param password string
+param mysqlPassword string
 
-var databaseName = 'appdb'
+var mysqlUsername = 'radadmin'
+var mysqlDatabase = 'todos'
 
-resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'mysql-azure-app-test'
+resource mysqlTodoApp 'Radius.Core/applications@2025-08-01-preview' = {
+  name: 'mysql-todo'
   properties: {
     environment: environment
   }
@@ -19,36 +21,72 @@ resource mysql 'Radius.Data/mySqlDatabases@2025-08-01-preview' = {
   name: 'mysql'
   properties: {
     environment: environment
-    application: app.id
+    application: mysqlTodoApp.id
     version: '8.0'
-    database: databaseName
-
-    username: 'radadmin'
-    password: password
+    database: mysqlDatabase
+    username: mysqlUsername
+    password: mysqlPassword
   }
 }
 
-resource todoAppImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
-  name: 'todo-app-image'
+resource mysqlTodoImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
+  name: 'mysql-todo-image'
   properties: {
     environment: environment
-    application: app.id
-
-    tag: 'v1.0.0'
+    application: mysqlTodoApp.id
     build: {
-      source: 'git::https://github.com/docker/getting-started-todo-app.git//?ref=55680777bc46c59d3fe0ab9ff7e79ee947d0c757'
+      source: buildSource
+      platforms: [
+        'linux/amd64'
+      ]
     }
   }
 }
 
-resource todoctr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'todoctr'
+resource mysqlTodoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'mysql-todo'
   properties: {
     environment: environment
-    application: app.id
+    application: mysqlTodoApp.id
     containers: {
       todo: {
-        image: todoAppImage.properties.imageReference
+        image: mysqlTodoImage.properties.imageReference
+        // The pinned app has no TLS option, so preload mysql2 to require certificate-verified TLS.
+        command: [
+          '/bin/sh'
+          '-c'
+        ]
+        args: [
+          '''
+set -eu
+cat > /tmp/mysql-tls.js <<'EOF'
+const mysql = require('/usr/local/app/node_modules/mysql2');
+const createPool = mysql.createPool;
+mysql.createPool = (options) => {
+    const pool = createPool({
+        ...options,
+        ssl: { rejectUnauthorized: true },
+    });
+    pool.on('connection', (connection) => {
+        connection.query("SHOW STATUS LIKE 'Ssl_cipher'", (error, rows) => {
+            if (error) {
+                console.error(`MySQL TLS verification failed: ${error.message}`);
+                process.exit(1);
+            }
+            const cipher = rows?.[0]?.Value;
+            if (!cipher) {
+                console.error('MySQL TLS verification failed: no negotiated cipher');
+                process.exit(1);
+            }
+            console.log(`MySQL TLS verified: ${cipher}`);
+        });
+    });
+    return pool;
+};
+EOF
+exec node --require /tmp/mysql-tls.js src/index.js
+'''
+        ]
         ports: {
           web: {
             containerPort: 3000
@@ -59,16 +97,27 @@ resource todoctr 'Radius.Compute/containers@2025-08-01-preview' = {
             value: mysql.properties.host
           }
           MYSQL_DB: {
-            value: databaseName
+            value: mysqlDatabase
           }
-
           MYSQL_USER: {
-            value: 'radadmin'
+            value: mysqlUsername
           }
           MYSQL_PASSWORD: {
-            value: password
+            value: mysqlPassword
           }
         }
+        readinessProbe: {
+          httpGet: {
+            path: '/api/greeting'
+            port: 3000
+          }
+        }
+      }
+    }
+    connections: {
+      mysqldb: {
+        source: mysql.id
+        disableDefaultEnvVars: true
       }
     }
   }
