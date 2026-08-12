@@ -1,33 +1,31 @@
 extension radius
 
-@description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
-@description('Database admin password. Marked @secure(); Radius encrypts it and injects it into the recipe and the pgweb connection URL.')
+param buildSource string = 'git::https://github.com/sosedoff/pgweb.git?ref=6b0b0244d1aefd6971999b03481eeeaa4ec7cf55'
+
 @secure()
-param password string
+param postgresPassword string
 
-var databaseName = 'appdb'
+var postgresUsername = 'radadmin'
+var postgresDatabase = 'pgweb'
 
-var databaseUsername = 'radadmin'
-
-resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'postgresql-pgweb-test'
+resource pgwebApp 'Radius.Core/applications@2025-08-01-preview' = {
+  name: 'pgweb'
   properties: {
     environment: environment
   }
 }
 
-resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
-  name: 'postgresql'
+resource postgres 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
+  name: 'postgres'
   properties: {
     environment: environment
-    application: app.id
+    application: pgwebApp.id
     size: 'S'
-    database: databaseName
-
-    username: databaseUsername
-    password: password
+    database: postgresDatabase
+    username: postgresUsername
+    password: postgresPassword
   }
 }
 
@@ -35,11 +33,12 @@ resource pgwebImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
   name: 'pgweb-image'
   properties: {
     environment: environment
-    application: app.id
-
-    tag: 'v0.17.0'
+    application: pgwebApp.id
     build: {
-      source: 'git::https://github.com/sosedoff/pgweb.git//?ref=v0.17.0'
+      source: buildSource
+      platforms: [
+        'linux/amd64'
+      ]
       args: {
         BUILDKIT_CONTEXT_KEEP_GIT_DIR: '1'
       }
@@ -47,24 +46,55 @@ resource pgwebImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
   }
 }
 
-resource pgwebctr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'pgwebctr'
+resource pgwebContainer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'pgweb'
   properties: {
     environment: environment
-    application: app.id
+    application: pgwebApp.id
     containers: {
       pgweb: {
         image: pgwebImage.properties.imageReference
+        args: [
+          '--host=$(PGWEB_DB_HOST)'
+          '--user=$(PGWEB_DB_USER)'
+          '--pass=$(PGWEB_DB_PASSWORD)'
+          '--db=$(PGWEB_DB_NAME)'
+          '--ssl=$(PGWEB_DB_SSL)'
+        ]
         ports: {
           web: {
             containerPort: 8081
           }
         }
         env: {
-          PGWEB_DATABASE_URL: {
-            value: 'postgres://${databaseUsername}:${password}@${postgresql.properties.host}:5432/${databaseName}?sslmode=require'
+          PGWEB_DB_HOST: {
+            value: postgres.properties.host
+          }
+          PGWEB_DB_USER: {
+            value: postgresUsername
+          }
+          PGWEB_DB_PASSWORD: {
+            value: postgresPassword
+          }
+          PGWEB_DB_NAME: {
+            value: postgresDatabase
+          }
+          PGWEB_DB_SSL: {
+            value: 'verify-full'
           }
         }
+        readinessProbe: {
+          httpGet: {
+            path: '/'
+            port: 8081
+          }
+        }
+      }
+    }
+    connections: {
+      postgresdb: {
+        source: postgres.id
+        disableDefaultEnvVars: true
       }
     }
   }

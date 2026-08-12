@@ -1,18 +1,17 @@
 extension radius
 
-@description('The ID of your Radius Environment. Set automatically by the rad CLI.')
 param environment string
 
-@description('Database admin password. Marked @secure(); Radius encrypts it and injects it into the recipe and the SQLPad connection.')
+param buildSource string = 'git::https://github.com/sqlpad/sqlpad.git?ref=ab1f0c03269f0178b9449d34505ce3462271f340'
+
 @secure()
-param password string
+param sqlServerPassword string
 
-var databaseName = 'appdb'
+var sqlServerUsername = 'radadmin'
+var sqlServerDatabase = 'appdb'
 
-var databaseUsername = 'radadmin'
-
-resource app 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'sqlpad-azure-app-test'
+resource sqlpadApp 'Radius.Core/applications@2025-08-01-preview' = {
+  name: 'sqlpad'
   properties: {
     environment: environment
   }
@@ -22,11 +21,10 @@ resource sqlserver 'Radius.Data/sqlServerDatabases@2025-08-01-preview' = {
   name: 'sqlserver'
   properties: {
     environment: environment
-    application: app.id
-    database: databaseName
-
-    username: databaseUsername
-    password: password
+    application: sqlpadApp.id
+    database: sqlServerDatabase
+    username: sqlServerUsername
+    password: sqlServerPassword
   }
 }
 
@@ -34,19 +32,21 @@ resource sqlpadImage 'Radius.Compute/containerImages@2025-08-01-preview' = {
   name: 'sqlpad-image'
   properties: {
     environment: environment
-    application: app.id
-    tag: 'v7.5.7'
+    application: sqlpadApp.id
     build: {
-      source: 'git::https://github.com/sqlpad/sqlpad.git//?ref=ab1f0c03269f0178b9449d34505ce3462271f340'
+      source: buildSource
+      platforms: [
+        'linux/amd64'
+      ]
     }
   }
 }
 
-resource sqlpadctr 'Radius.Compute/containers@2025-08-01-preview' = {
-  name: 'sqlpadctr'
+resource sqlpadContainer 'Radius.Compute/containers@2025-08-01-preview' = {
+  name: 'sqlpad'
   properties: {
     environment: environment
-    application: app.id
+    application: sqlpadApp.id
     containers: {
       sqlpad: {
         image: sqlpadImage.properties.imageReference
@@ -77,29 +77,29 @@ resource sqlpadctr 'Radius.Compute/containers@2025-08-01-preview' = {
           SQLPAD_CONNECTIONS__azure_sql__host: {
             value: sqlserver.properties.host
           }
-          SQLPAD_CONNECTIONS__azure_sql__port: {
-            value: '1433'
-          }
           SQLPAD_CONNECTIONS__azure_sql__database: {
-            value: databaseName
+            value: sqlServerDatabase
           }
           SQLPAD_CONNECTIONS__azure_sql__username: {
-            value: databaseUsername
+            value: sqlServerUsername
           }
           SQLPAD_CONNECTIONS__azure_sql__password: {
-            value: password
+            value: sqlServerPassword
           }
           SQLPAD_CONNECTIONS__azure_sql__sqlserverEncrypt: {
             value: 'true'
           }
-          SQLPAD_CONNECTIONS__azure_sql__trustServerCertificate: {
-            value: 'false'
+        }
+        readinessProbe: {
+          httpGet: {
+            path: '/'
+            port: 3000
           }
         }
       }
     }
     connections: {
-      sqlserver: {
+      sqlserverdb: {
         source: sqlserver.id
       }
     }
