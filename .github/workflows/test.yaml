@@ -209,7 +209,11 @@ jobs:
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad install kubernetes --set rp.publicEndpointOverride=localhost
+          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+            rad install kubernetes --set rp.publicEndpointOverride=localhost --preview
+          else
+            rad install kubernetes --set rp.publicEndpointOverride=localhost
+          fi
 
           echo "*** Verify manifests are registered ***"
           rm -f registermanifest_logs.txt
@@ -255,15 +259,20 @@ jobs:
             exit 1
           fi
 
-          rad group create default
-          rad workspace create kubernetes default --group default
-          rad group switch default
-          rad env create default
-          rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+            # 'rad install kubernetes --preview' already created the default resource group and
+            # the Radius.Core/environments/default environment with the default recipe pack.
+            rad workspace create kubernetes default --group default --preview
+          else
+            # 'rad install kubernetes' already created the default resource group and the
+            # Applications.Core/environments/default environment; bind both to the workspace with
+            # -e so no group/env switch is needed, then register the datastore recipes.
+            rad workspace create kubernetes default --group default -e default
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+          fi
 
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
