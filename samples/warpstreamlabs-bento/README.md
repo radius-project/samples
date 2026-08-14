@@ -6,7 +6,7 @@ This sample provisions an Azure Service Bus namespace and queue through `Radius.
 - **Resource type:** `Radius.Messaging/rabbitMQ`
 - **Cloud backing (Azure):** Azure Service Bus via the AVM `mcr.microsoft.com/bicep/avm/res/service-bus/namespace:0.16.2` module (`env-azure.bicep`).
 - **Application:** WarpStream Bento `v1.18.1`, built from source via `Radius.Compute/containerImages` with `resources/docker/Dockerfile` and run via `imageReference`.
-- **Credential model:** The recipe exposes the queue connection string under nested `outputs.secrets.connectionString`. Both containers read the non-secret `queue.properties.host` directly and consume the connection string as `RABBITMQ_CONNECTIONSTRING` via a `secretKeyRef` backed by `queue.properties.secrets`, deriving the Service Bus AMQP endpoint and SAS key from them.
+- **Credential model:** The recipe exposes the queue connection string under nested `outputs.secrets.connectionString`. Both containers read the non-secret `queue.properties.host` directly and consume the connection string via a `secretKeyRef` backed by the recipe-managed secret, deriving the Service Bus AMQP endpoint and SAS key from it. The application also supplies the password-secret resource ID required by the built-in RabbitMQ schema; the Azure Service Bus recipe does not consume that placeholder credential.
 
 ## Files
 | File | Role |

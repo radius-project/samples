@@ -29,13 +29,30 @@ resource app 'Radius.Core/applications@2025-08-01-preview' = {
   }
 }
 
-resource serviceBus 'Radius.Messaging/rabbitMQ@2025-08-01-preview' = {
-  name: 'sb'
+resource serviceBusSchemaSecret 'Radius.Security/secrets@2025-08-01-preview' = {
+  name: 'service-bus-schema-credentials'
   properties: {
     environment: environment
     application: app.id
-    queue: 'jobs'
+    data: {
+      password: {
+        #disable-next-line use-secure-value-for-secure-inputs
+        value: 'unused-by-azure-service-bus-recipe'
+      }
+    }
   }
+}
+
+resource serviceBus 'Radius.Messaging/rabbitMQ@2025-08-01-preview' = {
+  name: 'sb'
+  // Keep the payload compatible with both published schema revisions: the Azure
+  // recipe uses managed secrets, while the newer built-in schema requires password.
+  properties: any({
+    environment: environment
+    application: app.id
+    queue: 'jobs'
+    password: serviceBusSchemaSecret.id
+  })
 }
 
 resource image 'Radius.Compute/containerImages@2025-08-01-preview' = {
@@ -126,7 +143,7 @@ exec /bento -c /tmp/producer.yaml
           SERVICE_BUS_CONNECTION_STRING: {
             valueFrom: {
               secretKeyRef: {
-                secretName: serviceBus.properties.secrets.name
+                secretName: any(serviceBus.properties).secrets.name
                 key: 'connectionString'
               }
             }
@@ -169,7 +186,7 @@ resource consumer 'Radius.Compute/containers@2025-08-01-preview' = {
           SERVICE_BUS_CONNECTION_STRING: {
             valueFrom: {
               secretKeyRef: {
-                secretName: serviceBus.properties.secrets.name
+                secretName: any(serviceBus.properties).secrets.name
                 key: 'connectionString'
               }
             }
