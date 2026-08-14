@@ -23,18 +23,17 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@azure/monitor-opentelemetry": "^1.18.2",
+    "@azure/monitor-opentelemetry": "^1.19.0",
     "@dapr/dapr": "^3.17.0",
     "@types/mongodb": "^4.0.7",
     "@types/morgan": "^1.9.10",
     "@types/pg": "^8.20.0",
     "@types/redis": "^4.0.11",
     "@types/uuid": "^11.0.0",
-    "bootstrap": "^5.3.8",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongodb": "^7.2.0",
-    "morgan": "^1.10.1",
+    "morgan": "^1.11.0",
     "pg": "^8.21.0",
     "redis": "^5.12.1",
     "uuid": "^14.0.1"
