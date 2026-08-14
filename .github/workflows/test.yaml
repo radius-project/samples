@@ -51,14 +51,16 @@ jobs:
           - name: demo
             os: ubuntu-24.04
             runOnPullRequest: true
-            app: demo
+            app: demo-default
             env: default
             path: ./samples/demo/app.bicep
-            deployArgs: --application demo -p image=sampleregistry:5000/samples/demo
-            exposeArgs: --application demo
+            deployArgs: -p image=sampleregistry:5000/samples/demo
+            exposeArgs: --application demo-default
+            # Use the preview (Radius.*) resource types for expose/delete.
+            previewFlag: true
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
-            container: demo
+            container: demo-default
             enableDapr: false
             images: samples/demo
             directories: samples/demo/
@@ -280,7 +282,14 @@ jobs:
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose Applications.Core/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+              containerType="Radius.Compute/containers"
+              previewArg="--preview"
+            else
+              containerType="Applications.Core/containers"
+              previewArg=""
+            fi
+            rad resource expose "$containerType" ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} $previewArg &
             export ENDPOINT="http://localhost:3000/"
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
@@ -350,5 +359,9 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
-            rad app delete ${{ matrix.app }} -y
+            previewArg=""
+            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+              previewArg="--preview"
+            fi
+            rad app delete ${{ matrix.app }} -y $previewArg
           fi
