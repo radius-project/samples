@@ -9,11 +9,11 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.5",
     "@types/uuid": "^11.0.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.1"
   }
 }
