@@ -1,6 +1,8 @@
 FROM node:22-bookworm AS build
 WORKDIR /usr/src/app
 
+ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+
 COPY package.json package-lock.json ./
 COPY client/package.json client/package-lock.json ./client/
 RUN npm ci && npm cache clean --force

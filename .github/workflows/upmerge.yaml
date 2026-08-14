@@ -12,8 +12,9 @@
 # 2. Configures git with a user name and email.
 # 3. Creates a new branch from edge.
 # 4. Merges changes from the branch executing the workflow into the edge branch created in the previous step.
-# 5. Pushes the new branch if there are changes.
-# 6. Creates a pull request to merge the new branch into edge.
+# 5. If the merge conflicts, resets the new branch to the source branch so the conflicts can be resolved in a PR.
+# 6. Pushes the new branch if there are changes.
+# 7. Creates a pull request to merge the new branch into edge.
 
 # Example:
 # The current release branch is v0.36. We are creating the new release for v0.37.
@@ -92,6 +93,7 @@ jobs:
 
       # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
       # branch is assumed to be the current release branch, but could be any branch.
+      # If the merge conflicts, push the source state so a draft PR can be opened for manual resolution.
       # If there are no changes, stop the workflow.
       # We ignore the bicepconfig.json file because we don't want to overwrite the version in the edge branch.
       # Manual recovery (local):
@@ -105,25 +107,35 @@ jobs:
       #   git push -u origin upmerge/manual-<date>
       - name: Upmerge samples
         run: |
-          export SOURCE_BRANCH=$(basename ${{ github.ref }})
+          SOURCE_BRANCH="${GITHUB_REF_NAME}"
+          MERGE_CONFLICT=false
+          EDGE_OWNED_FILES=(
+              bicepconfig.json
+          )
           echo "Upmerging samples from ${SOURCE_BRANCH} to edge"
           git fetch origin "${SOURCE_BRANCH}"
 
-          if ! git merge --no-commit "origin/${SOURCE_BRANCH}"; then
-            echo "::error::Merge conflicts detected while upmerging ${SOURCE_BRANCH} into edge."
-            echo "Conflicted files:"
-            git diff --name-only --diff-filter=U
-            git merge --abort
-            exit 1
+          if git merge --no-ff --no-commit "origin/${SOURCE_BRANCH}"; then
+              git checkout edge -- "${EDGE_OWNED_FILES[@]}"
+          else
+              echo "::warning::Merge conflicts detected. Opening a draft PR for manual resolution."
+              git merge --abort
+              git reset --hard "origin/${SOURCE_BRANCH}"
+              git checkout edge -- "${EDGE_OWNED_FILES[@]}"
+              if ! git diff --cached --quiet; then
+                  git commit --signoff --message "Preserve edge-specific configuration"
+              fi
+              MERGE_CONFLICT=true
+              echo "MERGE_CONFLICT=true" >> "${GITHUB_ENV}"
           fi
 
-          git checkout edge -- bicepconfig.json
-
           if git diff --quiet edge; then
-            echo "No changes to merge from ${SOURCE_BRANCH} to edge"
+              echo "No changes to merge from ${SOURCE_BRANCH} to edge"
               echo "NO_CHANGES=true" >> "${GITHUB_ENV}"
           else
-            git commit --signoff --message "Upmerge to edge"
+              if [[ "${MERGE_CONFLICT:-false}" != "true" ]]; then
+                  git commit --signoff --message "Upmerge to edge"
+              fi
               echo "Pushing ${BRANCH_NAME} for PR to edge"
               git push --set-upstream origin "${BRANCH_NAME}"
           fi
@@ -134,4 +146,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          gh pr create --title "Upmerge to edge" --body "Upmerge to edge (kicked off by @${{ github.triggering_actor }})" --base edge --head "${BRANCH_NAME}"
+          BODY="Upmerge to edge (kicked off by @${{ github.triggering_actor }})"
+          DRAFT_ARGS=()
+
+          if [[ "${MERGE_CONFLICT:-false}" == "true" ]]; then
+              BODY="${BODY}
+
+          This upmerge has merge conflicts that require manual resolution."
+              DRAFT_ARGS+=(--draft)
+          fi
+
+          gh pr create "${DRAFT_ARGS[@]}" --title "Upmerge to edge" --body "${BODY}" --base edge --head "${BRANCH_NAME}"
