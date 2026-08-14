@@ -261,8 +261,9 @@ jobs:
 
           if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
             # 'rad install kubernetes --preview' already created the default resource group and
-            # the Radius.Core/environments/default environment with the default recipe pack.
-            rad workspace create kubernetes default --group default --preview
+            # the Radius.Core/environments/default environment with the default recipe pack;
+            # bind that environment to the workspace with -e so rad deploy can resolve it.
+            rad workspace create kubernetes default --group default --preview -e default
           else
             # 'rad install kubernetes' already created the default resource group and the
             # Applications.Core/environments/default environment; bind both to the workspace with
