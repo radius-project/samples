@@ -29,5 +29,20 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
         }
       }
     }
+    connections: {
+      redis: {
+        source: redis.id
+      }
+    }
   }
 }
+
+resource redis 'Radius.Data/redisCaches@2025-08-01-preview' = {
+  name: 'redis-${environmentName}'
+  properties: {
+    environment: environment
+    application: demoApp.id
+    size: 'S'
+  }
+}
+
