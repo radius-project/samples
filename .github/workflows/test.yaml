@@ -51,14 +51,16 @@ jobs:
           - name: demo
             os: ubuntu-24.04
             runOnPullRequest: true
-            app: demo
+            app: demo-default
             env: default
             path: ./samples/demo/app.bicep
-            deployArgs: --application demo -p image=sampleregistry:5000/samples/demo
-            exposeArgs: --application demo
+            deployArgs: -p image=sampleregistry:5000/samples/demo
+            exposeArgs: --application demo-default
+            # Use the preview (Radius.*) resource types for expose/delete.
+            previewFlag: true
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
-            container: demo
+            container: demo-default
             enableDapr: false
             images: samples/demo
             directories: samples/demo/
@@ -207,7 +209,11 @@ jobs:
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          rad install kubernetes --set rp.publicEndpointOverride=localhost
+          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+            rad install kubernetes --set rp.publicEndpointOverride=localhost --preview
+          else
+            rad install kubernetes --set rp.publicEndpointOverride=localhost
+          fi
 
           echo "*** Verify manifests are registered ***"
           rm -f registermanifest_logs.txt
@@ -253,15 +259,21 @@ jobs:
             exit 1
           fi
 
-          rad group create default
-          rad workspace create kubernetes default --group default
-          rad group switch default
-          rad env create default
-          rad env switch default
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
-          rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+            # 'rad install kubernetes --preview' already created the default resource group and
+            # the Radius.Core/environments/default environment with the default recipe pack;
+            # bind that environment to the workspace with -e so rad deploy can resolve it.
+            rad workspace create kubernetes default --group default --preview -e default
+          else
+            # 'rad install kubernetes' already created the default resource group and the
+            # Applications.Core/environments/default environment; bind both to the workspace with
+            # -e so no group/env switch is needed, then register the datastore recipes.
+            rad workspace create kubernetes default --group default -e default
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
+            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+          fi
 
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
@@ -280,7 +292,14 @@ jobs:
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose Applications.Core/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+              containerType="Radius.Compute/containers"
+              previewArg="--preview"
+            else
+              containerType="Applications.Core/containers"
+              previewArg=""
+            fi
+            rad resource expose "$containerType" ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} $previewArg &
             export ENDPOINT="http://localhost:3000/"
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
@@ -350,5 +369,9 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
-            rad app delete ${{ matrix.app }} -y
+            previewArg=""
+            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
+              previewArg="--preview"
+            fi
+            rad app delete ${{ matrix.app }} -y $previewArg
           fi
