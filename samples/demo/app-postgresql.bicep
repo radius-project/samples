@@ -60,11 +60,14 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     containers: {
       web: {
         image: image
-        // Host, port, and database arrive automatically as CONNECTION_POSTGRESQL_*
-        // environment variables from the connection below. Only the password needs
-        // explicit wiring, and it is bound by reference via secretKeyRef.
+        // Host, port, username, and database arrive automatically as
+        // CONNECTION_POSTGRESQL_* env vars from the connection below. The
+        // connection cannot carry the password (x-radius-sensitive properties
+        // redact to null on reads and are skipped by the containers recipe), so
+        // it is bound by reference here under the same naming scheme, filling
+        // the one gap the connection leaves.
         env: {
-          POSTGRES_PASSWORD: {
+          CONNECTION_POSTGRESQL_PASSWORD: {
             valueFrom: {
               secretKeyRef: {
                 secretName: dbCredentials.name
