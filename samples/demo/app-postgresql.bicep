@@ -3,6 +3,9 @@ extension radius
 @description('The Radius Environment ID. Injected automatically by the rad CLI.')
 param environment string
 
+@description('Container image for the demo app. Defaults to the published sample image; overridden in CI to test a locally-built image.')
+param image string = 'ghcr.io/radius-project/samples/demo:latest'
+
 @description('The administrator password for the PostgreSQL database. Pass via the CLI, e.g. -p password=$(openssl rand -hex 16).')
 @secure()
 param password string
@@ -56,7 +59,7 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     application: demoApp.id
     containers: {
       web: {
-        image: 'ghcr.io/radius-project/samples/demo:latest'
+        image: image
         // Host, port, and database arrive automatically as CONNECTION_POSTGRESQL_*
         // environment variables from the connection below. Only the password needs
         // explicit wiring, and it is bound by reference via secretKeyRef.
