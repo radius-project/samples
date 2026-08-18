@@ -76,7 +76,7 @@ jobs:
             # Use the preview (Radius.*) resource types for expose/delete.
             previewFlag: true
             uiTestFile: tests/demo/demo.app.spec.ts
-            expectRedisConnectionUrl: true
+            expectRedisConnections: true
             port: 3000
             container: demo-default
             enableDapr: false
@@ -309,7 +309,7 @@ jobs:
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
         env:
-          EXPECT_REDIS_CONNECTION_URL: ${{ matrix.expectRedisConnectionUrl }}
+          EXPECT_REDIS_CONNECTIONS: ${{ matrix.expectRedisConnections }}
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             if [[ "${{ matrix.previewFlag }}" == "true" ]]; then

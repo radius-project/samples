@@ -34,6 +34,9 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     }
     connections: {
       redis: {
+        source: redis.id
+      }
+      redisSecret: {
         source: redisSecret.id
       }
     }

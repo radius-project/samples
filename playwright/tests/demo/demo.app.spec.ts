@@ -40,10 +40,12 @@ test("To-Do App Basic UI Checks", async ({ page }) => {
   await page.getByRole("link", { name: "Radius Demo" }).click();
 });
 
-test("Redis connection URL is injected", async ({ request }) => {
+test("Redis resource and secret connections are injected", async ({
+  request
+}) => {
   test.skip(
-    process.env.EXPECT_REDIS_CONNECTION_URL !== "true",
-    "Redis connection assertion is only enabled for the Redis demo"
+    process.env.EXPECT_REDIS_CONNECTIONS !== "true",
+    "Redis connection assertions are only enabled for the Redis demo"
   );
 
   const endpoint = process.env.ENDPOINT;
@@ -55,7 +57,8 @@ test("Redis connection URL is injected", async ({ request }) => {
   expect(response.ok()).toBeTruthy();
 
   const containerInfo = await response.json();
-  expect(containerInfo.env.CONNECTION_REDIS_URL).toBeTruthy();
+  expect(containerInfo.env.CONNECTION_REDIS_HOST).toBeTruthy();
+  expect(containerInfo.env.CONNECTION_REDISSECRET_URL).toBeTruthy();
 });
 
 test("Add an item and check basic functionality", async ({ page }) => {

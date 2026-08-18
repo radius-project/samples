@@ -26,12 +26,19 @@ rad deploy samples/demo/app-redis.bicep
 
 The Redis resource creates a `Radius.Security/secrets` resource containing its
 secret outputs. The template declares that generated resource as `existing`,
-using `redis.properties.secrets.name`, and connects the container to the secret
-rather than directly to the Redis resource. This declaration discovers the
-generated resource; it does not create or manage a second secret.
+using `redis.properties.secrets.name`. This declaration discovers the generated
+resource; it does not create or manage a second secret.
 
 Radius names environment variables from the connection name and each secret
 key as `CONNECTION_<CONNECTION-NAME>_<SECRET-KEY>`, normalized to uppercase.
-For the `redis` connection and its `url` key, the demo receives
-`CONNECTION_REDIS_URL` without an explicit `secretKeyRef`. The demo uses that
-URL for its Todo storage.
+The template connects both resources so their properties remain distinct:
+
+- `redis` connects the `Radius.Data/redisCaches` resource and provides
+  non-secret values including `CONNECTION_REDIS_HOST` and
+  `CONNECTION_REDIS_PORT`.
+- `redisSecret` connects the generated `Radius.Security/secrets` resource. Its
+  `url` key becomes `CONNECTION_REDISSECRET_URL` without an explicit
+  `secretKeyRef`.
+
+The demo uses `CONNECTION_REDISSECRET_URL` for its Todo storage, while continuing
+to support `CONNECTION_REDIS_URL` and `REDIS_URL` for existing deployments.

@@ -36,9 +36,19 @@ export function createFactory(): RepositoryFactory {
         return new MongoFactory(process.env.CONNECTION_MONGODB_CONNECTIONSTRING);
     }
 
+    if (process.env.CONNECTION_REDISSECRET_URL) {
+        console.log("Using Redis: found url in environment variable CONNECTION_REDISSECRET_URL");
+        return new RedisFactory(process.env.CONNECTION_REDISSECRET_URL);
+    }
+
     if (process.env.CONNECTION_REDIS_URL) {
         console.log("Using Redis: found url in environment variable CONNECTION_REDIS_URL");
         return new RedisFactory(process.env.CONNECTION_REDIS_URL);
+    }
+
+    if (process.env.REDIS_URL) {
+        console.log("Using Redis: found url in environment variable REDIS_URL");
+        return new RedisFactory(process.env.REDIS_URL);
     }
 
     if (process.env.CONNECTION_REDIS_HOST) {
