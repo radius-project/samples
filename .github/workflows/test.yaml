@@ -65,6 +65,24 @@ jobs:
             images: samples/demo
             directories: samples/demo/
 
+          - name: demo-redis
+            os: ubuntu-24.04
+            runOnPullRequest: true
+            app: demo-default
+            env: default
+            path: ./samples/demo/app-redis.bicep
+            deployArgs: -p image=sampleregistry:5000/samples/demo
+            exposeArgs: --application demo-default
+            # Use the preview (Radius.*) resource types for expose/delete.
+            previewFlag: true
+            uiTestFile: tests/demo/demo.app.spec.ts
+            expectRedisConnectionUrl: true
+            port: 3000
+            container: demo-default
+            enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
+
           - name: dapr
             os: ubuntu-24.04
             runOnPullRequest: true
@@ -290,6 +308,8 @@ jobs:
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
+        env:
+          EXPECT_REDIS_CONNECTION_URL: ${{ matrix.expectRedisConnectionUrl }}
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
             if [[ "${{ matrix.previewFlag }}" == "true" ]]; then

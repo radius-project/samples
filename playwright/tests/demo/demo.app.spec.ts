@@ -40,6 +40,24 @@ test("To-Do App Basic UI Checks", async ({ page }) => {
   await page.getByRole("link", { name: "Radius Demo" }).click();
 });
 
+test("Redis connection URL is injected", async ({ request }) => {
+  test.skip(
+    process.env.EXPECT_REDIS_CONNECTION_URL !== "true",
+    "Redis connection assertion is only enabled for the Redis demo"
+  );
+
+  const endpoint = process.env.ENDPOINT;
+  expect(endpoint).toBeDefined();
+
+  const response = await request.get(
+    new URL("/api/container-info", endpoint as string).toString()
+  );
+  expect(response.ok()).toBeTruthy();
+
+  const containerInfo = await response.json();
+  expect(containerInfo.env.CONNECTION_REDIS_URL).toBeTruthy();
+});
+
 test("Add an item and check basic functionality", async ({ page }) => {
   // Listen for all console events and handle errors
   page.on("console", (msg) => {
@@ -81,7 +99,7 @@ test("Add an item and check basic functionality", async ({ page }) => {
   await expect(
     page
       .getByRole("row", {
-        name: `${todoItem} lightbulb Complete done Delete delete`,
+        name: `${todoItem} lightbulb Complete done Delete delete`
       })
       .getByRole("button", { name: "Complete done" })
   ).toBeVisible();
@@ -89,7 +107,7 @@ test("Add an item and check basic functionality", async ({ page }) => {
   // We click the Complete button
   await page
     .getByRole("row", {
-      name: `${todoItem} lightbulb Complete done Delete delete`,
+      name: `${todoItem} lightbulb Complete done Delete delete`
     })
     .getByRole("button", { name: "Complete done" })
     .click();
@@ -98,7 +116,7 @@ test("Add an item and check basic functionality", async ({ page }) => {
   await expect(
     page
       .getByRole("row", {
-        name: `${todoItem} done Complete done Delete delete`,
+        name: `${todoItem} done Complete done Delete delete`
       })
       .getByRole("button", { name: "Complete done" })
   ).toBeVisible();
@@ -106,7 +124,7 @@ test("Add an item and check basic functionality", async ({ page }) => {
   // Delete a todo item
   await page
     .getByRole("row", {
-      name: `${todoItem} done Complete done Delete delete`,
+      name: `${todoItem} done Complete done Delete delete`
     })
     .getByRole("button", { name: "Delete delete" })
     .click();
