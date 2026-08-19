@@ -25,9 +25,10 @@ rad deploy samples/demo/app-redis.bicep
 ```
 
 The Redis resource creates a `Radius.Security/secrets` resource containing its
-secret outputs. The template declares that generated resource as `existing`,
-using `redis.properties.secrets.name`. This declaration discovers the generated
-resource; it does not create or manage a second secret.
+secret outputs. The template reads the generated name from
+`redis.properties.secrets.name` and combines it with the Radius resource group
+ID to form the Secret connection source. This discovers the generated resource;
+it does not create or manage a second secret.
 
 Radius names environment variables from the connection name and each secret
 key as `CONNECTION_<CONNECTION-NAME>_<SECRET-KEY>`, normalized to uppercase.
