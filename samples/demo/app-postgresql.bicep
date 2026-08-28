@@ -37,6 +37,9 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
       postgresql: {
         source: postgresql.id
       }
+      postgresqlcredentials: {
+        source: postgresqlClientCredentials.id
+      }
     }
   }
 }
@@ -50,5 +53,20 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
     database: 'appdb'
     username: 'myadmin'
     password: password
+  }
+}
+
+// Keep this distinct from the PostgreSQL Recipe-owned
+// `postgresql-${environmentName}-credentials` Kubernetes Secret.
+resource postgresqlClientCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
+  name: 'postgresql-client-credentials-${environmentName}'
+  properties: {
+    environment: environment
+    application: demoApp.id
+    data: {
+      password: {
+        value: password
+      }
+    }
   }
 }

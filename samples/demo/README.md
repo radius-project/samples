@@ -14,3 +14,10 @@ docker build \
   --tag radius-demo:local \
   samples/demo
 ```
+
+## PostgreSQL variant
+
+`app-postgresql.bicep` uses the Kubernetes Container Recipe's direct Secret connection support to project the database password as `CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD`. This requires a Radius edge installation containing the Kubernetes Recipe contract from
+[`radius-project/resource-types-contrib#300`](https://github.com/radius-project/resource-types-contrib/pull/300).
+
+The demo image prefers that variable and retains `CONNECTION_POSTGRESQL_PASSWORD` as a compatibility fallback for older or mixed installations whose PostgreSQL Recipe still supplies the password. If both variables are present, they must match. Azure ACI does not project direct Secret connections, so this new password path is Kubernetes-only; its existing connection behavior is unchanged.
