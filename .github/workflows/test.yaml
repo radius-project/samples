@@ -209,11 +209,7 @@ jobs:
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: |
-          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
-            rad install kubernetes --set rp.publicEndpointOverride=localhost --preview
-          else
-            rad install kubernetes --set rp.publicEndpointOverride=localhost
-          fi
+          rad install kubernetes --set rp.publicEndpointOverride=localhost
 
           echo "*** Verify manifests are registered ***"
           rm -f registermanifest_logs.txt
@@ -259,16 +255,23 @@ jobs:
             exit 1
           fi
 
+          # 'rad install kubernetes' installs the control plane only, so the resource group,
+          # environment and workspace have to be created explicitly.
+          # See https://github.com/radius-project/radius/pull/12829.
+          previewArg=""
           if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
-            # 'rad install kubernetes --preview' already created the default resource group and
-            # the Radius.Core/environments/default environment with the default recipe pack;
-            # bind that environment to the workspace with -e so rad deploy can resolve it.
-            rad workspace create kubernetes default --group default --preview -e default
-          else
-            # 'rad install kubernetes' already created the default resource group and the
-            # Applications.Core/environments/default environment; bind both to the workspace with
-            # -e so no group/env switch is needed, then register the datastore recipes.
-            rad workspace create kubernetes default --group default -e default
+            previewArg="--preview"
+          fi
+
+          rad group create default
+          rad workspace create kubernetes default --group default
+
+          # With --preview and no --recipe-packs, 'rad env create' also creates the default
+          # recipe pack that backs the Radius.Compute/* resource types.
+          rad env create default $previewArg
+          rad env switch default $previewArg
+
+          if [[ "${{ matrix.previewFlag }}" != "true" ]]; then
             rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
             rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
             rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
