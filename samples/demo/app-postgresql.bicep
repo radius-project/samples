@@ -56,8 +56,6 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
   }
 }
 
-// Keep this distinct from the PostgreSQL Recipe-owned
-// `postgresql-${environmentName}-credentials` Kubernetes Secret.
 resource postgresqlClientCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
   name: 'postgresql-client-credentials-${environmentName}'
   properties: {
