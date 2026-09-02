@@ -37,8 +37,8 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
       postgresql: {
         source: postgresql.id
       }
-      postgresqlcredentials: {
-        source: postgresqlClientCredentials.id
+      postgresqlCredentials: {
+        source: postgresqlCredentials.id
       }
     }
   }
@@ -56,8 +56,8 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
   }
 }
 
-resource postgresqlClientCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
-  name: 'postgresql-client-credentials-${environmentName}'
+resource postgresqlCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
+  name: 'postgresql-credentials-${environmentName}'
   properties: {
     environment: environment
     application: demoApp.id

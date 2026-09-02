@@ -66,19 +66,19 @@ export function createFactory(): RepositoryFactory {
 
     if (process.env.CONNECTION_POSTGRESQL_HOST) {
         console.log("Using PostgreSQL: found hostname in environment variable CONNECTION_POSTGRESQL_HOST");
-        const secretConnectionPassword = process.env.CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD;
-        const legacyConnectionPassword = process.env.CONNECTION_POSTGRESQL_PASSWORD;
-        if (secretConnectionPassword !== undefined &&
-            legacyConnectionPassword !== undefined &&
+        const secretConnectionPassword = process.env.CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD || undefined;
+        const legacyConnectionPassword = process.env.CONNECTION_POSTGRESQL_PASSWORD || undefined;
+        if (secretConnectionPassword &&
+            legacyConnectionPassword &&
             secretConnectionPassword !== legacyConnectionPassword) {
-            throw new Error("Conflicting PostgreSQL passwords found in CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD and CONNECTION_POSTGRESQL_PASSWORD");
+            console.warn("Conflicting PostgreSQL passwords found; using CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD instead of CONNECTION_POSTGRESQL_PASSWORD");
         }
 
         const connection = {
             host: process.env.CONNECTION_POSTGRESQL_HOST!,
             port: process.env.CONNECTION_POSTGRESQL_PORT!,
             username: process.env.CONNECTION_POSTGRESQL_USERNAME || '',
-            password: secretConnectionPassword ?? legacyConnectionPassword ?? '',
+            password: secretConnectionPassword || legacyConnectionPassword || '',
             database: process.env.CONNECTION_POSTGRESQL_DATABASE || '',
         }
         const url = `postgresql://${connection.username}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`
