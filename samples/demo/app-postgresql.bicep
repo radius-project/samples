@@ -37,6 +37,9 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
       postgresql: {
         source: postgresql.id
       }
+      postgresqlCredentials: {
+        source: postgresqlCredentials.id
+      }
     }
   }
 }
@@ -50,5 +53,18 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
     database: 'appdb'
     username: 'myadmin'
     password: password
+  }
+}
+
+resource postgresqlCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
+  name: 'postgresql-credentials-${environmentName}'
+  properties: {
+    environment: environment
+    application: demoApp.id
+    data: {
+      password: {
+        value: password
+      }
+    }
   }
 }
