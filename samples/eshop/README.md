@@ -1,54 +1,74 @@
-# eShop on Radius reference application
+# eShop on Radius
 
-## Source
+A fork of the upstream [.NET eShop reference application](https://github.com/dotnet/eShop),
+modeled on Radius. The app source is unchanged from upstream — we only added what Radius
+needs to deploy it:
 
-This reference app is a "radified" version of the [eShop on containers](https://github.com/dotnet-architecture/eShopOnContainers) .NET reference application.
+- **`src/*/Dockerfile` (9)** — upstream ships none (it uses .NET Aspire / SDK publish); the
+  Radius in-cluster builder needs one per service.
+- **`.radius/`** — the Radius model (`app.bicep`), environment + recipe pack (`env.bicep`),
+  and `bicepconfig.json`.
+
+It doubles as a **reference input for the app-modeling skill**: a realistic multi-service
+app (containers + Redis + PostgreSQL + RabbitMQ) to generate and validate a Radius
+`app.bicep` from real-world source.
+
+## What gets deployed
+
+`.radius/app.bicep` defines a single `Radius.Core/applications` (`eshop`) with:
+
+| Kind | Resources |
+| --- | --- |
+| `Radius.Compute/containerImages` | 9 images built from source (`identity-api`, `basket-api`, `catalog-api`, `ordering-api`, `order-processor`, `payment-processor`, `webhooks-api`, `webhooksclient`, `webapp`) |
+| `Radius.Compute/containers` | The 9 eShop services wired together over cluster DNS |
+| `Radius.Data/redisCaches` | Basket cache |
+| `Radius.Data/postgreSqlDatabases` | Catalog, Identity, Ordering, Webhooks databases |
+| `Radius.Messaging/rabbitMQ` | Event bus |
+
+The graph renders in the Radius canvas / `rad app graph .radius/app.bicep`.
+
+## Prerequisites
+
+- An **edge / preview `rad` CLI and control plane**.
+- An AKS cluster with the Radius control plane installed, and an Azure subscription +
+  resource group for the backing services (Redis Enterprise, PostgreSQL Flexible
+  Server, Service Bus).
+- An OCI registry the in-cluster builder can push to (e.g. `ghcr.io/<org>`), and a
+  Kubernetes secret with push/pull credentials for it (used to push the built images and
+  pull them back to run the containers). Omit the secret for a public registry.
 
 ## Deploy
 
-1. Have a kubernetes cluster handy from the [supported clusters](https://docs.radapp.io/guides/operations/kubernetes/overview/#supported-kubernetes-clusters).
-   - (AWS only) Make sure that each of the Subnets in your EKS cluster Subnet Group are within the list of [supported MemoryDB availability zones](https://docs.aws.amazon.com/memorydb/latest/devguide/subnetgroups.html) 
-1. [Install the rad CLI](https://docs.radapp.io/getting-started/)
-1. Install Radius:
-   ```bash
-   rad install kubernetes
-   ```
-1. Set provider credentials to authenticate to your cloud provider (choose which type of hosting infrastructure you wish to use):
-   ```bash
-   # AWS
-   rad credential register aws access-key --aws-access-key-id <your-aws-access-key-id> --aws-secret-access-key <your-aws-secret-access-key>
+1. **Create the environment + recipe pack** ([`.radius/env.bicep`](./.radius/env.bicep)):
 
-   # Azure
-   rad credential register azure sp --client-id <your-azure-service-principal-client-id> --client-secret <your-azure-service-principal-client-secret> --tenant-id <your-azure-service-principal-tenant-id>
-   ```
-1. Clone the repository and switch to the app directory:
    ```bash
-   git clone https://github.com/radius-project/samples.git
-   cd samples/reference-apps/eshop
+   rad deploy .radius/env.bicep \
+     --parameters environmentName=eshop \
+     --parameters environmentNamespace=eshop \
+     --parameters azureSubscriptionId=<your-subscription-id> \
+     --parameters azureResourceGroup=<your-resource-group> \
+     --parameters containerImagesRegistry=ghcr.io/<your-org> \
+     --parameters containerImagesRegistrySecretName=<your-registry-pull-secret>
    ```
-1. Deploy an environment with the proper Recipes (choose which type of hosting infrastructure you wish to use):
+
+2. **Deploy the application**:
+
    ```bash
-   # Containers - simply initialize a new local-dev environment
-   rad init
-
-   # Azure
-   rad deploy environments/azure.bicep -p azureSubscriptionId=<your-sub-id> -p azureResourceGroup=<your-resource-group-name>
-
-   # AWS
-   rad deploy environments/aws.bicep -p awsAccountId=<your-aws-account-id> -p awsRegion=<your-aws-region> -p eksClusterName=<your-eks-cluster-name>
+   rad deploy .radius/app.bicep --environment eshop
    ```
-1. Switch to your new environment (choose which type of hosting infrastructure you wish to use):
-   ```bash
-   # Containers
-   rad env switch default
 
-   # Azure
-   rad env switch azure
+   The `containerImages` resources clone this folder
+   (`git::https://github.com/radius-project/samples.git//samples/eshop?ref=<branch>`)
+   and build each service image with BuildKit inside the cluster before the
+   `containers` start. Update the `?ref=` in `.radius/app.bicep` if you deploy from a
+   fork or a different branch.
 
-   # AWS
-   rad env switch aws
-   ```
-1. Deploy the application:
-   ```bash
-   rad deploy eshop.bicep
-   ```
+## Layout
+
+```
+samples/eshop/
+├── .radius/app.bicep   # Radius application model (the sample's entry point)
+├── .radius/env.bicep   # Environment + recipe pack (Azure/AKS)
+├── src/                # eShop application source + per-service Dockerfiles
+└── README.md
+```
