@@ -124,9 +124,9 @@ jobs:
             TARGET_BRANCH=${{ github.event.pull_request.base.ref }}
             if [[ "$TARGET_BRANCH" == "edge" ]]; then
               RADIUS_VERSION=edge
-            elif [[ "$TARGET_BRANCH" =~ ^refs/pull/v[0-9]+\.[0-9]+/merge$ ]]; then
-              # Example: refs/pull/v0.1/merge -> 0.1
-              RADIUS_VERSION=$(echo ${{ github.ref }} | cut -d '/' -f 3 | cut -d 'v' -f 2)
+            elif [[ "$TARGET_BRANCH" =~ ^v[0-9]+\.[0-9]+$ ]]; then
+              # Example: v0.1 -> 0.1
+              RADIUS_VERSION=${TARGET_BRANCH#v}
             fi
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             # Get the branch of the schedule event
