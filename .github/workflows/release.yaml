@@ -35,7 +35,7 @@ jobs:
           repositories: samples
 
       # Resolve the bot's GitHub-formatted name and email dynamically from the app slug
-      # so commits are attributed to the bot identity rather than hardcoded values.
+      # so the release commit's DCO sign-off matches the bot that authors it.
       - name: Get bot details
         id: bot-details
         uses: raven-actions/bot-details@ee8966a9ff6e7e42cbfc4a56b4ddb60a9d1b40a6 # v1.2.0
@@ -47,15 +47,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: edge
           path: samples
-          persist-credentials: true
-
-      - name: Configure git
-        run: |
-          git config --global user.name "${GIT_USER_NAME}"
-          git config --global user.email "${GIT_USER_EMAIL}"
-        env:
-          GIT_USER_NAME: ${{ steps.bot-details.outputs.name }}
-          GIT_USER_EMAIL: ${{ steps.bot-details.outputs.email }}
+          persist-credentials: false
 
       - name: Ensure inputs.version is valid semver
         run: |
@@ -68,9 +60,15 @@ jobs:
           CHANNEL="$(echo ${{ inputs.version }} | cut -d '.' -f 1,2)"
           echo "channel=$CHANNEL" >> "${GITHUB_OUTPUT}"
 
+      # The script creates the release commit through the GitHub API with the App token,
+      # so GitHub signs it and marks it as verified.
       - name: Release samples
         run: |
           ./samples/.github/scripts/release-samples.sh ${{ inputs.version }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BOT_NAME: ${{ steps.bot-details.outputs.name }}
+          BOT_EMAIL: ${{ steps.bot-details.outputs.email }}
 
       - name: Change the default branch
         run: |
