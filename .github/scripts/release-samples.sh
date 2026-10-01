@@ -51,14 +51,8 @@ pushd $REPOSITORY
 # The release branch starts from the checked-out commit
 BASE_SHA="$(git rev-parse HEAD)"
 
-# Update bicepconfig.json br:biceptypes.azurecr.io/radius with the CHANNEL
-BICEPCONFIG_RADIUS_STRING_REPLACEMENT="br:biceptypes.azurecr.io/radius:${CHANNEL}"
-awk -v REPLACEMENT="${BICEPCONFIG_RADIUS_STRING_REPLACEMENT}" '{gsub(/br:biceptypes\.azurecr\.io\/radius:latest/, REPLACEMENT); print}' bicepconfig.json > bicepconfig_updated.json
-mv bicepconfig_updated.json bicepconfig.json
-
-# Update bicepconfig.json br:biceptypes.azurecr.io/aws with the CHANNEL
-BICEPCONFIG_AWS_STRING_REPLACEMENT="br:biceptypes.azurecr.io/aws:${CHANNEL}"
-awk -v REPLACEMENT="${BICEPCONFIG_AWS_STRING_REPLACEMENT}" '{gsub(/br:biceptypes\.azurecr\.io\/aws:latest/, REPLACEMENT); print}' bicepconfig.json > bicepconfig_updated.json
+# Pin the root config's public GHCR edge extensions to the release channel.
+awk -v CHANNEL="${CHANNEL}" -f .github/scripts/release-bicepconfig.awk bicepconfig.json > bicepconfig_updated.json
 mv bicepconfig_updated.json bicepconfig.json
 echo "View updated bicepconfig..."
 cat bicepconfig.json
