@@ -1,0 +1,37 @@
+{
+  "experimentalFeaturesEnabled": {
+    "extensibility": true,
+    "ociEnabled": true
+  },
+  "extensions": {
+    "radius": "br:ghcr.io/radius-project/bicep-types-radius:edge",
+    "aws": "br:ghcr.io/radius-project/bicep-types-aws:edge",
+    "radiusPinned": "br:ghcr.io/radius-project/bicep-types-radius:0.59",
+    "awsPinned": "br:ghcr.io/radius-project/bicep-types-aws:0.59",
+    "radiusStable": "br:ghcr.io/radius-project/bicep-types-radius:0.60.2",
+    "awsStable": "br:ghcr.io/radius-project/bicep-types-aws:0.60.2",
+    "radiusLatest": "br:ghcr.io/radius-project/bicep-types-radius:latest",
+    "awsLatest": "br:ghcr.io/radius-project/bicep-types-aws:latest",
+    "awsPrerelease": "br:ghcr.io/radius-project/bicep-types-aws:0.59-rc1",
+    "radiusLatestPreview": "br:ghcr.io/radius-project/bicep-types-radius:latest-preview",
+    "awsLatestPreview": "br:ghcr.io/radius-project/bicep-types-aws:latest-preview",
+    "radiusLocal": "./radius.tgz",
+    "awsLocal": "../aws.tgz",
+    "custom": "br:example.azurecr.io/custom:latest",
+    "customRadius": "br:ghcr.io/example/bicep-types-radius:latest",
+    "customAws": "br:ghcr.io/radius-project/custom-bicep-types-aws:latest"
+  },
+  "analyzers": {
+    "core": {
+      "enabled": false
+    }
+  },
+  "moduleAliases": {
+    "br": {
+      "recipes": {
+        "registry": "recipes.azurecr.io",
+        "modulePath": "recipes"
+      }
+    }
+  }
+}
