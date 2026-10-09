@@ -1,8 +1,9 @@
 {
   "experimentalFeaturesEnabled": {
-    "extensibility": true
+    "extensibility": true,
+    "ociEnabled": true
   },
   "extensions": {
-    "radius": "br:biceptypes.azurecr.io/radius:latest"
+    "radius": "br:ghcr.io/radius-project/bicep-types-radius:edge"
   }
 }
