@@ -20,7 +20,7 @@ rad env switch "$name" --preview
 if [[ "$flavor" == edge ]]; then
   expected=sha256:ca65f43501f39fc31689e8a292e9e0e3179e4ebf7a89ec0143c12b4a1dc24ddd
   source=ghcr.io/radius-project/kube-recipes/postgresqldatabases:18142182e52e19a46b0ed172037357e8e142dcd2
-  actual=$(oras resolve "$source")
+  actual=$(oras manifest fetch --descriptor "$source" | jq -er '.digest')
   if [[ "$actual" != "$expected" ]]; then
     echo "Pre-TLS PostgreSQL Recipe digest does not match the recorded baseline." >&2
     exit 1
@@ -46,7 +46,7 @@ pack_name=${pack_id##*/}
 rad resource show Radius.Core/recipePacks "$pack_name" -g "$pack_group" -o json > "$evidence/pack.json"
 for type in Radius.Compute/containers Radius.Data/postgreSqlDatabases Radius.Security/secrets; do
   source=$(jq -er --arg type "$type" '.properties.recipes[$type].source' "$evidence/pack.json")
-  digest=$(oras resolve "$source")
+  digest=$(oras manifest fetch --descriptor "$source" | jq -er '.digest')
   printf '%s %s %s\n' "$type" "$source" "$digest" | tee -a "$evidence/recipe-digests.txt"
   rad resource-type show "$type" -o json > "$evidence/${type##*/}-schema.json"
 done

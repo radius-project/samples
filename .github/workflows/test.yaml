@@ -202,6 +202,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/postgresql-home/.kube"
           echo "HOME=$RUNNER_TEMP/postgresql-home" >> "$GITHUB_ENV"
           echo "KUBECONFIG=$RUNNER_TEMP/postgresql-home/.kube/config" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/postgresql-home/.local/bin" >> "$GITHUB_PATH"
 
       - name: Test demo database client
         if: steps.gen-id.outputs.RUN_TEST == 'true' && (matrix.name == 'demo' || matrix.compatibility != '')
