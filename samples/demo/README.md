@@ -20,3 +20,22 @@ docker build \
 `app-postgresql.bicep` uses the Kubernetes Container Recipe's direct Secret connection support to project the database password as `CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD`. This requires Radius 0.61.0 or later, or a current edge installation.
 
 The demo image prefers that variable and retains `CONNECTION_POSTGRESQL_PASSWORD` as a compatibility fallback for older or mixed installations whose PostgreSQL Recipe still supplies the password. If both variables are set to different values, the demo logs a warning and uses `CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD`. Azure ACI does not project direct Secret connections, so this new password path is Kubernetes-only; its existing connection behavior is unchanged.
+
+### Explicit client TLS
+
+When PostgreSQL is selected, set `RADIUS_DEMO_POSTGRESQL_TLS=verify-full` and
+`RADIUS_DEMO_POSTGRESQL_CA_FILE` to a readable file containing PEM CA certificates
+to verify the server certificate and its hostname. Mount only the public CA
+bundle into the client, never a server or CA private key. This requires a server
+that already supports TLS; these client settings do not enable TLS on the server.
+The existing PostgreSQL Bicep sample is unchanged.
+
+Explicit TLS overrides ambient `PGSSLMODE`, including `disable` and `no-verify`.
+An unsupported mode, a CA file without the mode, or a missing, unreadable, empty,
+or invalid CA bundle fails explicitly, without a plaintext retry.
+If both settings are absent, the client preserves node-postgres defaults,
+including `PGSSLMODE`. The projected `CONNECTION_POSTGRESQL_TLS` value is not an
+opt-in: older Recipes can report `required` while running a plaintext server.
+Other database drivers ignore these PostgreSQL-specific settings.
+
+Run the client regression tests with `npm test` from `samples/demo`.

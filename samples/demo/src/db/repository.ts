@@ -2,7 +2,8 @@ import { MongoFactory } from './mongo';
 import { RedisFactory } from './redis';
 import { InMemoryFactory } from './inmemory';
 import { DaprFactory } from './dapr';
-import { PostgresFactory } from './postgres';
+import { PostgresFactory, postgresTlsConfig } from './postgres';
+import { PoolConfig } from 'pg';
 import { CommunicationProtocolEnum } from '@dapr/dapr';
 
 export interface Item {
@@ -74,15 +75,18 @@ export function createFactory(): RepositoryFactory {
             console.warn("Conflicting PostgreSQL passwords found; using CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD instead of CONNECTION_POSTGRESQL_PASSWORD");
         }
 
-        const connection = {
+        const connection: PoolConfig = {
             host: process.env.CONNECTION_POSTGRESQL_HOST!,
-            port: process.env.CONNECTION_POSTGRESQL_PORT!,
-            username: process.env.CONNECTION_POSTGRESQL_USERNAME || '',
+            port: process.env.CONNECTION_POSTGRESQL_PORT ? Number(process.env.CONNECTION_POSTGRESQL_PORT) : undefined,
+            user: process.env.CONNECTION_POSTGRESQL_USERNAME || '',
             password: secretConnectionPassword || legacyConnectionPassword || '',
             database: process.env.CONNECTION_POSTGRESQL_DATABASE || '',
         }
-        const url = `postgresql://${connection.username}:${connection.password}@${connection.host}:${connection.port}/${connection.database}`
-        return new PostgresFactory(url);
+        const ssl = postgresTlsConfig();
+        if (ssl !== undefined) {
+            connection.ssl = ssl;
+        }
+        return new PostgresFactory(connection);
     }
 
     console.log("Using in-memory store: no connection string found");

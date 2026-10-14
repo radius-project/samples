@@ -164,6 +164,13 @@ jobs:
         with:
           node-version: 20
 
+      - name: Test demo database client
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo'
+        working-directory: samples/demo
+        run: |
+          npm ci
+          npm test
+
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash

@@ -1,27 +1,63 @@
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
+import { readFileSync } from 'node:fs';
+import { X509Certificate } from 'node:crypto';
 import { Repository, Item, RepositoryFactory } from './repository';
 import { v4 as uuidv4 } from 'uuid';
 
-export class PostgresFactory implements RepositoryFactory {
-    private connectionString: string;
-
-    constructor(connectionString: string) {
-        this.connectionString = connectionString;
+export function postgresTlsConfig(): PoolConfig['ssl'] {
+    const mode = process.env.RADIUS_DEMO_POSTGRESQL_TLS;
+    const caFile = process.env.RADIUS_DEMO_POSTGRESQL_CA_FILE;
+    if (mode === undefined && caFile === undefined) {
+        return undefined;
+    }
+    if (mode !== 'verify-full') {
+        throw new Error('Set RADIUS_DEMO_POSTGRESQL_TLS=verify-full when configuring PostgreSQL TLS; omit both TLS settings for legacy behavior.');
+    }
+    if (!caFile) {
+        throw new Error('RADIUS_DEMO_POSTGRESQL_CA_FILE is required with RADIUS_DEMO_POSTGRESQL_TLS=verify-full.');
     }
 
-    async create(): Promise<Repository> {
-        const pool = new Pool({
-            connectionString: this.connectionString,
-        });
+    let ca: string;
+    try {
+        ca = readFileSync(caFile, 'utf8');
+    } catch {
+        throw new Error('Cannot read RADIUS_DEMO_POSTGRESQL_CA_FILE; provide a readable PEM CA bundle.');
+    }
 
-        // Ensure the table exists
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS items (
-                id UUID PRIMARY KEY,
-                title TEXT NOT NULL,
-                done BOOLEAN NOT NULL
-            );
-        `);
+    const certificates = ca.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g);
+    try {
+        if (!certificates?.length ||
+            ca.replace(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g, '').trim() ||
+            certificates.some(certificate => !new X509Certificate(certificate).ca)) {
+            throw new Error('Invalid CA bundle');
+        }
+    } catch {
+        throw new Error('RADIUS_DEMO_POSTGRESQL_CA_FILE must contain a nonempty, valid PEM CA certificate bundle.');
+    }
+    return { ca, rejectUnauthorized: true };
+}
+
+export class PostgresFactory implements RepositoryFactory {
+    constructor(private config: PoolConfig) {}
+
+    async create(): Promise<Repository> {
+        const pool = new Pool(this.config);
+        try {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS items (
+                    id UUID PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    done BOOLEAN NOT NULL
+                );
+            `);
+        } catch (error) {
+            try {
+                await pool.end();
+            } catch {
+                console.warn('Failed to close PostgreSQL pool after initialization failed.');
+            }
+            throw error;
+        }
 
         return new PostgresRepository(pool);
     }
