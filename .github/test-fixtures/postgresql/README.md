@@ -55,6 +55,8 @@ certificate with the exact DNS SAN, and creates the operator TLS Secret before
 database deployment. Both compilation and deployment must use the same isolated
 `HOME`, kubeconfig, CLI, and `$HOME/.rad/bin/bicep`. Do not compile in a fresh
 cache and then deploy using a different, stale user cache.
+The fixture explicitly runs `rad bicep download` before compiler assertions:
+installing the CLI/control plane does not populate a fresh HOME's Bicep binary.
 
 `prepare-tls.py` downloads the three Bicep Recipes from contrib commit
 `1a4c120fdab2b0f0c49bda692aef4b519855d79d`, recording their source paths and SHA-256

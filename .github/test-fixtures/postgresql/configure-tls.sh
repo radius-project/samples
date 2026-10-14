@@ -45,6 +45,7 @@ openssl verify -CAfile "$work/ca.crt" -verify_hostname "$host" "$work/server.crt
 kubectl create secret tls postgresql-tutorial-tls -n "$namespace" \
   --cert="$work/server.crt" --key="$work/server.key"
 python3 .github/test-fixtures/postgresql/prepare-tls.py "$work/prepared" "$image" "$work/ca.crt" > "$evidence/recipe-sources.json"
+rad bicep download
 python3 .github/test-fixtures/postgresql/check-tls-template.py "$HOME/.rad/bin/bicep"
 for recipe in postgresql containers secrets; do
   rad bicep publish --file "$work/prepared/$recipe.bicep" \
