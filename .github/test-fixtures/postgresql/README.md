@@ -37,3 +37,57 @@ there. The local-registry HTTP exception must apply only to that registry.
 After collecting nonsecret evidence, delete only the owned test resources and
 temporary password parameter files. Passing these checks is a pre-merge gate,
 not authorization to publish images, change Recipe defaults, or merge a PR.
+
+## TLS-only sample gate
+
+The `postgresql-tls` matrix row reuses the same K3D/local registry setup. It
+compiles and deploys the public PostgreSQL app and its intentionally public
+Recipe Pack helper without changing their application or connection names.
+Node 20 runs the source tests; the built Node 22 image runs the same explicit
+test file outside production `dist`. Existing Playwright demo CRUD runs against
+the TLS deployment before the destructive negative cases.
+
+`configure-tls.sh PRIVATE_DIRECTORY EVIDENCE_DIRECTORY IMAGE LOCAL_REGISTRY`
+requires `POSTGRESQL_TEST_CONTEXT` to equal the current disposable context.
+It refuses namespace/group/workspace collisions, creates `tutorial` with the
+verified `radius-tutorial` namespace, issues a short-lived CA and server
+certificate with the exact DNS SAN, and creates the operator TLS Secret before
+database deployment. Both compilation and deployment must use the same isolated
+`HOME`, kubeconfig, CLI, and `$HOME/.rad/bin/bicep`. Do not compile in a fresh
+cache and then deploy using a different, stale user cache.
+
+`prepare-tls.py` downloads the three Bicep Recipes from contrib commit
+`1a4c120fdab2b0f0c49bda692aef4b519855d79d`, recording their source paths and SHA-256
+hashes. They are compiled and published **only to the isolated local registry**.
+The public helper selects all three tagged local candidates explicitly. The
+fixture verifies the stored mappings, resolved digests, actual registered TLS
+schema, compiler/type-cache hashes, and runtime images. No default `edge`
+PostgreSQL Recipe is used. The image parameter selects the locally built
+container by digest. Public TLS Recipe and retained client-image publication
+remain separate, unmet gates.
+
+After deploying the public sample with the protected generated
+`prepared/parameters.json`, run:
+
+```bash
+bash .github/test-fixtures/postgresql/verify-tls.sh "$private" "$evidence"
+# Run the existing Playwright demo tests while this deployment is healthy.
+bash .github/test-fixtures/postgresql/negative-tls.sh "$private" "$evidence"
+```
+
+`verify-tls.sh` verifies readiness and returned hostname, streams only the public
+CA to an authenticated `psql` probe, and runs `tls-probe.cjs` in the actual demo
+container. That probe exercises HTTP CRUD, independently checks PostgreSQL rows,
+queries `pg_stat_ssl` on the compiled client's repository connection, checks the
+CA-only mount is readable and rejects writes with `EROFS`, and rejects wrong CA,
+hostname/SAN mismatch, and plaintext clients. It never places passwords in argv.
+
+`negative-tls.sh` repeats the checks with server policy omitted from a private
+copy of the sample. Application deletion must remove the app-owned CA Secret and
+leave the operator TLS Secret's UID/data hash unchanged. Only after that assertion
+does the fixture deliberately damage its own server Secret to check missing
+Secret, missing key, and invalid certificate failures. Finally it selects the
+digest-verified old PostgreSQL Recipe and proves the explicit TLS client fails
+without downgrading. It removes its applications and operator Secret, not the
+namespace. Private key/parameter files must be removed on success or failure;
+CI never uploads the private directory or raw Secret contents.

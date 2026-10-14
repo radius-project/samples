@@ -105,6 +105,23 @@ jobs:
             images: samples/demo
             directories: samples/demo/
 
+          - name: postgresql-tls
+            os: ubuntu-24.04
+            runOnPullRequest: true
+            radiusVersion: edge
+            app: demo-tutorial
+            env: tutorial
+            path: ./samples/demo/app-postgresql.bicep
+            deployArgs: -p @${RUNNER_TEMP}/postgresql-tls/prepared/parameters.json
+            exposeArgs: --application demo-tutorial
+            previewFlag: true
+            uiTestFile: tests/demo/demo.app.spec.ts
+            port: 3000
+            container: demo-tutorial
+            enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
+
           - name: volumes
             os: ubuntu-24.04
             runOnPullRequest: true
@@ -196,8 +213,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Isolate PostgreSQL compatibility configuration
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.compatibility != ''
+      - name: Isolate PostgreSQL configuration
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && (matrix.compatibility != '' || matrix.name == 'postgresql-tls')
         run: |
           mkdir -p "$RUNNER_TEMP/postgresql-home/.kube"
           echo "HOME=$RUNNER_TEMP/postgresql-home" >> "$GITHUB_ENV"
@@ -205,7 +222,7 @@ jobs:
           echo "$RUNNER_TEMP/postgresql-home/.local/bin" >> "$GITHUB_PATH"
 
       - name: Test demo database client
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && (matrix.name == 'demo' || matrix.compatibility != '')
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && (matrix.name == 'demo' || matrix.compatibility != '' || matrix.name == 'postgresql-tls')
         working-directory: samples/demo
         run: |
           npm ci
@@ -214,6 +231,10 @@ jobs:
       - name: Download k3d
         if: steps.gen-id.outputs.RUN_TEST == 'true'
         run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+      - name: Test PostgreSQL TLS fixture preparation
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'postgresql-tls'
+        run: python -B .github/test-fixtures/postgresql/test-tls-fixtures.py
 
       - name: Create k3d cluster
         if: steps.gen-id.outputs.RUN_TEST == 'true'
@@ -255,6 +276,7 @@ jobs:
 
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'
+        shell: bash
         run: |
           rad install kubernetes --set rp.publicEndpointOverride=localhost
 
@@ -300,6 +322,15 @@ jobs:
           if ! grep -q "Successfully registered manifests" registermanifest_logs.txt; then
             echo "Manifests not registered after 3 minutes."
             exit 1
+          fi
+
+          if [[ "${{ matrix.name }}" == postgresql-tls ]]; then
+            export POSTGRESQL_TEST_CONTEXT=k3d-k3s-default
+            digest=$(oras manifest fetch --plain-http --descriptor localhost:51351/samples/demo:latest | jq -er '.digest')
+            bash .github/test-fixtures/postgresql/configure-tls.sh \
+              "$RUNNER_TEMP/postgresql-tls" "$RUNNER_TEMP/postgresql-tls-evidence" \
+              "sampleregistry:5000/samples/demo@$digest" localhost:51351
+            exit 0
           fi
 
           if [[ -n "${{ matrix.compatibility }}" ]]; then
@@ -369,6 +400,16 @@ jobs:
           cp "$cache/manifest" "$RUNNER_TEMP/postgresql-evidence/bicep-types-manifest.json"
           sha256sum "$cache/manifest" "$cache/types.tgz" > "$RUNNER_TEMP/postgresql-evidence/bicep-types-hashes.txt"
 
+      - name: Verify PostgreSQL TLS and persisted HTTP CRUD
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'postgresql-tls'
+        shell: bash
+        run: |
+          docker run --rm \
+            --mount "type=bind,source=$PWD/samples/demo/test,target=/usr/src/app/test,readonly" \
+            localhost:51351/samples/demo:latest node --test test/postgres.test.cjs
+          bash .github/test-fixtures/postgresql/verify-tls.sh \
+            "$RUNNER_TEMP/postgresql-tls" "$RUNNER_TEMP/postgresql-tls-evidence"
+
       - name: Upload PostgreSQL compatibility evidence
         if: always() && matrix.compatibility != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -402,6 +443,32 @@ jobs:
           npm ci
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
+
+      - name: Verify PostgreSQL TLS failures and Secret ownership
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'postgresql-tls'
+        shell: bash
+        env:
+          POSTGRESQL_TEST_CONTEXT: k3d-k3s-default
+        run: |
+          bash .github/test-fixtures/postgresql/negative-tls.sh \
+            "$RUNNER_TEMP/postgresql-tls" "$RUNNER_TEMP/postgresql-tls-evidence"
+
+      - name: Upload PostgreSQL TLS evidence
+        if: always() && matrix.name == 'postgresql-tls'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: postgresql-tls-evidence
+          path: ${{ runner.temp }}/postgresql-tls-evidence/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Remove PostgreSQL TLS private files
+        if: always() && matrix.name == 'postgresql-tls'
+        shell: bash
+        run: |
+          rm -f -- "$RUNNER_TEMP/postgresql-tls/ca.key" \
+            "$RUNNER_TEMP/postgresql-tls/wrong-ca.key" "$RUNNER_TEMP/postgresql-tls/server.key" \
+            "$RUNNER_TEMP/postgresql-tls/prepared/parameters.json"
 
       - name: Upload Playwright Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -469,7 +536,7 @@ jobs:
 
       # Cleanup
       - name: Delete app
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success' && matrix.name != 'postgresql-tls'
         run: |
           if command -v rad &> /dev/null; then
             previewArg=""
