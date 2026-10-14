@@ -16,6 +16,7 @@ on:
     paths:
       - samples/**
       - .github/workflows/**
+      - .github/test-fixtures/postgresql/**
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -41,7 +42,7 @@ jobs:
   test:
     name: Sample tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
     strategy:
@@ -75,6 +76,34 @@ jobs:
             enableDapr: true
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
+
+          - name: postgresql-released
+            os: ubuntu-24.04
+            runOnPullRequest: true
+            compatibility: released
+            radiusVersion: 0.61.1
+            app: demo-pr1compat
+            env: pr1compat
+            path: ${RUNNER_TEMP}/postgresql/app-postgresql.bicep
+            deployArgs: -p @${RUNNER_TEMP}/postgresql/parameters.json
+            previewFlag: true
+            enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
+
+          - name: postgresql-edge
+            os: ubuntu-24.04
+            runOnPullRequest: true
+            compatibility: edge
+            radiusVersion: edge
+            app: demo-pr1compat
+            env: pr1compat
+            path: ${RUNNER_TEMP}/postgresql/app-postgresql.bicep
+            deployArgs: -p @${RUNNER_TEMP}/postgresql/parameters.json
+            previewFlag: true
+            enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
 
           - name: volumes
             os: ubuntu-24.04
@@ -145,6 +174,9 @@ jobs:
             exit 1
           fi
 
+          if [[ -n "${{ matrix.radiusVersion }}" ]]; then
+            RADIUS_VERSION="${{ matrix.radiusVersion }}"
+          fi
           echo "RADIUS_VERSION=$RADIUS_VERSION" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout
@@ -164,8 +196,15 @@ jobs:
         with:
           node-version: 20
 
+      - name: Isolate PostgreSQL compatibility configuration
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.compatibility != ''
+        run: |
+          mkdir -p "$RUNNER_TEMP/postgresql-home/.kube"
+          echo "HOME=$RUNNER_TEMP/postgresql-home" >> "$GITHUB_ENV"
+          echo "KUBECONFIG=$RUNNER_TEMP/postgresql-home/.kube/config" >> "$GITHUB_ENV"
+
       - name: Test demo database client
-        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo'
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && (matrix.name == 'demo' || matrix.compatibility != '')
         working-directory: samples/demo
         run: |
           npm ci
@@ -262,6 +301,12 @@ jobs:
             exit 1
           fi
 
+          if [[ -n "${{ matrix.compatibility }}" ]]; then
+            bash .github/test-fixtures/postgresql/configure.sh \
+              "${{ matrix.compatibility }}" pr1compat "$RUNNER_TEMP/postgresql-evidence"
+            exit 0
+          fi
+
           # 'rad install kubernetes' installs the control plane only, so the resource group,
           # environment and workspace have to be created explicitly.
           # See https://github.com/radius-project/radius/pull/12829.
@@ -285,6 +330,15 @@ jobs:
             rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
           fi
 
+      - name: Prepare pinned PostgreSQL compatibility template
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.compatibility != ''
+        shell: bash
+        run: |
+          python .github/test-fixtures/postgresql/prepare.py \
+            "$RUNNER_TEMP/postgresql" sampleregistry:5000/samples/demo:latest \
+            | tee "$RUNNER_TEMP/postgresql-evidence/template.json"
+          cp bicepconfig.json "$RUNNER_TEMP/postgresql/"
+
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
@@ -296,6 +350,32 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+
+      - name: Verify PostgreSQL backend and persisted CRUD
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.compatibility != ''
+        shell: bash
+        run: |
+          kubectl rollout status deployment/postgresql-pr1compat -n pr1compat --timeout=180s
+          kubectl rollout status deployment/demo-pr1compat -n pr1compat --timeout=180s
+          kubectl exec -i -n pr1compat deployment/demo-pr1compat -c web -- node \
+            < .github/test-fixtures/postgresql/probe.cjs \
+            | tee "$RUNNER_TEMP/postgresql-evidence/crud.txt"
+          kubectl get pods -n pr1compat -o json |
+            jq '[.items[] | {name:.metadata.name, containers:[.status.containerStatuses[]? | {name,image,imageID}]}]' \
+            > "$RUNNER_TEMP/postgresql-evidence/application-images.json"
+          "$HOME/.rad/bin/bicep" --version > "$RUNNER_TEMP/postgresql-evidence/bicep-version.txt"
+          cache="$HOME/.bicep/br/biceptypes.azurecr.io/radius/latest\$"
+          cp "$cache/manifest" "$RUNNER_TEMP/postgresql-evidence/bicep-types-manifest.json"
+          sha256sum "$cache/manifest" "$cache/types.tgz" > "$RUNNER_TEMP/postgresql-evidence/bicep-types-hashes.txt"
+
+      - name: Upload PostgreSQL compatibility evidence
+        if: always() && matrix.compatibility != ''
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: postgresql-${{ matrix.compatibility }}-evidence
+          path: ${{ runner.temp }}/postgresql-evidence/
+          retention-days: 30
+          if-no-files-found: error
 
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
