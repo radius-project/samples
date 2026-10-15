@@ -75,6 +75,10 @@ hashes. Recipes are compiled and published **only to the isolated local registry
 It copies the public Bicep files byte-for-byte to a private directory with a
 candidate extension configuration. Compilation checks source-byte identity and
 rejects diagnostics; deployment uses the same directory and configuration.
+The CA resource and volume share one authored name variable with an explicit
+symbolic dependency for required-mode ordering. The compiled container must not
+read `reference('postgresqlCa')`: runtime `1370bad` can try to fetch the skipped
+resource even inside the disabled branch's conditional expression.
 No public imports or global type-cache files are changed.
 `build-tls-types.sh` uses the official generator and aggregate index builder from
 Radius commit `56fa47301fc5d310bcd3df032078357cf6cd3cb6`. It regenerates Data from

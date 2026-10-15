@@ -49,13 +49,16 @@ def check(binary, template_directory=None):
     assert "'image', parameters('image')" in props
     assert "if(variables('tlsEnabled'), createObject('RADIUS_DEMO_POSTGRESQL_TLS', createObject('value', 'verify-full'), 'RADIUS_DEMO_POSTGRESQL_CA_FILE', createObject('value', '/etc/postgresql-ca/ca.crt')), createObject('PGSSLMODE', createObject('value', 'disable')))" in props
     assert "if(variables('tlsEnabled'), createObject('volumeMounts', createArray(createObject('volumeName', 'postgresql-ca', 'mountPath', '/etc/postgresql-ca'))), createObject())" in props
-    assert "if(variables('tlsEnabled'), createObject('volumes', createObject('postgresql-ca', createObject('secretName', reference('postgresqlCa').name))), createObject())" in props
+    assert "if(variables('tlsEnabled'), createObject('volumes', createObject('postgresql-ca', createObject('secretName', variables('postgresqlCaName')))), createObject())" in props
+    assert "reference('postgresqlCa')" not in json.dumps(app)
     assert "'connections', createObject('postgresql', createObject('source', reference('postgresql').id), 'postgresqlCredentials', createObject('source', reference('postgresqlCredentials').id))" in props
     assert set(container["dependsOn"]) == {
         "demoApp", "postgresql", "postgresqlCa", "postgresqlCredentials",
     }
     ca = resources["postgresqlCa"]["properties"]
     assert resources["postgresqlCa"]["condition"] == "[variables('tlsEnabled')]"
+    assert ca["name"] == "[variables('postgresqlCaName')]"
+    assert app["variables"]["postgresqlCaName"] == "[format('postgresql-ca-{0}', variables('environmentName'))]"
     assert app["variables"]["tlsEnabled"] == "[equals(parameters('postgresqlTls'), 'required')]"
     assert resources["demoApp"]["properties"]["name"] == "[variables('validatedAppName')]"
     assert app["variables"]["validatedAppName"] == (
@@ -74,7 +77,7 @@ def check(binary, template_directory=None):
     }
     expected_names = {
         "demoContainer": "demo", "postgresql": "postgresql",
-        "postgresqlCredentials": "postgresql-credentials", "postgresqlCa": "postgresql-ca",
+        "postgresqlCredentials": "postgresql-credentials",
     }
     for symbol, prefix in expected_names.items():
         assert resources[symbol]["properties"]["name"] == (

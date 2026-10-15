@@ -29,6 +29,7 @@ var validatedAppName = tlsEnabled && empty(trim(postgresqlCaCertificate))
 // Environment name derived from the Environment ID, used to keep resource names
 // unique per environment (e.g. dev/test/prod) within the same resource group.
 var environmentName = last(split(environment, '/'))
+var postgresqlCaName = 'postgresql-ca-${environmentName}'
 
 resource demoApp 'Radius.Core/applications@2025-08-01-preview' = {
   name: validatedAppName
@@ -75,7 +76,7 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     ...(tlsEnabled ? {
       volumes: {
         'postgresql-ca': {
-          secretName: postgresqlCa!.name
+          secretName: postgresqlCaName
         }
       }
     } : {})
@@ -88,9 +89,8 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
       }
     }
   }
-  // A name reference alone need not order deployment of the Secret Recipe.
+  // Order the CA Recipe without reading a conditionally skipped resource.
   dependsOn: [
-    #disable-next-line no-unnecessary-dependson
     postgresqlCa
   ]
 }
@@ -109,7 +109,7 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
 }
 
 resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = if (tlsEnabled) {
-  name: 'postgresql-ca-${environmentName}'
+  name: postgresqlCaName
   properties: {
     environment: environment
     application: demoApp.id
