@@ -75,9 +75,18 @@ export function createFactory(): RepositoryFactory {
             console.warn("Conflicting PostgreSQL passwords found; using CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD instead of CONNECTION_POSTGRESQL_PASSWORD");
         }
 
+        const configuredPort = process.env.CONNECTION_POSTGRESQL_PORT;
+        let port: number | undefined;
+        if (configuredPort) {
+            port = Number(configuredPort);
+            if (!/^\d+$/.test(configuredPort) || !Number.isInteger(port) || port < 1 || port > 65535) {
+                throw new Error('CONNECTION_POSTGRESQL_PORT must be a decimal integer between 1 and 65535.');
+            }
+        }
+
         const connection: PoolConfig = {
             host: process.env.CONNECTION_POSTGRESQL_HOST!,
-            port: process.env.CONNECTION_POSTGRESQL_PORT ? Number(process.env.CONNECTION_POSTGRESQL_PORT) : undefined,
+            port,
             user: process.env.CONNECTION_POSTGRESQL_USERNAME || '',
             password: secretConnectionPassword || legacyConnectionPassword || '',
             database: process.env.CONNECTION_POSTGRESQL_DATABASE || '',
