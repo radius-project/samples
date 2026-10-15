@@ -115,11 +115,16 @@ bundle into the client, never a server or CA private key. This requires a server
 that already supports TLS; these client settings do not enable TLS on the server.
 The PostgreSQL Bicep sample supplies these settings and the CA mount explicitly.
 
-Explicit TLS overrides ambient `PGSSLMODE`, including `disable` and `no-verify`.
+`PGSSLMODE` is a PostgreSQL client environment variable supported by libpq/psql
+and some drivers; support varies by driver. It controls client connections, not
+the server's TLS policy. See the [PostgreSQL SSL documentation](https://www.postgresql.org/docs/current/libpq-ssl.html)
+for details. With both demo TLS settings absent, the client preserves existing
+node-postgres behavior, including `PGSSLMODE`. Explicit demo verified-TLS settings
+override `PGSSLMODE`, including `disable` and `no-verify`.
+
 An unsupported mode, a CA file without the mode, or a missing, unreadable, empty,
 or invalid CA bundle fails explicitly, without a plaintext retry.
-If both settings are absent, the client preserves node-postgres defaults,
-including `PGSSLMODE`. The projected `CONNECTION_POSTGRESQL_TLS` value is not an
+The projected `CONNECTION_POSTGRESQL_TLS` value is not an
 opt-in: older Recipes can report `required` while running a plaintext server.
 Other database drivers ignore these PostgreSQL-specific settings.
 
