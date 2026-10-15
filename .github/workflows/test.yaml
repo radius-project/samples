@@ -111,7 +111,7 @@ jobs:
             radiusVersion: edge
             app: demo-tutorial
             env: tutorial
-            path: ./samples/demo/app-postgresql.bicep
+            path: ${RUNNER_TEMP}/postgresql-tls/prepared/public/app-postgresql.bicep
             deployArgs: -p @${RUNNER_TEMP}/postgresql-tls/prepared/parameters.json
             exposeArgs: --application demo-tutorial
             previewFlag: true
@@ -444,7 +444,7 @@ jobs:
           npx playwright install --with-deps
           npx playwright test ${{ matrix.uiTestFile }} --retries 3
 
-      - name: Verify PostgreSQL TLS failures and Secret ownership
+      - name: Verify PostgreSQL modes, failures, and Secret ownership
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'postgresql-tls'
         shell: bash
         env:
@@ -468,7 +468,9 @@ jobs:
         run: |
           rm -f -- "$RUNNER_TEMP/postgresql-tls/ca.key" \
             "$RUNNER_TEMP/postgresql-tls/wrong-ca.key" "$RUNNER_TEMP/postgresql-tls/server.key" \
-            "$RUNNER_TEMP/postgresql-tls/prepared/parameters.json"
+            "$RUNNER_TEMP/postgresql-tls/prepared/parameters.json" \
+            "$RUNNER_TEMP/postgresql-tls/disabled-parameters.json" \
+            "$RUNNER_TEMP/postgresql-tls/guard-parameters.json"
 
       - name: Upload Playwright Results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

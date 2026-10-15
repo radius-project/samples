@@ -6,6 +6,7 @@ work=$1
 evidence=$2
 image=$3
 registry=$4
+templates="$work/prepared/public"
 : "${POSTGRESQL_TEST_CONTEXT:?Set the exact disposable cluster context before running TLS tests.}"
 [[ "$(kubectl config current-context)" == "$POSTGRESQL_TEST_CONTEXT" ]]
 [[ "$registry" =~ ^localhost:[0-9]+$ ]] || { echo "Only a local test registry is allowed." >&2; exit 1; }
@@ -23,9 +24,9 @@ kubectl create namespace radius-tutorial
 kubectl label namespace radius-tutorial samples.radius.io/test=postgresql-tls
 rad group create tutorial
 rad workspace create kubernetes tutorial --group tutorial
-rad env create tutorial --preview --kubernetes-namespace radius-tutorial
-rad env switch tutorial --preview
-rad env show tutorial --preview -o json > "$evidence/environment-before.json"
+rad env create tutorial --kubernetes-namespace radius-tutorial
+rad env switch tutorial
+rad env show tutorial -o json > "$evidence/environment-before.json"
 namespace=$(jq -er '.properties.providers.kubernetes.namespace' "$evidence/environment-before.json")
 [[ "$namespace" == radius-tutorial ]]
 host="postgresql-tutorial.$namespace.svc.cluster.local"
@@ -47,7 +48,9 @@ kubectl create secret tls postgresql-tutorial-tls -n "$namespace" \
   --cert="$work/server.crt" --key="$work/server.key"
 python3 .github/test-fixtures/postgresql/prepare-tls.py "$work/prepared" "$image" "$work/ca.crt" > "$evidence/recipe-sources.json"
 rad bicep download
-python3 .github/test-fixtures/postgresql/check-tls-template.py "$HOME/.rad/bin/bicep"
+rad resource-type create -f "$work/prepared/postgresql.yaml"
+bash .github/test-fixtures/postgresql/build-tls-types.sh "$work/prepared" "$evidence" "$HOME/.rad/bin/bicep"
+python3 .github/test-fixtures/postgresql/check-tls-template.py "$HOME/.rad/bin/bicep" "$templates"
 for recipe in postgresql containers secrets; do
   rad bicep publish --file "$work/prepared/$recipe.bicep" \
     --target "br:$registry/postgresql-tls/$recipe:candidate" --plain-http
@@ -56,7 +59,7 @@ for recipe in postgresql containers secrets; do
 done
 for invalid_source in 'br:sampleregistry:5000/postgresql-tls/postgresql:candidate' \
   'sampleregistry:5000/postgresql-tls/postgresql@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'; do
-  if rad deploy samples/demo/postgresql-tls-pack.bicep \
+  if rad deploy "$templates/postgresql-tls-pack.bicep" \
     -p packName=tutorial-invalid-source -p "postgresqlRecipeSource=$invalid_source" \
     -p containerRecipeSource=sampleregistry:5000/postgresql-tls/containers:candidate \
     -p secretRecipeSource=sampleregistry:5000/postgresql-tls/secrets:candidate > "$work/invalid-source.log" 2>&1; then
@@ -66,15 +69,15 @@ for invalid_source in 'br:sampleregistry:5000/postgresql-tls/postgresql:candidat
   grep -Fq 'Recipe sources must be raw registry/path:tag references' "$work/invalid-source.log"
 done
 echo "Recipe URL prefixes and digest-only sources rejected." > "$evidence/pack-inputs.txt"
-rad deploy samples/demo/postgresql-tls-pack.bicep \
+rad deploy "$templates/postgresql-tls-pack.bicep" \
   -p packName=tutorial-postgresql-tls \
   -p postgresqlRecipeSource=sampleregistry:5000/postgresql-tls/postgresql:candidate \
   -p containerRecipeSource=sampleregistry:5000/postgresql-tls/containers:candidate \
   -p secretRecipeSource=sampleregistry:5000/postgresql-tls/secrets:candidate
-rad env delete tutorial --preview -y
-rad env create tutorial --preview --kubernetes-namespace "$namespace" --recipe-packs tutorial-postgresql-tls
-rad env switch tutorial --preview
-rad env show tutorial --preview -o json > "$evidence/environment.json"
+rad env delete tutorial -y
+rad env create tutorial --kubernetes-namespace "$namespace" --recipe-packs tutorial-postgresql-tls
+rad env switch tutorial
+rad env show tutorial -o json > "$evidence/environment.json"
 jq -e '.properties.providers.kubernetes.namespace == "radius-tutorial" and (.properties.recipePacks | length == 1) and (.properties.recipePacks[0] | endswith("/tutorial-postgresql-tls"))' "$evidence/environment.json" >/dev/null
 rad resource show Radius.Core/recipePacks tutorial-postgresql-tls -o json > "$evidence/pack.json"
 jq -e '.properties.recipes | length == 3' "$evidence/pack.json" >/dev/null
@@ -85,12 +88,58 @@ for mapping in 'Radius.Data/postgreSqlDatabases:postgresql' 'Radius.Compute/cont
     '.properties.recipes[$type] | .kind == "bicep" and .source == $source and .plainHttp == true' "$evidence/pack.json" >/dev/null
   rad resource-type show "$type" -o json > "$evidence/$recipe-schema.json"
 done
-jq -e '.APIVersions["2025-08-01-preview"].Schema.properties.tls | .type == "string" and (.enum | index("required") != null)' "$evidence/postgresql-schema.json" >/dev/null
+jq -e '.APIVersions["2025-08-01-preview"].Schema.properties.tls |
+  .type == "string" and .default == "required" and
+  (.enum | index("required") != null and index("disabled") != null)' "$evidence/postgresql-schema.json" >/dev/null
 rad version > "$evidence/runtime.txt"
 "$HOME/.rad/bin/bicep" --version > "$evidence/bicep-version.txt"
-cache="$HOME/.bicep/br/biceptypes.azurecr.io/radius/latest\$"
-cp "$cache/manifest" "$evidence/bicep-types-manifest.json"
-sha256sum "$cache/manifest" "$cache/types.tgz" > "$evidence/bicep-types-hashes.txt"
+cp "$templates/bicepconfig.json" "$evidence/bicepconfig.json"
+sha256sum "$work/prepared/radius-extension.tgz" "$work/prepared/postgresql.yaml" > "$evidence/bicep-types-hashes.txt"
 kubectl get pods -n radius-system -o json |
   jq '[.items[] | {name:.metadata.name, containers:[.status.containerStatuses[]? | {name,image,imageID}]}]' \
     > "$evidence/control-plane-images.json"
+
+# Guard failures must precede changes to either a fresh app or the tutorial base.
+snapshot_resources() {
+  for type in Radius.Core/applications Radius.Compute/containers Radius.Data/postgreSqlDatabases Radius.Security/secrets; do
+    rad resource list "$type" --preview -o json | jq -S 'sort_by(.id)' | sha256sum
+  done
+  kubectl get deployments,services,secrets -n radius-tutorial -o json |
+    jq -S '[.items[] | {kind,metadata:{name:.metadata.name,uid:.metadata.uid},spec,data}] | sort_by(.kind,.metadata.name)' | sha256sum
+}
+for base in fresh existing; do
+  if [[ "$base" == existing ]]; then
+    rad deploy "$templates/app.bicep" -p "image=$image"
+    kubectl rollout status deployment/demo-tutorial -n radius-tutorial --timeout=180s
+  fi
+  snapshot_resources > "$work/guard-before.json"
+  for invalid in missing empty whitespace; do
+    jq --arg invalid "$invalid" '
+      if $invalid == "missing" then del(.parameters.postgresqlCaCertificate)
+      else .parameters.postgresqlCaCertificate.value = (if $invalid == "empty" then "" else " \n" end) end
+    ' "$work/prepared/parameters.json" > "$work/guard-parameters.json"
+    if rad deploy "$templates/app-postgresql.bicep" -p "@$work/guard-parameters.json" > "$work/guard.log" 2>&1; then
+      echo "Required mode accepted $invalid CA input." >&2
+      exit 1
+    fi
+    grep -Fq 'postgresqlCaCertificate is required when postgresqlTls is required.' "$work/guard.log"
+    snapshot_resources > "$work/guard-after.json"
+    cmp "$work/guard-before.json" "$work/guard-after.json"
+    echo "$base app: $invalid CA rejected before resource changes." >> "$evidence/ca-input-guard.txt"
+  done
+  for invalid in optional unknown; do
+    jq --arg invalid "$invalid" '.parameters.postgresqlTls.value = $invalid' \
+      "$work/prepared/parameters.json" > "$work/guard-parameters.json"
+    if rad deploy "$templates/app-postgresql.bicep" -p "@$work/guard-parameters.json" > "$work/guard.log" 2>&1; then
+      echo "Unsupported tutorial mode was accepted." >&2
+      exit 1
+    fi
+    grep -Fq postgresqlTls "$work/guard.log"
+    grep -Eiq 'allowed|invalid|validation' "$work/guard.log"
+    snapshot_resources > "$work/guard-after.json"
+    cmp "$work/guard-before.json" "$work/guard-after.json"
+    echo "$base app: unsupported mode rejected before resource changes." >> "$evidence/ca-input-guard.txt"
+  done
+done
+rad app delete demo-tutorial --preview -y
+rm -f "$work/guard-parameters.json"

@@ -8,8 +8,13 @@ const { Pool } = require(`${process.cwd()}/node_modules/pg`);
 
 async function main() {
     const [mode, expectedHost, serviceIp, wrongCaBase64] = process.argv.slice(2);
-    assert.equal(process.env.RADIUS_DEMO_POSTGRESQL_TLS, 'verify-full');
-    assert.equal(process.env.RADIUS_DEMO_POSTGRESQL_CA_FILE, '/etc/postgresql-ca/ca.crt');
+    const enabled = mode !== 'disabled';
+    assert.equal(process.env.RADIUS_DEMO_POSTGRESQL_TLS, enabled ? 'verify-full' : undefined);
+    assert.equal(process.env.RADIUS_DEMO_POSTGRESQL_CA_FILE, enabled ? '/etc/postgresql-ca/ca.crt' : undefined);
+    if (!enabled) {
+        assert.equal(process.env.PGSSLMODE, 'disable');
+        assert.equal(fs.existsSync('/etc/postgresql-ca'), false);
+    }
     assert.equal(process.env.CONNECTION_POSTGRESQL_HOST, expectedHost);
     const factory = createFactory();
     assert.equal(factory.constructor.name, 'PostgresFactory');
@@ -18,11 +23,15 @@ async function main() {
         console.log('Verified client rejected the old plaintext server without downgrade.');
         return;
     }
-    assert.equal(mode, 'tls');
-    const ca = fs.readFileSync(process.env.RADIUS_DEMO_POSTGRESQL_CA_FILE, 'utf8');
-    assert.deepEqual(fs.readdirSync('/etc/postgresql-ca').filter(name => !name.startsWith('..')), ['ca.crt']);
-    assert.ok(!ca.includes('PRIVATE KEY'));
-    assert.throws(() => fs.writeFileSync('/etc/postgresql-ca/write-probe', 'test'), { code: 'EROFS' });
+    assert.ok(['tls', 'disabled'].includes(mode));
+    let ca;
+    if (enabled) {
+        ca = fs.readFileSync(process.env.RADIUS_DEMO_POSTGRESQL_CA_FILE, 'utf8');
+        assert.deepEqual(fs.readdirSync('/etc/postgresql-ca').filter(name => !name.startsWith('..')), ['ca.crt']);
+        assert.ok(!ca.includes('PRIVATE KEY'));
+        assert.throws(() => fs.writeFileSync('/etc/postgresql-ca/write-probe', 'test'), { code: 'EROFS' });
+    }
+    assert.ok(process.env.CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD);
     const options = {
         host: expectedHost,
         port: Number(process.env.CONNECTION_POSTGRESQL_PORT),
@@ -30,7 +39,7 @@ async function main() {
         password: process.env.CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD || process.env.CONNECTION_POSTGRESQL_PASSWORD,
         database: process.env.CONNECTION_POSTGRESQL_DATABASE,
         connectionTimeoutMillis: 5000,
-        ssl: { ca, rejectUnauthorized: true },
+        ssl: enabled ? { ca, rejectUnauthorized: true } : false,
     };
     const repository = await factory.create();
     assert.equal(repository.isRealDatabase(), true);
@@ -55,7 +64,7 @@ async function main() {
         result = await verifier.query('SELECT title, done FROM items WHERE id = $1', [id]);
         assert.deepEqual(result.rows, [{ title: 'verified-tls-update', done: true }]);
         result = await repository.pool.query('SELECT ssl FROM pg_stat_ssl WHERE pid = pg_backend_pid()');
-        assert.deepEqual(result.rows, [{ ssl: true }]);
+        assert.deepEqual(result.rows, [{ ssl: enabled }]);
         const list = await fetch('http://localhost:3000/api/todos');
         const body = await list.json();
         assert.equal(body.message, null);
@@ -64,13 +73,29 @@ async function main() {
         assert.equal(deleted.status, 204);
         result = await verifier.query('SELECT count(*)::int AS count FROM items WHERE id = $1', [id]);
         assert.equal(result.rows[0].count, 0);
-        console.log(JSON.stringify({ backend: 'PostgreSQL', node: process.version, ssl: true, httpCrud: 'passed', persistedRows: 'verified', caMount: 'read-only' }));
+        console.log(JSON.stringify({ backend: 'PostgreSQL', node: process.version, ssl: enabled, httpCrud: 'passed', persistedRows: 'verified', caMount: enabled ? 'read-only' : 'absent' }));
     } finally {
         try {
             if (id) await repository.delete(id);
         } finally {
             await Promise.all([repository.dispose(), verifier.end()]);
         }
+    }
+    const wrongPassword = new Pool({ ...options, password: `${options.password}-incorrect` });
+    try {
+        await assert.rejects(wrongPassword.query('SELECT 1'), { code: '28P01' });
+    } finally {
+        await wrongPassword.end();
+    }
+    if (!enabled) {
+        const tlsClient = new Pool({ ...options, ssl: { rejectUnauthorized: true } });
+        try {
+            await assert.rejects(tlsClient.query('SELECT 1'), /server does not support SSL/i);
+        } finally {
+            await tlsClient.end();
+        }
+        console.log('Disabled server rejected wrong-password and TLS-forcing clients.');
+        return;
     }
     const plaintext = new Pool({ ...options, ssl: false });
     try {

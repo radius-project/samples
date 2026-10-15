@@ -2,6 +2,7 @@
 """Focused preparation checks; no cluster, network, or third-party test framework."""
 
 import importlib.util
+import hashlib
 import io
 import json
 import os
@@ -23,12 +24,12 @@ class PreparationTests(unittest.TestCase):
     def test_pinned_sources_private_parameters_and_exact_omission(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = pathlib.Path(temporary) / "private"
-            with patch("sys.stdout", new_callable=io.StringIO), patch.object(
+            with patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
                 PREPARE.urllib.request, "urlopen",
                 side_effect=lambda *a, **kw: io.BytesIO(b"extension kubernetes\n"),
             ) as request:
                 PREPARE.prepare(target, IMAGE, CA)
-            self.assertEqual(request.call_count, 3)
+            self.assertEqual(request.call_count, 4)
             for call in request.call_args_list:
                 self.assertIn(f"/{PREPARE.COMMIT}/", call.args[0])
             parameters = json.loads((target / "parameters.json").read_text())["parameters"]
@@ -39,7 +40,37 @@ class PreparationTests(unittest.TestCase):
                 self.assertEqual((target / "parameters.json").stat().st_mode & 0o777, 0o600)
             root = PATH.resolve().parents[3]
             source = (root / "samples/demo/app-postgresql.bicep").read_text()
-            self.assertEqual((target / "omitted-policy.bicep").read_text(), source.replace("    tls: 'required'\n", "", 1))
+            for source_file in (root / "samples/demo").glob("*.bicep"):
+                self.assertEqual((target / "public" / source_file.name).read_bytes(), source_file.read_bytes())
+            self.assertEqual(
+                json.loads((target / "public/bicepconfig.json").read_text())["extensions"]["radius"],
+                "../radius-extension.tgz",
+            )
+            self.assertNotIn("postgresqlTls", parameters)
+            self.assertEqual((target / "omitted-policy.bicep").read_text(), source.replace("    tls: postgresqlTls\n", "", 1))
+
+    def test_disabled_requires_no_ca(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            target = pathlib.Path(temporary) / "disabled"
+            with patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
+                PREPARE.urllib.request, "urlopen", side_effect=lambda *a, **kw: io.BytesIO(b"extension kubernetes\n"),
+            ):
+                PREPARE.prepare(target, IMAGE, "", "disabled")
+            parameters = json.loads((target / "parameters.json").read_text())["parameters"]
+            self.assertEqual(parameters["postgresqlTls"], {"value": "disabled"})
+            self.assertNotIn("postgresqlCaCertificate", parameters)
+
+    def test_rejects_unknown_tutorial_policy(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            for mode in ("", "optional", "disable", "unknown"):
+                with self.subTest(mode=mode), self.assertRaises(ValueError):
+                    PREPARE.prepare(pathlib.Path(temporary) / "unused", IMAGE, CA, mode)
+
+    def test_rejects_changed_candidate_schema(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(
+            PREPARE.urllib.request, "urlopen", side_effect=lambda *a, **kw: io.BytesIO(b"changed schema"),
+        ), self.assertRaisesRegex(ValueError, "reviewed aggregate input"):
+            PREPARE.prepare(pathlib.Path(temporary) / "unused", IMAGE, CA)
 
     def test_rejects_nonlocal_or_injected_image_and_private_key(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -56,11 +87,21 @@ class PreparationTests(unittest.TestCase):
 
 
 class LookupTests(unittest.TestCase):
-    def run_fixture(self, script, status, output):
+    def run_fixture(self, script, status, output, check_env=False):
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)
             evidence = root / "evidence"
             evidence.mkdir()
+            fixture = PATH.with_name(script)
+            if script == "negative-tls.sh":
+                source = fixture.read_text().split("\nidentity=$(server_identity)\n", 1)[0]
+                fixture = root / "delete-check.sh"
+                fixture.write_text(source + """
+identity=$(server_identity)
+delete_and_verify
+echo "Deletion verified" > "$evidence/lifecycle.txt"
+rad deploy next-stage
+""")
             result = subprocess.run(
                 ["bash", "-c", """
 set -euo pipefail
@@ -81,10 +122,27 @@ kubectl() {
       printf '%s' "$LOOKUP_OUTPUT"
       if [[ "$LOOKUP_STATUS" != 0 ]]; then echo "Mock lookup failed" >&2; fi
       return "$LOOKUP_STATUS" ;;
+    "create namespace radius-tutorial"|"label namespace radius-tutorial")
+      [[ "$CHECK_ENV" == 1 ]] ;;
     *) echo "Unexpected kubectl command: $*" >&2; exit 99 ;;
   esac
 }
 rad() {
+  if [[ "$CHECK_ENV" == 1 ]]; then
+    case "$1 $2" in
+      "group list"|"workspace list") echo '[]'; return ;;
+      "group create"|"workspace create") return ;;
+      "env "*)
+        if [[ " $* " == *" --preview "* ]]; then
+          echo "Unsupported env --preview flag" >&2
+          exit 99
+        fi
+        if [[ "$2" == show ]]; then
+          echo '{"properties":{"providers":{"kubernetes":{"namespace":"radius-tutorial"}}}}'
+        fi
+        return ;;
+    esac
+  fi
   case "$1 $2" in
     "group list"|"deploy "*)
       echo "Reached next stage" >&2
@@ -93,16 +151,23 @@ rad() {
     *) echo "Unexpected rad command: $*" >&2; exit 99 ;;
   esac
 }
+openssl() { echo "Reached next stage" >&2; exit 73; }
 source "$1" "$2" "$3" sampleregistry:5000/samples/demo:test localhost:51351
-""", "fixture-test", str(PATH.with_name(script)), str(root / "private"), str(evidence)],
+""", "fixture-test", str(fixture), str(root / "private"), str(evidence)],
                 env={
                     **os.environ, "POSTGRESQL_TEST_CONTEXT": "owned-test",
                     "LOOKUP_STATUS": str(status), "LOOKUP_OUTPUT": output,
+                    "CHECK_ENV": "1" if check_env else "0",
                 },
                 capture_output=True, text=True,
             )
             lifecycle = evidence / "lifecycle.txt"
             return result, lifecycle.exists()
+
+    def test_current_edge_environment_commands(self):
+        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True)
+        self.assertEqual(result.returncode, 73, result.stderr)
+        self.assertIn("Reached next stage", result.stderr)
 
     def test_namespace_lookup_requires_success_and_absence(self):
         for status, output, expected in [

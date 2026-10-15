@@ -38,7 +38,7 @@ After collecting nonsecret evidence, delete only the owned test resources and
 temporary password parameter files. Passing these checks is a pre-merge gate,
 not authorization to publish images, change Recipe defaults, or merge a PR.
 
-## TLS-only sample gate
+## Tutorial transport-mode gate
 
 The `postgresql-tls` matrix row reuses the same K3D/local registry setup. It
 compiles and deploys the public PostgreSQL app and its intentionally public
@@ -60,10 +60,28 @@ installing the CLI/control plane does not populate a fresh HOME's Bicep binary.
 Namespace collision and CA-deletion checks require successful Kubernetes lookups;
 API errors must not be interpreted as absent resources. The Bash-backed fixture
 unit tests cover lookup errors, existing resources, and confirmed absence.
+Before deploying the database, the fixture rejects missing, empty, and whitespace
+CA inputs in required mode against both a fresh app and the deployed base app.
+It compares hashed resource inventories before and after each rejection.
 
-`prepare-tls.py` downloads the three Bicep Recipes from contrib commit
-`1a4c120fdab2b0f0c49bda692aef4b519855d79d`, recording their source paths and SHA-256
-hashes. They are compiled and published **only to the isolated local registry**.
+`prepare-tls.py` downloads the PostgreSQL schema and three Bicep Recipes from contrib commit
+`c587abffceeb0296bc9a6e10f2835b9a6cdf56a4`, recording their source paths and SHA-256
+hashes. Recipes are compiled and published **only to the isolated local registry**.
+It copies the public Bicep files byte-for-byte to a private directory with a
+candidate extension configuration. Compilation checks source-byte identity and
+rejects diagnostics; deployment uses the same directory and configuration.
+No public imports or global type-cache files are changed.
+`build-tls-types.sh` uses the official generator and aggregate index builder from
+Radius commit `56fa47301fc5d310bcd3df032078357cf6cd3cb6`. It regenerates Data from
+the candidate PostgreSQL manifest and the snapshot's other Data manifests,
+preserves other namespace type files, and packages the local extension with the
+same Bicep compiler used for deployment. The index builder runs in a disposable
+Node 24 container using the pinned generator package and its exact `bicep-types`
+dependency. The generated npm lock hash is recorded with the build evidence; source client tests
+still run on Node 20 and in the Node 22 demo image. Go may download the toolchain
+selected by the pinned generator's module into the isolated HOME.
+This is candidate validation, not evidence that published `radius:latest`
+supports disabled. Public extension availability remains a release gate.
 The public helper selects all three tagged local candidates explicitly. The
 fixture verifies the stored mappings, resolved digests, actual registered TLS
 schema, compiler/type-cache hashes, and runtime images. No default `edge`
@@ -86,9 +104,17 @@ container. That probe exercises HTTP CRUD, independently checks PostgreSQL rows,
 queries `pg_stat_ssl` on the compiled client's repository connection, checks the
 CA-only mount is readable and rejects writes with `EROFS`, and rejects wrong CA,
 hostname/SAN mismatch, and plaintext clients. It never places passwords in argv.
+Pass `disabled` as its third argument to assert absent demo TLS settings,
+`PGSSLMODE=disable`, no certificate mount, authenticated plaintext psql and Node
+sessions (`ssl=false`), persisted HTTP CRUD, wrong-password rejection, and
+TLS-forcing client rejection. This branch reads no CA files.
 
 `negative-tls.sh` repeats the checks with server policy omitted from a private
-copy of the sample. Application deletion must remove the app-owned CA Secret and
+copy of the sample. It also exercises required -> disabled -> required and records
+remaining Radius Secrets after conditional omission; the tutorial does not promise
+automatic removal of a previously created CA. Fresh disabled and repeated disabled
+deployments must succeed without either certificate Secret or a CA parameter.
+Application deletion must remove the app-owned CA Secret and
 leave the operator TLS Secret's UID/data hash unchanged. Only after that assertion
 does the fixture deliberately damage its own server Secret to check missing
 Secret, missing key, and invalid certificate failures. Finally it selects the

@@ -17,9 +17,11 @@ docker build \
 
 ## PostgreSQL variant
 
-`app-postgresql.bicep` is a **TLS-only Kubernetes example**. It sets the server
-policy to `required` and the client to `verify-full`: both the certificate chain
-and DNS hostname must verify. It keeps the existing application, database,
+`app-postgresql.bicep` is a Kubernetes example with **verified TLS by default**.
+Its `postgresqlTls` parameter defaults to `required`, with client `verify-full`:
+both the certificate chain and DNS hostname must verify. Explicitly choosing
+`disabled` creates a certificate-free, password-authenticated plaintext database.
+It keeps the existing application, database,
 connection profile, and authored password Secret names.
 
 **Publication is blocked.** A compatible public TLS Recipe prerelease and a
@@ -42,6 +44,13 @@ Use a fresh, isolated Environment, not a shared default Environment. The tutoria
 uses Environment `tutorial`, application `demo-tutorial`, database
 `postgresql-tutorial`, and Recipe Pack `tutorial-postgresql-tls`.
 
+Choose `postgresqlTls` before preparing certificates. Use `required` (the default)
+for verified TLS. Use `disabled` only for a disposable database on a trusted,
+private network: credentials and data are not protected by TLS. This warning does
+not enforce network isolation. The server's `optional` policy still requires
+certificates and is not a tutorial choice. Azure rejects `disabled`; this sample
+uses Kubernetes Recipes.
+
 1. Verify the actual CLI/runtime, the registered `Radius.Data` schema's `tls`
    property, and the Bicep extension used to compile this file. The mutable
    extension reference in `bicepconfig.json` and an unchanged API version are
@@ -57,26 +66,31 @@ uses Environment `tutorial`, application `demo-tutorial`, database
 3. Discover and verify the Environment's Kubernetes namespace. For the tutorial
    it must be `radius-tutorial`, making the exact server hostname
    `postgresql-tutorial.radius-tutorial.svc.cluster.local`. Issue a certificate
-   with that DNS SAN and verify its chain and hostname **before deployment**.
+   with that DNS SAN and verify its chain and hostname **before deployment**
+   when using `required`. Skip certificate preparation for `disabled`.
    Do not assume a namespace from the Environment's name. Create a namespace
    only after checking that it is owned by this disposable tutorial.
-4. Before database deployment, use `kubectl create secret tls` with
+4. For `required`, before database deployment, use `kubectl create secret tls` with
    `--cert` and `--key` file paths to create the operator-owned
    `postgresql-tutorial-tls` Secret in that namespace. Refuse collisions rather
    than overwriting an existing Secret. Keep server and issuer private keys out
    of the repository, parameter files, client environment, and logs.
-5. Supply `password`, `postgresqlCaCertificate` (the public PEM CA bundle), and
-   `image` through a protected JSON parameter file. The CLI injects `environment`.
+5. Supply `password` and `image` through a protected JSON parameter file.
+   For `required`, also supply `postgresqlCaCertificate` (the public PEM CA bundle);
+   a missing or empty CA fails before application resources are changed.
+   For `disabled`, set `"postgresqlTls": {"value": "disabled"}` and omit
+   `postgresqlCaCertificate`. Its empty default is not a fake certificate.
+   The CLI injects `environment`.
    Use a verified retained `image@sha256:...` for publication; local CI overrides
    it with its explicitly built candidate image. Container image digest
    references are supported even though Recipe digest-only references are not.
-6. Wait for the database and demo Deployments to become ready. Verify the
-   returned database hostname equals the certificate SAN, exercise PostgreSQL
+6. Wait for the database and demo Deployments to become ready. In required mode,
+   verify the returned database hostname equals the certificate SAN. Exercise PostgreSQL
    create/read/update/delete, and check persisted rows and `pg_stat_ssl` for the
-   **Node client's session**. A successful deployment or in-memory UI is not
-   evidence of an authenticated TLS connection.
+   **Node client's session**: `true` for required, `false` for disabled.
+   A successful deployment or in-memory UI is not database evidence.
 
-The application owns a separate generic Secret, `postgresql-ca-tutorial`,
+In required mode, the application owns a separate generic Secret, `postgresql-ca-tutorial`,
 containing only `ca.crt`. The container mounts it at `/etc/postgresql-ca` through
 the selected Container Recipe's Secret-volume support, with an explicit
 deployment dependency. Kubernetes Secret volumes are read-only; the Radius
@@ -86,15 +100,24 @@ from the operator's `postgresql-tutorial-tls`, the Recipe's
 `postgresql-credentials-tutorial`. No connection or client mount grants access
 to the server Secret.
 
+Disabled mode creates no CA Secret or certificate mount, and sets
+`PGSSLMODE=disable` with both `RADIUS_DEMO_POSTGRESQL_TLS` and
+`RADIUS_DEMO_POSTGRESQL_CA_FILE` absent. The authored password Secret and its
+connection remain. Keep the complete three-type Recipe Pack: disabled needs the
+new compatible PostgreSQL Recipe, not an old Recipe that ignores the policy.
+
 Missing or invalid server Secrets, a wrong namespace, an untrusted CA, or a
-hostname mismatch must fail without falling back to plaintext. Check namespace,
+hostname mismatch in required mode must fail without falling back to plaintext. Check namespace,
 Secret name, certificate validity/SAN, and the selected Recipe; do not disable
 verification to recover.
 
 Delete the application-owned resources with application deletion. The operator
-server Secret must retain its original UID and data; remove it separately only
+server Secret, if created, must retain its original UID and data; remove it separately only
 if it belongs to this tutorial and is no longer needed. Do not delete a shared
-namespace. These demo Recipes use ephemeral PostgreSQL storage: Pod replacement
+namespace. These instructions are for fresh deployments. To change modes, delete
+and redeploy the owned app; conditional omission does not guarantee that Radius
+deletes a previously created CA resource. Do not delete external Secrets as part
+of a mode change. These demo Recipes use ephemeral PostgreSQL storage: Pod replacement
 can erase database data. This is not a production migration or certificate
 rotation procedure. Keep this demo local-only: its UI displays environment
 variables, including credentials.
@@ -113,7 +136,7 @@ When PostgreSQL is selected, set `RADIUS_DEMO_POSTGRESQL_TLS=verify-full` and
 to verify the server certificate and its hostname. Mount only the public CA
 bundle into the client, never a server or CA private key. This requires a server
 that already supports TLS; these client settings do not enable TLS on the server.
-The PostgreSQL Bicep sample supplies these settings and the CA mount explicitly.
+The PostgreSQL Bicep sample supplies these settings and the CA mount in required mode.
 
 `PGSSLMODE` is a PostgreSQL client environment variable supported by libpq/psql
 and some drivers; support varies by driver. It controls client connections, not

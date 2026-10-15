@@ -11,16 +11,27 @@ param password string
 @minLength(1)
 param image string
 
-@description('Public PEM CA certificate bundle used to verify the PostgreSQL server. Never supply a private key.')
-@minLength(1)
-param postgresqlCaCertificate string
+@description('Public PEM CA bundle required with postgresqlTls=required; omit for disabled. Never supply a private key.')
+param postgresqlCaCertificate string = ''
+
+@description('Use required for verified TLS, or explicitly choose disabled for a disposable plaintext database.')
+@allowed([
+  'required'
+  'disabled'
+])
+param postgresqlTls string = 'required'
+
+var tlsEnabled = postgresqlTls == 'required'
+var validatedAppName = tlsEnabled && empty(trim(postgresqlCaCertificate))
+  ? fail('postgresqlCaCertificate is required when postgresqlTls is required.')
+  : 'demo-${environmentName}'
 
 // Environment name derived from the Environment ID, used to keep resource names
 // unique per environment (e.g. dev/test/prod) within the same resource group.
 var environmentName = last(split(environment, '/'))
 
 resource demoApp 'Radius.Core/applications@2025-08-01-preview' = {
-  name: 'demo-${environmentName}'
+  name: validatedAppName
   properties: {
     environment: environment
   }
@@ -34,20 +45,26 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     containers: {
       web: {
         image: image
-        env: {
+        env: tlsEnabled ? {
           RADIUS_DEMO_POSTGRESQL_TLS: {
             value: 'verify-full'
           }
           RADIUS_DEMO_POSTGRESQL_CA_FILE: {
             value: '/etc/postgresql-ca/ca.crt'
           }
-        }
-        volumeMounts: [
-          {
-            volumeName: 'postgresql-ca'
-            mountPath: '/etc/postgresql-ca'
+        } : {
+          PGSSLMODE: {
+            value: 'disable'
           }
-        ]
+        }
+        ...(tlsEnabled ? {
+          volumeMounts: [
+            {
+              volumeName: 'postgresql-ca'
+              mountPath: '/etc/postgresql-ca'
+            }
+          ]
+        } : {})
         ports: {
           web: {
             containerPort: 3000
@@ -55,11 +72,13 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
         }
       }
     }
-    volumes: {
-      'postgresql-ca': {
-        secretName: postgresqlCa.name
+    ...(tlsEnabled ? {
+      volumes: {
+        'postgresql-ca': {
+          secretName: postgresqlCa!.name
+        }
       }
-    }
+    } : {})
     connections: {
       postgresql: {
         source: postgresql.id
@@ -85,11 +104,11 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
     database: 'appdb'
     username: 'myadmin'
     password: password
-    tls: 'required'
+    tls: postgresqlTls
   }
 }
 
-resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = {
+resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = if (tlsEnabled) {
   name: 'postgresql-ca-${environmentName}'
   properties: {
     environment: environment
