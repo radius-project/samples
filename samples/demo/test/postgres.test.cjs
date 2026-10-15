@@ -140,6 +140,63 @@ for (const contents of ['', ' \n', 'not a certificate', '-----BEGIN CERTIFICATE-
     });
 }
 
+for (const port of [
+    'abc', '5432x', '0', '00000', ' ', '\t', '\n', ' 5432 ', ' 5432', '5432 ',
+    '5432\n', '5432\r\n', '+5432', '1e3', '1.5', '-1', '65536', 'Infinity',
+]) {
+    test(`rejects invalid PostgreSQL port ${JSON.stringify(port)} without ambient fallback`, () => {
+        process.env.CONNECTION_POSTGRESQL_PORT = port;
+        process.env.PGPORT = '6543';
+        assert.throws(createFactory, {
+            message: 'CONNECTION_POSTGRESQL_PORT must be a decimal integer between 1 and 65535.',
+        });
+        assert.equal(pools.length, 0);
+    });
+}
+
+test('invalid PostgreSQL port errors identify the setting and range without exposing input or credentials', () => {
+    const port = 'invalid-port-sentinel:@/?';
+    const username = 'username-sentinel:@/?';
+    const password = 'password-sentinel:@/?';
+    Object.assign(process.env, {
+        CONNECTION_POSTGRESQL_PORT: port,
+        CONNECTION_POSTGRESQL_USERNAME: username,
+        CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD: password,
+    });
+    assert.throws(createFactory, error => {
+        assert.ok(error instanceof Error);
+        assert.match(error.message, /CONNECTION_POSTGRESQL_PORT/);
+        assert.match(error.message, /1 and 65535/);
+        for (const value of [port, username, password]) {
+            assert.equal(error.message.includes(value), false);
+        }
+        return true;
+    });
+    assert.equal(pools.length, 0);
+});
+
+for (const port of [undefined, '']) {
+    test(`preserves default and ambient ports when configured port is ${JSON.stringify(port)}`, async () => {
+        if (port !== undefined) process.env.CONNECTION_POSTGRESQL_PORT = port;
+        const options = await config();
+        assert.equal(options.port, undefined);
+        assert.equal(new pg.Client(options).connectionParameters.port, 5432);
+        process.env.PGPORT = '6543';
+        assert.equal(new pg.Client(options).connectionParameters.port, 6543);
+    });
+}
+
+for (const [port, expected] of [
+    ['1', 1], ['5432', 5432], ['65535', 65535],
+    ['00001', 1], ['05432', 5432], ['065535', 65535],
+]) {
+    test(`accepts explicit PostgreSQL port ${port} over the ambient setting`, async () => {
+        process.env.CONNECTION_POSTGRESQL_PORT = port;
+        process.env.PGPORT = '6543';
+        assert.equal(new pg.Client(await config()).connectionParameters.port, expected);
+    });
+}
+
 test('connection fields preserve reserved characters without URI or SSL query interpretation', async () => {
     enableTls();
     const user = 'user:@/%?#&=';
@@ -191,6 +248,7 @@ test('preserves all driver priorities and parses TLS only for PostgreSQL', () =>
         CONNECTION_REDIS_URL: 'redis://url-host:6379',
         CONNECTION_REDIS_HOST: 'redis-host',
         CONNECTION_REDIS_PORT: '6379',
+        CONNECTION_POSTGRESQL_PORT: 'invalid',
         RADIUS_DEMO_POSTGRESQL_TLS: 'invalid',
         RADIUS_DEMO_POSTGRESQL_CA_FILE: 'nonexistent',
     });
@@ -203,6 +261,8 @@ test('preserves all driver priorities and parses TLS only for PostgreSQL', () =>
         assert.equal(createFactory().constructor.name, factory);
         delete process.env[variable];
     }
+    assert.throws(createFactory, /CONNECTION_POSTGRESQL_PORT/);
+    delete process.env.CONNECTION_POSTGRESQL_PORT;
     assert.throws(createFactory, /RADIUS_DEMO_POSTGRESQL_TLS/);
     delete process.env.CONNECTION_POSTGRESQL_HOST;
     assert.equal(createFactory().constructor.name, 'InMemoryFactory');

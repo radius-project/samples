@@ -101,6 +101,13 @@ variables, including credentials.
 
 ### Explicit client TLS
 
+When PostgreSQL is selected, a nonempty `CONNECTION_POSTGRESQL_PORT` must contain
+only decimal digits and have a value from 1 to 65535. Leading zeros are accepted:
+`05432` means 5432. Whitespace, signs, fractions, scientific notation, and values
+outside that range fail before a pool is created. An absent or empty value
+preserves the driver's default and `PGPORT` behavior. Other drivers ignore this
+PostgreSQL setting.
+
 When PostgreSQL is selected, set `RADIUS_DEMO_POSTGRESQL_TLS=verify-full` and
 `RADIUS_DEMO_POSTGRESQL_CA_FILE` to a readable file containing PEM CA certificates
 to verify the server certificate and its hostname. Mount only the public CA
