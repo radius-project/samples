@@ -56,8 +56,12 @@ def check(binary, template_directory=None):
         "demoApp", "postgresql", "postgresqlCa", "postgresqlCredentials",
     }
     ca = resources["postgresqlCa"]["properties"]
-    assert resources["postgresqlCa"]["condition"] == "[variables('tlsEnabled')]"
-    assert ca["name"] == "[variables('postgresqlCaName')]"
+    assert "condition" not in resources["postgresqlCa"]
+    assert resources["postgresqlCa"]["copy"] == {
+        "name": "postgresqlCa",
+        "count": "[length(if(variables('tlsEnabled'), createArray(variables('postgresqlCaName')), createArray()))]",
+    }
+    assert ca["name"] == "[if(variables('tlsEnabled'), createArray(variables('postgresqlCaName')), createArray())[copyIndex()]]"
     assert app["variables"]["postgresqlCaName"] == "[format('postgresql-ca-{0}', variables('environmentName'))]"
     assert app["variables"]["tlsEnabled"] == "[equals(parameters('postgresqlTls'), 'required')]"
     assert resources["demoApp"]["properties"]["name"] == "[variables('validatedAppName')]"
@@ -100,7 +104,7 @@ def check(binary, template_directory=None):
         "Radius.Security/secrets": "[parameters('secretRecipeSource')]",
     }
     assert pack["resources"]["pack"]["type"] == "Radius.Core/recipePacks@2025-08-01-preview"
-    print("Public templates compiled; secure default, mode guard, conditional CA wiring, identity, and pack mappings passed. Runtime evaluation is checked by CI.")
+    print("Public templates compiled; secure default, mode guard, zero/one CA collection, identity, ordering, and pack mappings passed. Runtime evaluation is checked by CI.")
 
 
 if __name__ == "__main__":

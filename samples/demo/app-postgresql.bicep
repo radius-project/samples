@@ -89,7 +89,7 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
       }
     }
   }
-  // Order the CA Recipe without reading a conditionally skipped resource.
+  // Order any CA Recipe instance before mounting its public certificate.
   dependsOn: [
     postgresqlCa
   ]
@@ -108,8 +108,9 @@ resource postgresql 'Radius.Data/postgreSqlDatabases@2025-08-01-preview' = {
   }
 }
 
-resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = if (tlsEnabled) {
-  name: postgresqlCaName
+// Zero copies avoid dependencies on conditionally skipped resources.
+resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = [for caName in (tlsEnabled ? [postgresqlCaName] : []): {
+  name: caName
   properties: {
     environment: environment
     application: demoApp.id
@@ -120,7 +121,7 @@ resource postgresqlCa 'Radius.Security/secrets@2025-08-01-preview' = if (tlsEnab
       }
     }
   }
-}
+}]
 
 resource postgresqlCredentials 'Radius.Security/secrets@2025-08-01-preview' = {
   name: 'postgresql-credentials-${environmentName}'

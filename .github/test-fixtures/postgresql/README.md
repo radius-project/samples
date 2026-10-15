@@ -76,9 +76,14 @@ It copies the public Bicep files byte-for-byte to a private directory with a
 candidate extension configuration. Compilation checks source-byte identity and
 rejects diagnostics; deployment uses the same directory and configuration.
 The CA resource and volume share one authored name variable with an explicit
-symbolic dependency for required-mode ordering. The compiled container must not
-read `reference('postgresqlCa')`: runtime `1370bad` can try to fetch the skipped
-resource even inside the disabled branch's conditional expression.
+whole-collection dependency for required-mode ordering. Required mode creates
+one CA instance; disabled expands to zero instances, not a false-condition
+resource. The latter causes the deployed engine to fetch an unsupported
+`DeploymentResourceNoOperationJob` callback even without a `reference()` call.
+Compilation asserts the zero/one copy-count expression, shared name, dependency,
+and absence of both a CA condition and CA `reference()` calls. Live transitions
+and fresh disabled deployments must still prove expansion and ordering; zero
+copies do not promise deletion of a CA retained from an earlier deployment.
 No public imports or global type-cache files are changed.
 `build-tls-types.sh` uses the official generator and aggregate index builder from
 Radius commit `56fa47301fc5d310bcd3df032078357cf6cd3cb6`. It regenerates Data from
