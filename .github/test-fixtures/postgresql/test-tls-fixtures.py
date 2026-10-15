@@ -24,7 +24,7 @@ class PreparationTests(unittest.TestCase):
     def test_pinned_sources_private_parameters_and_exact_omission(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = pathlib.Path(temporary) / "private"
-            with patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
+            with patch.object(PREPARE, "prepare_docs_probes", return_value={}), patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
                 PREPARE.urllib.request, "urlopen",
                 side_effect=lambda *a, **kw: io.BytesIO(b"extension kubernetes\n"),
             ) as request:
@@ -52,7 +52,7 @@ class PreparationTests(unittest.TestCase):
     def test_disabled_requires_no_ca(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = pathlib.Path(temporary) / "disabled"
-            with patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
+            with patch.object(PREPARE, "prepare_docs_probes", return_value={}), patch.object(PREPARE, "SCHEMA_SHA256", hashlib.sha256(b"extension kubernetes\n").hexdigest()), patch("sys.stdout", new_callable=io.StringIO), patch.object(
                 PREPARE.urllib.request, "urlopen", side_effect=lambda *a, **kw: io.BytesIO(b"extension kubernetes\n"),
             ):
                 PREPARE.prepare(target, IMAGE, "", "disabled")
@@ -84,6 +84,105 @@ class PreparationTests(unittest.TestCase):
     def test_refuses_existing_private_directory(self):
         with tempfile.TemporaryDirectory() as temporary, self.assertRaises(FileExistsError):
             PREPARE.prepare(pathlib.Path(temporary), IMAGE, CA)
+
+
+class DocsProbeTests(unittest.TestCase):
+    SOURCE = b"```bash\nca_input=/dev/null\n```\n\n```bash\nnode - <<'NODE'\nconst probe = true;\nNODE\n```\n"
+    PROBES = {
+        "docs-node-verification.cjs": b"const probe = true;\n",
+        "docs-psql-verification.sh": b"ca_input=/dev/null\n",
+    }
+    HASHES = {name: hashlib.sha256(payload).hexdigest() for name, payload in PROBES.items()}
+
+    def test_pinned_extraction_and_runtime_drift_check(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.object(
+            PREPARE, "DOCS_SHA256", hashlib.sha256(self.SOURCE).hexdigest(),
+        ), patch.object(PREPARE, "DOCS_PROBE_SHA256", self.HASHES), patch.object(
+            PREPARE.urllib.request, "urlopen", return_value=io.BytesIO(self.SOURCE),
+        ) as request:
+            root = pathlib.Path(temporary)
+            evidence = PREPARE.prepare_docs_probes(root)
+            self.assertIn(f"/{PREPARE.DOCS_COMMIT}/{PREPARE.DOCS_PATH}", request.call_args.args[0])
+            self.assertEqual(evidence["commit"], PREPARE.DOCS_COMMIT)
+            self.assertEqual(evidence["probes"], self.HASHES)
+            for name, expected in self.PROBES.items():
+                self.assertEqual((root / name).read_bytes(), expected)
+            result = subprocess.run(["sha256sum", "--check", "docs-probes.sha256"], cwd=root, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            (root / "docs-node-verification.cjs").write_bytes(b"changed\n")
+            result = subprocess.run(["sha256sum", "--check", "docs-probes.sha256"], cwd=root, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_rejects_source_drift(self):
+        with self.assertRaisesRegex(ValueError, "signed checkpoint"):
+            PREPARE.extract_docs_probes(b"changed documentation")
+
+    def test_docs_runtime_modes_and_failures(self):
+        source = PATH.with_name("verify-tls.sh").read_text()
+        checks = source[source.index('(cd "$work/prepared"'):source.index("\nkubectl get pods")]
+        for mode, failure, expected in [
+            ("required", "", 0), ("disabled", "", 0),
+            ("disabled", "psql", 61), ("required", "node", 62),
+            ("disabled", "tamper", 1),
+        ]:
+            with self.subTest(mode=mode, failure=failure), tempfile.TemporaryDirectory(prefix="docs probes ") as temporary:
+                root = pathlib.Path(temporary)
+                prepared = root / "prepared"
+                prepared.mkdir()
+                evidence = root / "evidence"
+                evidence.mkdir()
+                psql = prepared / "docs-psql-verification.sh"
+                psql.write_text("""
+[[ "$DB_NAME" == postgresql-tutorial && "$NAMESPACE" == radius-tutorial ]]
+[[ "$KUBE_CONTEXT" == owned-test && "$DB_HOST" == test-host ]]
+if [[ "$POSTGRESQL_TLS" == required ]]; then
+  [[ "$TLS_DIR" == "$EXPECTED_TLS_DIR" ]]
+else
+  [[ "$POSTGRESQL_TLS" == disabled && ! -v TLS_DIR ]]
+fi
+if [[ "$PROBE_FAIL" == psql ]]; then exit 61; fi
+echo "docs psql $POSTGRESQL_TLS"
+""")
+                node = prepared / "docs-node-verification.cjs"
+                node.write_bytes(b"exact-node-payload\n")
+                (prepared / "docs-probes.sha256").write_text("".join(
+                    f"{hashlib.sha256(file.read_bytes()).hexdigest()}  {file.name}\n" for file in (psql, node)
+                ))
+                if failure == "tamper":
+                    node.write_bytes(b"changed-node-payload\n")
+                result = subprocess.run(["bash", "-c", """
+set -euo pipefail
+work=$1
+evidence=$2
+mode=$3
+host=test-host
+kubectl() {
+  [[ "$*" == *"--context owned-test"* && "$*" == *"node - $mode" ]]
+  [[ "$(cat)" == exact-node-payload ]]
+  if [[ "$PROBE_FAIL" == node ]]; then return 62; fi
+  echo "docs node $mode"
+}
+""" + checks, "docs-runtime", str(root), str(evidence), mode], env={
+                    **os.environ, "POSTGRESQL_TEST_CONTEXT": "owned-test",
+                    "EXPECTED_TLS_DIR": str(root), "TLS_DIR": "must-not-leak",
+                    "PROBE_FAIL": failure,
+                }, capture_output=True, text=True)
+                self.assertEqual(result.returncode, expected, result.stderr)
+                if not failure:
+                    self.assertEqual((evidence / "docs-psql.txt").read_text(), f"docs psql {mode}\n")
+                    self.assertEqual((evidence / "docs-node.txt").read_text(), f"docs node {mode}\n")
+
+    def test_rejects_missing_duplicate_and_changed_payloads(self):
+        variants = [
+            self.SOURCE.replace(b"ca_input=", b"other="),
+            self.SOURCE + self.SOURCE,
+            self.SOURCE.replace(b"true;", b"false;"),
+        ]
+        for source in variants:
+            with self.subTest(source=source), patch.object(
+                PREPARE, "DOCS_SHA256", hashlib.sha256(source).hexdigest(),
+            ), patch.object(PREPARE, "DOCS_PROBE_SHA256", self.HASHES), self.assertRaises(ValueError):
+                PREPARE.extract_docs_probes(source)
 
 
 class LookupTests(unittest.TestCase):

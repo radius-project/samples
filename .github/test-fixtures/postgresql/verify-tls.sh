@@ -4,6 +4,8 @@ work=$1
 evidence=$2
 mode=${3:-required}
 [[ "$mode" == required || "$mode" == disabled ]]
+: "${POSTGRESQL_TEST_CONTEXT:?Expected owned test context.}"
+[[ "$(kubectl config current-context)" == "$POSTGRESQL_TEST_CONTEXT" ]]
 kubectl rollout status deployment/postgresql-tutorial -n radius-tutorial --timeout=180s
 kubectl rollout status deployment/demo-tutorial -n radius-tutorial --timeout=180s
 host=$(cat "$evidence/expected-host.txt")
@@ -53,6 +55,20 @@ else
       ([.volumes[]? | select(has("secret"))] | length == 0) and
       ([.initContainers[]? | select(.name == "prepare-tls")] | length == 0)' >/dev/null
 fi
+(cd "$work/prepared" && sha256sum --check docs-probes.sha256) |
+  tee "$evidence/docs-probe-bytes.txt"
+tls_env=()
+if [[ "$mode" == required ]]; then
+  tls_env=("TLS_DIR=$work")
+fi
+env -u TLS_DIR "${tls_env[@]}" POSTGRESQL_TLS="$mode" \
+  DB_NAME=postgresql-tutorial DB_HOST="$host" NAMESPACE=radius-tutorial \
+  KUBE_CONTEXT="$POSTGRESQL_TEST_CONTEXT" \
+  bash -euo pipefail "$work/prepared/docs-psql-verification.sh" |
+  tee "$evidence/docs-psql.txt"
+kubectl exec -i -n radius-tutorial --context "$POSTGRESQL_TEST_CONTEXT" \
+  deployment/demo-tutorial -c web -- node - "$mode" \
+  < "$work/prepared/docs-node-verification.cjs" | tee "$evidence/docs-node.txt"
 kubectl get pods -n radius-tutorial -o json |
   jq '[.items[] | {name:.metadata.name, containers:[.status.containerStatuses[]? | {name,image,imageID}]}]' \
     > "$evidence/application-images.json"

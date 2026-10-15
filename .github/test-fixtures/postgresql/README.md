@@ -113,6 +113,17 @@ Pass `disabled` as its third argument to assert absent demo TLS settings,
 sessions (`ssl=false`), persisted HTTP CRUD, wrong-password rejection, and
 TLS-forcing client rejection. This branch reads no CA files.
 
+The same verification also executes the exact Node and psql tutorial payloads
+from signed docs commit `3762995602fa07251d15cc9cebdba56ccbd24195`, separately
+from the fixture probes. `prepare-tls.py` downloads
+`docs/content/getting-started/add-connection/_index.md`, requires its pinned
+SHA-256, extracts unique fenced/heredoc blocks without rewriting their payloads,
+and checks both payload hashes. Source/probe provenance is recorded in
+`recipe-sources.json`; `verify-tls.sh` rechecks the staged bytes before execution
+and writes `docs-node.txt`, `docs-psql.txt`, and `docs-probe-bytes.txt` for each
+mode. Disabled runs leave `TLS_DIR` unset. These checks require the same explicit
+`POSTGRESQL_TEST_CONTEXT` as setup and do not create another cluster.
+
 `negative-tls.sh` repeats the checks with server policy omitted from a private
 copy of the sample. It also exercises required -> disabled -> required and records
 remaining Radius Secrets after conditional omission; the tutorial does not promise

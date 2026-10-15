@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare private pinned Recipes and parameter files, never published artifacts."""
+"""Prepare private pinned Recipes, docs probes, and protected parameters."""
 
 import hashlib
 import json
@@ -16,6 +16,47 @@ RECIPES = {
     "containers": "Compute/containers/recipes/kubernetes/bicep/kubernetes-containers.bicep",
     "secrets": "Security/secrets/recipes/kubernetes/bicep/kubernetes-secrets.bicep",
 }
+DOCS_COMMIT = "3762995602fa07251d15cc9cebdba56ccbd24195"
+DOCS_PATH = "docs/content/getting-started/add-connection/_index.md"
+DOCS_SHA256 = "9fec29e098f9c9da87a6404262e56bea6e0b4bfa8261a084bb812e8507ba0c43"
+DOCS_PROBE_SHA256 = {
+    "docs-node-verification.cjs": "8afd84c075a58d8467148ff25e8f3b493733a99c92c7dacdf8b7fe6979f4a7da",
+    "docs-psql-verification.sh": "4d31d639183a6b7060625261552b16622ee26fb899295cda74125b081822e7c6",
+}
+
+
+def extract_docs_probes(content):
+    if hashlib.sha256(content).hexdigest() != DOCS_SHA256:
+        raise ValueError("Documentation source does not match the signed checkpoint.")
+    blocks = re.findall(r"```bash\n(.*?)\n```", content.decode("utf-8"), re.S)
+    psql = [block for block in blocks if block.startswith("ca_input=")]
+    node = [block for block in blocks if "<<'NODE'" in block]
+    if len(psql) != 1 or len(node) != 1 or node[0].count("<<'NODE'\n") != 1 or not node[0].endswith("\nNODE"):
+        raise ValueError("Expected unique documentation Node and psql probe blocks.")
+    probes = {
+        "docs-node-verification.cjs": (node[0].split("<<'NODE'\n", 1)[1].rsplit("\nNODE", 1)[0] + "\n").encode("utf-8"),
+        "docs-psql-verification.sh": (psql[0] + "\n").encode("utf-8"),
+    }
+    for name, payload in probes.items():
+        if hashlib.sha256(payload).hexdigest() != DOCS_PROBE_SHA256[name]:
+            raise ValueError(f"Extracted documentation probe does not match reviewed bytes: {name}")
+    return probes
+
+
+def prepare_docs_probes(directory):
+    with urllib.request.urlopen(
+        f"https://raw.githubusercontent.com/radius-project/docs/{DOCS_COMMIT}/{DOCS_PATH}", timeout=60,
+    ) as response:
+        probes = extract_docs_probes(response.read())
+    for name, payload in probes.items():
+        (directory / name).write_bytes(payload)
+    (directory / "docs-probes.sha256").write_text(
+        "".join(f"{digest}  {name}\n" for name, digest in DOCS_PROBE_SHA256.items()), encoding="utf-8",
+    )
+    return {
+        "repository": "radius-project/docs", "commit": DOCS_COMMIT, "path": DOCS_PATH,
+        "sha256": DOCS_SHA256, "probes": DOCS_PROBE_SHA256,
+    }
 
 
 def prepare(directory, image, ca, mode="required"):
@@ -71,6 +112,7 @@ def prepare(directory, image, ca, mode="required"):
     policy = "    tls: postgresqlTls\n"
     assert source.count(policy) == 1
     (directory / "omitted-policy.bicep").write_text(source.replace(policy, "", 1), encoding="utf-8")
+    evidence.append(prepare_docs_probes(directory))
     print(json.dumps(evidence, indent=2))
 
 

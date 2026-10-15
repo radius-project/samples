@@ -403,6 +403,8 @@ jobs:
       - name: Verify PostgreSQL TLS and persisted HTTP CRUD
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'postgresql-tls'
         shell: bash
+        env:
+          POSTGRESQL_TEST_CONTEXT: k3d-k3s-default
         run: |
           docker run --rm \
             --mount "type=bind,source=$PWD/samples/demo/test,target=/usr/src/app/test,readonly" \
