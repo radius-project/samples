@@ -57,6 +57,9 @@ database deployment. Both compilation and deployment must use the same isolated
 cache and then deploy using a different, stale user cache.
 The fixture explicitly runs `rad bicep download` before compiler assertions:
 installing the CLI/control plane does not populate a fresh HOME's Bicep binary.
+Namespace collision and CA-deletion checks require successful Kubernetes lookups;
+API errors must not be interpreted as absent resources. The Bash-backed fixture
+unit tests cover lookup errors, existing resources, and confirmed absence.
 
 `prepare-tls.py` downloads the three Bicep Recipes from contrib commit
 `1a4c120fdab2b0f0c49bda692aef4b519855d79d`, recording their source paths and SHA-256

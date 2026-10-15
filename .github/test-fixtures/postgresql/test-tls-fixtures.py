@@ -6,6 +6,7 @@ import io
 import json
 import os
 import pathlib
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -52,6 +53,79 @@ class PreparationTests(unittest.TestCase):
     def test_refuses_existing_private_directory(self):
         with tempfile.TemporaryDirectory() as temporary, self.assertRaises(FileExistsError):
             PREPARE.prepare(pathlib.Path(temporary), IMAGE, CA)
+
+
+class LookupTests(unittest.TestCase):
+    def run_fixture(self, script, status, output):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            evidence = root / "evidence"
+            evidence.mkdir()
+            result = subprocess.run(
+                ["bash", "-c", """
+set -euo pipefail
+kubectl() {
+  case "$1 $2 ${3-}" in
+    "config current-context ") echo owned-test ;;
+    "get namespace radius-tutorial")
+      if [[ "$*" == *jsonpath* ]]; then
+        echo postgresql-tls
+      else
+        printf '%s' "$LOOKUP_OUTPUT"
+        if [[ "$LOOKUP_STATUS" != 0 ]]; then echo "Mock lookup failed" >&2; fi
+        return "$LOOKUP_STATUS"
+      fi ;;
+    "get secret postgresql-tutorial-tls")
+      echo '{"metadata":{"uid":"owned-uid"},"data":{"tls.crt":"public-fixture"}}' ;;
+    "get secret postgresql-ca-tutorial")
+      printf '%s' "$LOOKUP_OUTPUT"
+      if [[ "$LOOKUP_STATUS" != 0 ]]; then echo "Mock lookup failed" >&2; fi
+      return "$LOOKUP_STATUS" ;;
+    *) echo "Unexpected kubectl command: $*" >&2; exit 99 ;;
+  esac
+}
+rad() {
+  case "$1 $2" in
+    "group list"|"deploy "*)
+      echo "Reached next stage" >&2
+      exit 73 ;;
+    "app delete") echo "Deleted owned app" ;;
+    *) echo "Unexpected rad command: $*" >&2; exit 99 ;;
+  esac
+}
+source "$1" "$2" "$3" sampleregistry:5000/samples/demo:test localhost:51351
+""", "fixture-test", str(PATH.with_name(script)), str(root / "private"), str(evidence)],
+                env={
+                    **os.environ, "POSTGRESQL_TEST_CONTEXT": "owned-test",
+                    "LOOKUP_STATUS": str(status), "LOOKUP_OUTPUT": output,
+                },
+                capture_output=True, text=True,
+            )
+            lifecycle = evidence / "lifecycle.txt"
+            return result, lifecycle.exists()
+
+    def test_namespace_lookup_requires_success_and_absence(self):
+        for status, output, expected in [
+            (42, "", 42), (0, "namespace/radius-tutorial", 1), (0, "", 73),
+        ]:
+            with self.subTest(status=status, output=output):
+                result, _ = self.run_fixture("configure-tls.sh", status, output)
+                self.assertEqual(result.returncode, expected, result.stderr)
+                self.assertEqual("Reached next stage" in result.stderr, expected == 73)
+                if status:
+                    self.assertIn("Mock lookup failed", result.stderr)
+
+    def test_ca_deletion_requires_successful_absence_lookup(self):
+        for status, output, expected in [
+            (42, "", 42), (0, "secret/postgresql-ca-tutorial", 1), (0, "", 73),
+        ]:
+            with self.subTest(status=status, output=output):
+                result, lifecycle = self.run_fixture("negative-tls.sh", status, output)
+                self.assertEqual(result.returncode, expected, result.stderr)
+                self.assertEqual(lifecycle, expected == 73)
+                self.assertEqual("Reached next stage" in result.stderr, expected == 73)
+                if status:
+                    self.assertIn("Mock lookup failed", result.stderr)
 
 
 if __name__ == "__main__":

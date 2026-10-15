@@ -10,7 +10,8 @@ registry=$4
 [[ "$(kubectl config current-context)" == "$POSTGRESQL_TEST_CONTEXT" ]]
 [[ "$registry" =~ ^localhost:[0-9]+$ ]] || { echo "Only a local test registry is allowed." >&2; exit 1; }
 [[ ! -e "$work" ]] || { echo "Private test directory already exists." >&2; exit 1; }
-[[ -z "$(kubectl get namespace radius-tutorial --ignore-not-found -o name)" ]] ||
+existing_namespace=$(kubectl get namespace radius-tutorial --ignore-not-found -o name)
+[[ -z "$existing_namespace" ]] ||
   { echo "Refusing an existing tutorial namespace." >&2; exit 1; }
 mkdir -p "$evidence"
 rad group list -o json > "$evidence/groups-before.json"

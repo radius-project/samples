@@ -13,9 +13,11 @@ server_identity() {
 }
 
 delete_and_verify() {
+  local remaining_ca
   rad app delete demo-tutorial --preview -y
   [[ "$(server_identity)" == "$identity" ]]
-  [[ -z "$(kubectl get secret postgresql-ca-tutorial -n radius-tutorial --ignore-not-found -o name)" ]]
+  remaining_ca=$(kubectl get secret postgresql-ca-tutorial -n radius-tutorial --ignore-not-found -o name)
+  [[ -z "$remaining_ca" ]]
 }
 
 identity=$(server_identity)
