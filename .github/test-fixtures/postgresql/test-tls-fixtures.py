@@ -197,7 +197,7 @@ class LookupTests(unittest.TestCase):
                 fixture = root / "environment-check.sh"
                 fixture.write_text("rad_env() {" + source + """
 for command in create switch show delete; do
-  rad_env "$command" tutorial
+  output=$(rad_env "$command" tutorial)
 done
 """)
             if script == "negative-tls.sh":
@@ -246,6 +246,8 @@ rad() {
             echo "Mock help failed" >&2
             return 42
           fi
+          if [[ "$ENV_STYLE" == malformed-help ]]; then echo "Unexpected output"; return; fi
+          printf 'Usage:\n  rad env %s [flags]\n' "$2"
           if [[ "$ENV_STYLE" == preview ]]; then echo "      --preview   Use Radius.Core"; fi
           return 0
         fi
@@ -302,9 +304,18 @@ source "$1" "$2" "$3" sampleregistry:5000/samples/demo:test localhost:51351
                 self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_environment_help_errors_do_not_fall_back(self):
-        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style="help-error")
-        self.assertEqual(result.returncode, 42, result.stderr)
-        self.assertIn("Mock help failed", result.stderr)
+        for env_only in (False, True):
+            with self.subTest(command_substitution=env_only):
+                result, _ = self.run_fixture(
+                    "configure-tls.sh", 0, "", check_env=True, env_style="help-error", env_only=env_only,
+                )
+                self.assertEqual(result.returncode, 42, result.stderr)
+                self.assertIn("Mock help failed", result.stderr)
+
+    def test_malformed_help_does_not_select_legacy_commands(self):
+        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style="malformed-help")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("invalid help output", result.stderr)
 
     def test_legacy_environment_is_not_accepted(self):
         result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style="legacy-result")

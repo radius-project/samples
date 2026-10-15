@@ -25,7 +25,11 @@ rad_env() {
   local command=$1
   shift
   local help
-  help=$(rad env "$command" --help)
+  help=$(rad env "$command" --help) || return $?
+  if ! grep -Eq '^Usage:' <<< "$help"; then
+    echo "Cannot determine rad env $command flags: invalid help output." >&2
+    return 1
+  fi
   local preview=()
   if grep -Eq -- '(^|[[:space:]])--preview([[:space:]]|$)' <<< "$help"; then
     preview=(--preview)
