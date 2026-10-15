@@ -57,6 +57,10 @@ database deployment. Both compilation and deployment must use the same isolated
 cache and then deploy using a different, stale user cache.
 The fixture explicitly runs `rad bicep download` before compiler assertions:
 installing the CLI/control plane does not populate a fresh HOME's Bicep binary.
+Environment commands add `--preview` only when the installed command advertises
+it in `--help`: older edge CLIs otherwise select `Applications.Core`, while newer
+CLIs reject the flag. The fixture requires a `Radius.Core` environment and the
+exact owned namespace, and records the CLI version before bootstrap.
 Namespace collision and CA-deletion checks require successful Kubernetes lookups;
 API errors must not be interpreted as absent resources. The Bash-backed fixture
 unit tests cover lookup errors, existing resources, and confirmed absence.

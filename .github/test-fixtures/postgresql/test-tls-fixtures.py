@@ -87,12 +87,20 @@ class PreparationTests(unittest.TestCase):
 
 
 class LookupTests(unittest.TestCase):
-    def run_fixture(self, script, status, output, check_env=False):
+    def run_fixture(self, script, status, output, check_env=False, env_style="current", env_only=False):
         with tempfile.TemporaryDirectory() as temporary:
             root = pathlib.Path(temporary)
             evidence = root / "evidence"
             evidence.mkdir()
             fixture = PATH.with_name(script)
+            if env_only:
+                source = fixture.read_text().split("\nrad_env() {", 1)[1].split("\nkubectl create namespace", 1)[0]
+                fixture = root / "environment-check.sh"
+                fixture.write_text("rad_env() {" + source + """
+for command in create switch show delete; do
+  rad_env "$command" tutorial
+done
+""")
             if script == "negative-tls.sh":
                 source = fixture.read_text().split("\nidentity=$(server_identity)\n", 1)[0]
                 fixture = root / "delete-check.sh"
@@ -128,17 +136,33 @@ kubectl() {
   esac
 }
 rad() {
+  if [[ "$1" == version ]]; then echo "Mock CLI"; return; fi
   if [[ "$CHECK_ENV" == 1 ]]; then
     case "$1 $2" in
       "group list"|"workspace list") echo '[]'; return ;;
       "group create"|"workspace create") return ;;
       "env "*)
-        if [[ " $* " == *" --preview "* ]]; then
+        if [[ "${3-}" == --help ]]; then
+          if [[ "$ENV_STYLE" == help-error ]]; then
+            echo "Mock help failed" >&2
+            return 42
+          fi
+          if [[ "$ENV_STYLE" == preview ]]; then echo "      --preview   Use Radius.Core"; fi
+          return 0
+        fi
+        if [[ "$ENV_STYLE" == preview && " $* " != *" --preview "* ]]; then
+          echo "Preview CLI requires --preview to select Radius.Core" >&2
+          exit 99
+        elif [[ "$ENV_STYLE" != preview && " $* " == *" --preview "* ]]; then
           echo "Unsupported env --preview flag" >&2
           exit 99
         fi
         if [[ "$2" == show ]]; then
-          echo '{"properties":{"providers":{"kubernetes":{"namespace":"radius-tutorial"}}}}'
+          if [[ "$ENV_STYLE" == legacy-result ]]; then
+            echo '{"type":"Applications.Core/environments","properties":{"compute":{"namespace":"radius-tutorial"}}}'
+          else
+            echo '{"type":"Radius.Core/environments","properties":{"providers":{"kubernetes":{"namespace":"radius-tutorial"}}}}'
+          fi
         fi
         return ;;
     esac
@@ -158,6 +182,7 @@ source "$1" "$2" "$3" sampleregistry:5000/samples/demo:test localhost:51351
                     **os.environ, "POSTGRESQL_TEST_CONTEXT": "owned-test",
                     "LOOKUP_STATUS": str(status), "LOOKUP_OUTPUT": output,
                     "CHECK_ENV": "1" if check_env else "0",
+                    "ENV_STYLE": env_style,
                 },
                 capture_output=True, text=True,
             )
@@ -165,9 +190,27 @@ source "$1" "$2" "$3" sampleregistry:5000/samples/demo:test localhost:51351
             return result, lifecycle.exists()
 
     def test_current_edge_environment_commands(self):
-        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True)
-        self.assertEqual(result.returncode, 73, result.stderr)
-        self.assertIn("Reached next stage", result.stderr)
+        for style in ("current", "preview"):
+            with self.subTest(style=style):
+                result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style=style)
+                self.assertEqual(result.returncode, 73, result.stderr)
+                self.assertIn("Reached next stage", result.stderr)
+
+    def test_all_environment_commands_select_supported_flags(self):
+        for style in ("current", "preview"):
+            with self.subTest(style=style):
+                result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style=style, env_only=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_environment_help_errors_do_not_fall_back(self):
+        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style="help-error")
+        self.assertEqual(result.returncode, 42, result.stderr)
+        self.assertIn("Mock help failed", result.stderr)
+
+    def test_legacy_environment_is_not_accepted(self):
+        result, _ = self.run_fixture("configure-tls.sh", 0, "", check_env=True, env_style="legacy-result")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("Expected a Radius.Core environment", result.stderr)
 
     def test_namespace_lookup_requires_success_and_absence(self):
         for status, output, expected in [

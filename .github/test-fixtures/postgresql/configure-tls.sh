@@ -15,18 +15,34 @@ existing_namespace=$(kubectl get namespace radius-tutorial --ignore-not-found -o
 [[ -z "$existing_namespace" ]] ||
   { echo "Refusing an existing tutorial namespace." >&2; exit 1; }
 mkdir -p "$evidence"
+rad version > "$evidence/runtime.txt"
 rad group list -o json > "$evidence/groups-before.json"
 jq -e 'all(.[]; .name != "tutorial")' "$evidence/groups-before.json" >/dev/null
 rad workspace list -o json > "$evidence/workspaces-before.json"
 jq -e 'length == 0' "$evidence/workspaces-before.json" >/dev/null
 
+rad_env() {
+  local command=$1
+  shift
+  local help
+  help=$(rad env "$command" --help)
+  local preview=()
+  if grep -Eq -- '(^|[[:space:]])--preview([[:space:]]|$)' <<< "$help"; then
+    preview=(--preview)
+  fi
+  rad env "$command" "${preview[@]}" "$@"
+}
+
 kubectl create namespace radius-tutorial
 kubectl label namespace radius-tutorial samples.radius.io/test=postgresql-tls
 rad group create tutorial
 rad workspace create kubernetes tutorial --group tutorial
-rad env create tutorial --kubernetes-namespace radius-tutorial
-rad env switch tutorial
-rad env show tutorial -o json > "$evidence/environment-before.json"
+rad_env create tutorial --kubernetes-namespace radius-tutorial
+rad_env switch tutorial
+rad_env show tutorial -o json > "$evidence/environment-before.json"
+jq -e '.type == "Radius.Core/environments" and
+  .properties.providers.kubernetes.namespace == "radius-tutorial"' "$evidence/environment-before.json" >/dev/null ||
+  { echo "Expected a Radius.Core environment in radius-tutorial; incompatible CLI/bootstrap." >&2; exit 1; }
 namespace=$(jq -er '.properties.providers.kubernetes.namespace' "$evidence/environment-before.json")
 [[ "$namespace" == radius-tutorial ]]
 host="postgresql-tutorial.$namespace.svc.cluster.local"
@@ -74,11 +90,11 @@ rad deploy "$templates/postgresql-tls-pack.bicep" \
   -p postgresqlRecipeSource=sampleregistry:5000/postgresql-tls/postgresql:candidate \
   -p containerRecipeSource=sampleregistry:5000/postgresql-tls/containers:candidate \
   -p secretRecipeSource=sampleregistry:5000/postgresql-tls/secrets:candidate
-rad env delete tutorial -y
-rad env create tutorial --kubernetes-namespace "$namespace" --recipe-packs tutorial-postgresql-tls
-rad env switch tutorial
-rad env show tutorial -o json > "$evidence/environment.json"
-jq -e '.properties.providers.kubernetes.namespace == "radius-tutorial" and (.properties.recipePacks | length == 1) and (.properties.recipePacks[0] | endswith("/tutorial-postgresql-tls"))' "$evidence/environment.json" >/dev/null
+rad_env delete tutorial -y
+rad_env create tutorial --kubernetes-namespace "$namespace" --recipe-packs tutorial-postgresql-tls
+rad_env switch tutorial
+rad_env show tutorial -o json > "$evidence/environment.json"
+jq -e '.type == "Radius.Core/environments" and .properties.providers.kubernetes.namespace == "radius-tutorial" and (.properties.recipePacks | length == 1) and (.properties.recipePacks[0] | endswith("/tutorial-postgresql-tls"))' "$evidence/environment.json" >/dev/null
 rad resource show Radius.Core/recipePacks tutorial-postgresql-tls -o json > "$evidence/pack.json"
 jq -e '.properties.recipes | length == 3' "$evidence/pack.json" >/dev/null
 for mapping in 'Radius.Data/postgreSqlDatabases:postgresql' 'Radius.Compute/containers:containers' 'Radius.Security/secrets:secrets'; do
@@ -91,7 +107,6 @@ done
 jq -e '.APIVersions["2025-08-01-preview"].Schema.properties.tls |
   .type == "string" and .default == "required" and
   (.enum | index("required") != null and index("disabled") != null)' "$evidence/postgresql-schema.json" >/dev/null
-rad version > "$evidence/runtime.txt"
 "$HOME/.rad/bin/bicep" --version > "$evidence/bicep-version.txt"
 cp "$templates/bicepconfig.json" "$evidence/bicepconfig.json"
 sha256sum "$work/prepared/radius-extension.tgz" "$work/prepared/postgresql.yaml" > "$evidence/bicep-types-hashes.txt"
