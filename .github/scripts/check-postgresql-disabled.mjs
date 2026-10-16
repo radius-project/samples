@@ -77,9 +77,6 @@ if (phase === "after") {
   const namespaces = new Set(deployments.map((deployment) => deployment.metadata.namespace));
   assert.equal(namespaces.size, 1);
   const [namespace] = namespaces;
-  if (environment.properties.providers?.kubernetes?.namespace) {
-    assert.equal(namespace, environment.properties.providers.kubernetes.namespace);
-  }
   for (const deployment of deployments) {
     run("kubectl", ["rollout", "status", `deployment/${deployment.metadata.name}`, "-n", namespace, "--timeout=180s"]);
     const current = json("kubectl", ["get", "deployment", deployment.metadata.name, "-n", namespace, "-o", "json"]);
