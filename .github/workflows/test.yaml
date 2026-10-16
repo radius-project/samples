@@ -76,6 +76,22 @@ jobs:
             images: samples/dapr-frontend,samples/dapr-backend
             directories: samples/dapr/ui/,samples/dapr/nodeapp/
 
+          - name: demo-postgresql-disabled
+            os: ubuntu-24.04
+            runOnPullRequest: true
+            app: demo-default
+            env: default
+            path: ./samples/demo/app-postgresql.bicep
+            deployArgs: -p image=sampleregistry:5000/samples/demo -p @"$POSTGRESQL_PARAMETERS"
+            exposeArgs: --application demo-default
+            previewFlag: true
+            uiTestFile: tests/demo/demo.app.spec.ts
+            port: 3000
+            container: demo-default
+            enableDapr: false
+            images: samples/demo
+            directories: samples/demo/
+
           - name: volumes
             os: ubuntu-24.04
             runOnPullRequest: true
@@ -278,6 +294,45 @@ jobs:
             rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
           fi
 
+      - name: Check PostgreSQL policy artifact gate
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo-postgresql-disabled'
+        env:
+          POSTGRESQL_DISABLED_RECIPE_SOURCE: ${{ vars.POSTGRESQL_DISABLED_RECIPE_SOURCE }}
+          POSTGRESQL_DISABLED_RECIPE_DIGEST: ${{ vars.POSTGRESQL_DISABLED_RECIPE_DIGEST }}
+        run: node .github/scripts/check-postgresql-disabled.mjs before
+
+      - name: Compile PostgreSQL sample without diagnostics
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo-postgresql-disabled'
+        run: |
+          curl --fail --location --silent --show-error -o "$RUNNER_TEMP/bicep" https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x "$RUNNER_TEMP/bicep"
+          "$RUNNER_TEMP/bicep" --version
+          "$RUNNER_TEMP/bicep" build samples/demo/app-postgresql.bicep --stdout --diagnostics-format sarif \
+            > /dev/null 2> "$RUNNER_TEMP/postgresql-bicep.sarif"
+          jq -e '[.runs[].results[]? | select(.level != "note" and .level != "none")] | length == 0' "$RUNNER_TEMP/postgresql-bicep.sarif"
+          oras resolve biceptypes.azurecr.io/radius:latest
+
+      - name: Prepare PostgreSQL password parameter file
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo-postgresql-disabled'
+        run: |
+          set +x
+          umask 077
+          parameters="$(mktemp "$RUNNER_TEMP/postgresql-disabled.XXXXXX.json")"
+          trap 'rm -f "$parameters"' EXIT
+          node - "$parameters" <<'NODE'
+          const { randomBytes } = require("node:crypto");
+          const { writeFileSync } = require("node:fs");
+          const password = randomBytes(32).toString("hex");
+          console.log(`::add-mask::${password}`);
+          writeFileSync(process.argv[2], JSON.stringify({
+            $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+            contentVersion: "1.0.0.0",
+            parameters: { password: { value: password } }
+          }));
+          NODE
+          echo "POSTGRESQL_PARAMETERS=$parameters" >> "$GITHUB_ENV"
+          trap - EXIT
+
       # Deploy application and run tests
       # Retry the deployment step in case of transient failures
       - name: Deploy app
@@ -289,6 +344,13 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 30
           command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+
+      - name: Verify PostgreSQL disabled runtime and persisted HTTP CRUD
+        if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.name == 'demo-postgresql-disabled'
+        env:
+          POSTGRESQL_DISABLED_RECIPE_SOURCE: ${{ vars.POSTGRESQL_DISABLED_RECIPE_SOURCE }}
+          POSTGRESQL_DISABLED_RECIPE_DIGEST: ${{ vars.POSTGRESQL_DISABLED_RECIPE_DIGEST }}
+        run: node .github/scripts/check-postgresql-disabled.mjs after
 
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
@@ -380,6 +442,24 @@ jobs:
           if-no-files-found: error
 
       # Cleanup
+      - name: Remove PostgreSQL password parameter file
+        if: always() && matrix.name == 'demo-postgresql-disabled'
+        run: |
+          if [[ -n "${POSTGRESQL_PARAMETERS:-}" ]]; then
+            rm -f -- "$POSTGRESQL_PARAMETERS"
+          fi
+
+      - name: Upload PostgreSQL artifact evidence
+        if: always() && matrix.name == 'demo-postgresql-disabled'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: postgresql-disabled-evidence
+          path: |
+            ${{ runner.temp }}/postgresql-disabled-evidence.json
+            ${{ runner.temp }}/postgresql-bicep.sarif
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Delete app
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
