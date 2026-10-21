@@ -203,6 +203,8 @@ jobs:
 
       - name: Download rad CLI
         if: steps.gen-id.outputs.RUN_TEST == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           ./.github/scripts/install-radius.sh ${{ steps.gen-radius-version.outputs.RADIUS_VERSION }}
 
