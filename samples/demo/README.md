@@ -20,3 +20,30 @@ docker build \
 `app-postgresql.bicep` uses the Kubernetes Container Recipe's direct Secret connection support to project the database password as `CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD`. This requires Radius 0.61.0 or later, or a current edge installation.
 
 The demo image prefers that variable and retains `CONNECTION_POSTGRESQL_PASSWORD` as a compatibility fallback for older or mixed installations whose PostgreSQL Recipe still supplies the password. If both variables are set to different values, the demo logs a warning and uses `CONNECTION_POSTGRESQLCREDENTIALS_PASSWORD`. Azure ACI does not project direct Secret connections, so this new password path is Kubernetes-only; its existing connection behavior is unchanged.
+
+### Kubernetes PostgreSQL TLS
+
+The edge template uses the existing Node.js PostgreSQL client's `PGSSLMODE=verify-full` and `NODE_EXTRA_CA_CERTS` settings to require encrypted connections and verify the server certificate and hostname. It uses TLS even if the database policy permits plaintext; it never falls back after a trust error. No demo image rebuild is needed for this configuration.
+
+The demo's generated connection URI has no SSL query parameters. Keep it that way: URI SSL options take precedence over `PGSSLMODE` and can disable verification or encryption.
+
+Before deployment, obtain a server certificate with a DNS subject alternative name matching `postgresql-<environment>.<namespace>.svc.cluster.local`. Prepare these operator-owned Secrets in the Environment's actual Kubernetes namespace:
+
+```bash
+environment=default
+namespace=default # Replace with the namespace shown by rad env show.
+kubectl create secret tls "postgresql-$environment-tls" -n "$namespace" \
+  --cert=server.crt --key=server.key
+kubectl create secret generic "postgresql-$environment-ca" -n "$namespace" \
+  --from-file=ca.crt=ca.crt
+```
+
+The TLS Secret holds the leaf-first server certificate chain and matching unencrypted private key. The CA Secret contains only the public root CA; the client mounts it at `/etc/postgresql-ca/ca.crt`. Never distribute the server key or CA private key to the demo. See the [PostgreSQL Recipe TLS guide](https://github.com/radius-project/resource-types-contrib/blob/main/Data/postgreSqlDatabases/README.md#kubernetes-tls) for certificate creation, a development CA example, and artifact migration.
+
+These instructions require a PostgreSQL Kubernetes Recipe with TLS support; older plaintext-only Recipes cannot serve this verified connection. The TLS Secret is required by the updated Recipes even when `tls` is optional. Coordinate the new sample configuration with the updated Recipe artifact rather than assuming a source merge updates a running server.
+
+**Back up data before any database rollout:** the default PostgreSQL Recipes do not provision durable data volumes. Rotate the server Secret and explicitly restart the database Deployment to load it. If the public CA changes, update the CA Secret and restart the demo too, since Node loads additional CAs at process startup. Application deletion removes the authored password Secret, not these two operator-owned Secrets; delete them explicitly when no longer needed:
+
+```bash
+kubectl delete secret "postgresql-$environment-tls" "postgresql-$environment-ca" -n "$namespace"
+```
