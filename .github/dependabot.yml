@@ -133,6 +133,34 @@ updates:
           - "version-update:semver-minor"
           - "version-update:semver-major"
 
+  # Security updates run on the default branch and skip blocks that set
+  # target-branch. This block groups them across all of the directories above.
+  - package-ecosystem: npm
+    directories:
+      - "/playwright"
+      - "/samples/dapr/nodeapp"
+      - "/samples/demo"
+      - "/samples/demo/client"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+      - deps/npm
+    groups:
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-major"
+
   - package-ecosystem: nuget
     directories:
       - "/samples/aws"
@@ -153,6 +181,27 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
+      security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  # Security updates run on the default branch and skip blocks that set
+  # target-branch. This block groups them across all of the directories above.
+  - package-ecosystem: nuget
+    directories:
+      - "/samples/aws"
+      - "/samples/dapr/ui"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+      - deps/nuget
+    groups:
       security:
         applies-to: security-updates
         patterns:
