@@ -23,15 +23,23 @@ The demo image prefers that variable and retains `CONNECTION_POSTGRESQL_PASSWORD
 
 ### Kubernetes PostgreSQL TLS
 
-The edge template uses the existing Node.js PostgreSQL client's `PGSSLMODE=verify-full` and `NODE_EXTRA_CA_CERTS` settings to require encrypted connections and verify the server certificate and hostname. It uses TLS even if the database policy permits plaintext; it never falls back after a trust error. No demo image rebuild is needed for this configuration.
+This template uses the existing Node.js PostgreSQL client's `PGSSLMODE=verify-full` and `NODE_EXTRA_CA_CERTS` settings to require encrypted connections and verify the server certificate and hostname. It uses TLS even if the database policy permits plaintext; it never falls back after a trust error. No demo image rebuild is needed for this configuration.
 
 The demo's generated connection URI has no SSL query parameters. Keep it that way: URI SSL options take precedence over `PGSSLMODE` and can disable verification or encryption.
 
-Before deployment, obtain a server certificate with a DNS subject alternative name matching `postgresql-<environment>.<namespace>.svc.cluster.local`. Prepare these operator-owned Secrets in the Environment's actual Kubernetes namespace:
+Before generating certificates, set the Environment name (the last segment of its ID) and its actual Kubernetes namespace. The namespace is not necessarily the same as the Environment name:
 
 ```bash
 environment=default
 namespace=default # Replace with the namespace shown by rad env show.
+database="postgresql-$environment"
+```
+
+Obtain a server certificate with a DNS subject alternative name matching `postgresql-<environment>.<namespace>.svc.cluster.local` from your operator. For an isolated development cluster, follow the [PostgreSQL Recipe TLS guide's development CA example](https://github.com/radius-project/resource-types-contrib/blob/main/Data/postgreSqlDatabases/README.md#kubernetes-tls) using the variables above, not its generic `database=postgresql` or namespace assignments. Run the certificate-generation steps, including `umask`, the `hostname` assignment, the `printf` command that prepares the SAN extension file, and the `openssl` commands. Skip the guide's `kubectl create secret` command.
+
+Once `server.crt`, `server.key`, and `ca.crt` are available, create both operator-owned Secrets here:
+
+```bash
 kubectl create secret tls "postgresql-$environment-tls" -n "$namespace" \
   --cert=server.crt --key=server.key
 kubectl create secret generic "postgresql-$environment-ca" -n "$namespace" \
