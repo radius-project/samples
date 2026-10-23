@@ -26,11 +26,30 @@ resource demoContainer 'Radius.Compute/containers@2025-08-01-preview' = {
     containers: {
       web: {
         image: 'ghcr.io/radius-project/samples/demo:latest'
+        env: {
+          PGSSLMODE: {
+            value: 'verify-full'
+          }
+          NODE_EXTRA_CA_CERTS: {
+            value: '/etc/postgresql-ca/ca.crt'
+          }
+        }
+        volumeMounts: [
+          {
+            volumeName: 'postgresqlCa'
+            mountPath: '/etc/postgresql-ca'
+          }
+        ]
         ports: {
           web: {
             containerPort: 3000
           }
         }
+      }
+    }
+    volumes: {
+      postgresqlCa: {
+        secretName: 'postgresql-${environmentName}-ca'
       }
     }
     connections: {
