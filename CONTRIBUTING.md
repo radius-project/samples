@@ -30,7 +30,7 @@ Normal review and branch protections still apply.
 
 The App installation must grant **Contents**, **Pull requests**, and
 **Workflows: Read & Write** in this repository; workflow-file propagation needs
-the last permission. No signing key or branch-rule bypass is required.
+the last permission. No bot commit-signing key or branch-rule bypass is required.
 `repo-files-sync` is not a substitute here: copying source files would overwrite
 edge edits rather than perform the required three-way merge.
 

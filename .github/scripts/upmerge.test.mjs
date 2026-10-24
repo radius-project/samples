@@ -96,12 +96,7 @@ function fixture(t) {
       GITHUB_OUTPUT: join(root, "outputs").replaceAll("\\", "/"),
       ...extraEnv
     };
-    for (const key of [
-      "GIT_AUTHOR_NAME",
-      "GIT_AUTHOR_EMAIL",
-      "GIT_COMMITTER_NAME",
-      "GIT_COMMITTER_EMAIL"
-    ]) {
+    for (const key of ["GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL"]) {
       delete runEnv[key];
     }
     const result = spawnSync(
@@ -125,6 +120,7 @@ function fixture(t) {
   }
 
   git("init", "--initial-branch=edge");
+  git("config", "user.useConfigOnly", "true");
   git("init", "--bare", "--initial-branch=edge", remote);
   git("remote", "add", "origin", remote.replaceAll("\\", "/"));
   write("bicepconfig.json", "base configuration\n");
@@ -309,6 +305,17 @@ test("fetch failures are not draft conflicts or no-ops", (t) => {
   assert.equal(f.git("rev-parse", "HEAD"), f.edge);
 });
 
+test("missing preparation identity cannot fall back to OS identity guessing", (t) => {
+  const f = fixture(t);
+  const result = f.prepare({
+    GIT_COMMITTER_NAME: "",
+    GIT_COMMITTER_EMAIL: ""
+  });
+  failsWithoutOutputs(f, result);
+  assert.match(result.stderr, /empty ident/i);
+  assert.equal(f.git("rev-parse", "HEAD"), f.edge);
+});
+
 test("dirty checkouts and invalid source IDs fail before merge", async (t) => {
   for (const dirty of [false, true]) {
     await t.test(`dirty=${dirty}`, (t) => {
@@ -376,6 +383,14 @@ test("workflow delegates signing and PR lifecycle to the pinned action", () => {
   assert.match(step("Checkout edge"), /ref: edge/);
   assert.match(step("Checkout edge"), /fetch-depth: 0/);
   assert.match(step("Upmerge samples"), /SOURCE_SHA: \$\{\{ github\.sha \}\}/);
+  assert.match(
+    step("Upmerge samples"),
+    /GIT_COMMITTER_NAME: \$\{\{ steps\.bot-details\.outputs\.name \}\}/
+  );
+  assert.match(
+    step("Upmerge samples"),
+    /GIT_COMMITTER_EMAIL: \$\{\{ steps\.bot-details\.outputs\.email \}\}/
+  );
   assert.doesNotMatch(
     script("Upmerge samples"),
     /\bgit (?:commit|push|reset)\b/

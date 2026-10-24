@@ -72,6 +72,8 @@ jobs:
         id: prepare
         env:
           SOURCE_SHA: ${{ github.sha }}
+          GIT_COMMITTER_NAME: ${{ steps.bot-details.outputs.name }}
+          GIT_COMMITTER_EMAIL: ${{ steps.bot-details.outputs.email }}
         run: |
           set -euo pipefail
           if [[ ! "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
