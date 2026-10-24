@@ -13,10 +13,10 @@ Radius is in an early phase of development right now. We welcome feedback in the
 ## Release branch upmerges
 
 Run **Upmerge to edge** from the active release branch.
-`.github/workflows/upmerge.yaml` is a generated thin caller of the shared
+`.github/workflows/upmerge.yaml` is a synced thin caller of the shared
 [`__upmerge.yml`](https://github.com/radius-project/.github/blob/main/.github/workflows/__upmerge.yml)
-workflow in `radius-project/.github`. Merge preparation, App-backed signing,
-verification, and regression fixtures are maintained centrally, not copied here.
+workflow in `radius-project/.github`. Merge preparation, App-backed signing, and
+verification are maintained centrally, not copied here.
 The caller follows the organization's existing `@main` reusable-workflow pattern.
 
 `bicepconfig.json` always retains its `edge` state, including absence or deletion.
@@ -32,14 +32,13 @@ The App installation must grant **Contents**, **Pull requests**, and
 **Workflows: Read & Write** in this repository; workflow-file propagation needs
 the last permission. No bot commit-signing key or branch-rule bypass is required.
 
-Update the shared workflow, caller template, and sync configuration in
-`radius-project/.github`: `sync-templates/.github/workflows/upmerge.yaml.njk` and
-the samples `template.preserve_paths` entry in `.github/sync.yml` configure this
-caller. Do not edit the generated file or maintain local merge code or fixtures.
+Update the shared workflow and native caller in `radius-project/.github`.
+[`workflow-templates/upmerge-samples.yml`](https://github.com/radius-project/.github/blob/main/workflow-templates/upmerge-samples.yml)
+declares the literal `preserve-paths` input for samples. `.github/sync.yml` selects
+that static file and its `samples@edge` destination; it does not supply workflow
+inputs. Do not edit the synced file or maintain local merge code.
 Follow [the central sync guide](https://github.com/radius-project/.github/blob/main/eng/SYNC.md#signed-release-upmerge)
-for rendering callers and running the shared
-[merge fixtures](https://github.com/radius-project/.github/blob/main/.github/tests/upmerge.test.mjs)
-and [caller contract checks](https://github.com/radius-project/.github/blob/main/.github/tests/upmerge-callers.test.cjs).
+for maintaining the native callers.
 File sync distributes only the caller to `samples@edge`, not release/source
 content; it does not replace the three-way upmerge.
 
