@@ -39,10 +39,7 @@ function script(name) {
     .split("\n")
     .map((line) => line.slice(10))
     .join("\n");
-  assert.ok(
-    !result.includes("${{"),
-    "Scripts must receive inputs through env"
-  );
+  assert.ok(!result.includes("${{"), "Scripts must receive inputs through env");
   return result;
 }
 
