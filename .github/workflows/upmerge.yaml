@@ -1,192 +1,26 @@
-# Upmerge the executing release revision into edge as a signed net diff, not
-# source ancestry. Only workflow_dispatch can create a pull request.
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+# ------------------------------------------------------------------------------
+# This file is synced from the radius-project/.github repository.
+# DO NOT EDIT MANUALLY - changes will be overwritten by the next sync.
+# Source: https://github.com/radius-project/.github
+# Docs: https://github.com/radius-project/.github/blob/main/eng/SYNC.md#signed-release-upmerge
+# ------------------------------------------------------------------------------
 ---
-name: Upmerge samples to edge
+name: Upmerge to edge
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - .github/workflows/upmerge.yaml
-      - .github/scripts/upmerge.test.mjs
 
 permissions: {}
 
 jobs:
-  test:
-    name: Test upmerge preparation
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+  upmerge:
+    uses: radius-project/.github/.github/workflows/__upmerge.yml@main
     permissions:
       contents: read
-    steps:
-      - name: Checkout tests
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Test workflow
-        run: node --test .github/scripts/upmerge.test.mjs
-
-  upmerge:
-    name: Upmerge samples to edge
-    needs: test
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions:
-      contents: read # required by actions/create-github-app-token
-    steps:
-      # The RADIUS_RELEASE_BOT App installation needs Contents, Pull requests,
-      # and Workflows: Read & Write. The token is scoped only to this repository.
-      - name: Get App Token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          permission-contents: write
-          permission-pull-requests: write
-          permission-workflows: write
-          repositories: samples
-
-      - name: Get bot details
-        id: bot-details
-        uses: raven-actions/bot-details@ee8966a9ff6e7e42cbfc4a56b4ddb60a9d1b40a6 # v1.2.0
-        with:
-          bot-slug-name: ${{ steps.app-token.outputs.app-slug }}
-
-      - name: Checkout edge
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: edge
-          token: ${{ steps.app-token.outputs.token }}
-          fetch-depth: 0
-          persist-credentials: true
-
-      # Inline preparation belongs to the executing workflow revision, even
-      # before edge has received this workflow or its tests.
-      - name: Upmerge samples
-        id: prepare
-        env:
-          SOURCE_SHA: ${{ github.sha }}
-          GIT_COMMITTER_NAME: ${{ steps.bot-details.outputs.name }}
-          GIT_COMMITTER_EMAIL: ${{ steps.bot-details.outputs.email }}
-        run: |
-          set -euo pipefail
-          if [[ ! "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
-              echo "::error::Expected the full workflow source commit SHA."
-              exit 1
-          fi
-
-          BASE_SHA=$(git rev-parse --verify HEAD)
-          BRANCH=$(git symbolic-ref --short HEAD)
-          STATUS=$(git status --porcelain --untracked-files=all)
-          if [[ "${BRANCH}" != "edge" || -n "${STATUS}" ]]; then
-              echo "::error::Upmerge preparation requires a clean edge checkout."
-              exit 1
-          fi
-          git fetch --no-tags origin "${SOURCE_SHA}"
-          FETCHED_SHA=$(git rev-parse --verify "FETCH_HEAD^{commit}")
-          if [[ "${FETCHED_SHA}" != "${SOURCE_SHA}" ]]; then
-              echo "::error::Fetched revision does not match the workflow source."
-              exit 1
-          fi
-
-          restore_edge_config() {
-              local edge_config
-              edge_config=$(git ls-tree "${BASE_SHA}" -- bicepconfig.json)
-              if [[ -n "${edge_config}" ]]; then
-                  git restore --source="${BASE_SHA}" --staged --worktree -- bicepconfig.json
-              else
-                  git rm -r --force --ignore-unmatch -- bicepconfig.json
-              fi
-          }
-
-          MERGE_STATUS=0
-          git merge --squash --no-commit "${SOURCE_SHA}" || MERGE_STATUS=$?
-          UNMERGED=$(git ls-files --unmerged)
-          case "${MERGE_STATUS}:${UNMERGED:+conflicts}" in
-              0: | 1:conflicts) ;;
-              *)
-                  echo "::error::Git merge failed without a valid content-conflict result."
-                  exit 1
-                  ;;
-          esac
-
-          restore_edge_config
-          UNMERGED=$(git ls-files --unmerged)
-          CONFLICT=false
-          if [[ -n "${UNMERGED}" ]]; then
-              echo "::warning::Content conflicts require a draft PR and manual resolution."
-              # A provisional source snapshot is not a resolved merge. Keep HEAD
-              # on edge so the signing action cannot import the source's parents.
-              git read-tree --reset -u "${SOURCE_SHA}"
-              restore_edge_config
-              CONFLICT=true
-          fi
-
-          UNMERGED=$(git ls-files --unmerged)
-          HEAD_SHA=$(git rev-parse --verify HEAD)
-          if [[ -n "${UNMERGED}" || "${HEAD_SHA}" != "${BASE_SHA}" ]]; then
-              echo "::error::Preparation left unmerged files or changed the edge parent."
-              exit 1
-          fi
-
-          DIFF_STATUS=0
-          git diff --cached --quiet || DIFF_STATUS=$?
-          case "${DIFF_STATUS}" in
-              0) NO_CHANGES=true ;;
-              1) NO_CHANGES=false ;;
-              *)
-                  echo "::error::Unable to determine the prepared upmerge diff."
-                  exit 1
-                  ;;
-          esac
-          if [[ "${CONFLICT}" == "true" && "${NO_CHANGES}" == "true" ]]; then
-              echo "::error::Conflicts produced no reviewable diff; manual recovery is required."
-              exit 1
-          fi
-          echo "no-changes=${NO_CHANGES}" >> "${GITHUB_OUTPUT}"
-          echo "conflict=${CONFLICT}" >> "${GITHUB_OUTPUT}"
-
-      # The action creates one signed commit from the uncommitted net diff.
-      # Do not override author/committer: GitHub signs as the authenticated App.
-      - name: Create pull request
-        id: pull-request
-        if: steps.prepare.outputs.no-changes != 'true'
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          token: ${{ steps.app-token.outputs.token }}
-          sign-commits: true
-          commit-message: |
-            Upmerge to edge
-
-            Signed-off-by: ${{ steps.bot-details.outputs.name }} <${{ steps.bot-details.outputs.email }}>
-          branch: upmerge/${{ github.run_id }}-${{ github.run_attempt }}
-          base: edge
-          title: Upmerge to edge
-          draft: ${{ steps.prepare.outputs.conflict }}
-          body: |
-            Upmerge `${{ github.ref_name }}` to edge (kicked off by @${{ github.triggering_actor }}).
-
-            ${{ steps.prepare.outputs.conflict == 'true' && '**Draft: merge conflicts require manual resolution.** This is a provisional source snapshot, not a resolved merge. Other edge-only changes may be absent; restore them and resolve conflicts before marking this PR ready.' || 'This is the signed net diff of the merged source and edge trees, without importing source commit ancestry.' }}
-
-            `bicepconfig.json` retains its edge state, including absence or deletion. Normal review and merge requirements still apply.
-
-      - name: Require signed pull request
-        if: steps.prepare.outputs.no-changes != 'true'
-        env:
-          COMMITS_VERIFIED: ${{ steps.pull-request.outputs.pull-request-commits-verified }}
-          PR_NUMBER: ${{ steps.pull-request.outputs.pull-request-number }}
-          PR_URL: ${{ steps.pull-request.outputs.pull-request-url }}
-          PR_HEAD_SHA: ${{ steps.pull-request.outputs.pull-request-head-sha }}
-        run: |
-          set -euo pipefail
-          if [[ "${COMMITS_VERIFIED}" != "true" || -z "${PR_NUMBER}" ||
-              -z "${PR_URL}" || -z "${PR_HEAD_SHA}" ]]; then
-              echo "::error::The action did not return a GitHub-verified commit and pull request."
-              exit 1
-          fi
+    with:
+      preserve-paths: |
+        bicepconfig.json
+    secrets:
+      RADIUS_RELEASE_BOT_CLIENT_ID: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
+      RADIUS_RELEASE_BOT_PRIVATE_KEY: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
