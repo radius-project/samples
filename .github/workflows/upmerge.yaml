@@ -1,31 +1,12 @@
-# This workflow automates the process of upmerging changes from the current release branch to the edge branch.
-# During the course of a release, the release branch is the default branch so that PRs can be immediately
-# brought into the release without waiting for a new release. This workflow merges those changes into
-# the edge branch so that edge can be used as the basis for the next release branch.
-#
-# This workflow assumes that it is being triggered from the current release branch, but it could be triggered from
-# any branch, and it uses that branch as the source branch for merging into the edge branch.
-# The workflow is triggered manually via the workflow_dispatch event.
-#
-# The workflow performs the following steps:
-# 1. Checks out the edge branch.
-# 2. Configures git with a user name and email.
-# 3. Creates a new branch from edge.
-# 4. Merges changes from the branch executing the workflow into the edge branch created in the previous step.
-# 5. If the merge conflicts, resets the new branch to the source branch so the conflicts can be resolved in a PR.
-# 6. Pushes the new branch if there are changes.
-# 7. Creates a pull request to merge the new branch into edge.
-
-# Example:
-# The current release branch is v0.36. We are creating the new release for v0.37.
-# The release person manually triggers this workflow from branch v0.36. The workflow runs, which does the following
-# 1. A new branch is created named upmerge/2024-07-31-98b9. The source branch is edge.
-# 2. Changes from branch v0.36 are merged into branch upmerge/2024-07-31-98b9.
-# 3. A PR is created from branch upmerge/2024-07-31-98b9 --> edge. The workflow finishes and reports success.
-
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+# ------------------------------------------------------------------------------
+# This file is synced from the radius-project/.github repository.
+# DO NOT EDIT MANUALLY - changes will be overwritten by the next sync.
+# Source: https://github.com/radius-project/.github
+# Docs: https://github.com/radius-project/.github/blob/main/eng/SYNC.md#signed-release-upmerge
+# ------------------------------------------------------------------------------
 ---
-name: Upmerge samples to edge
+name: Upmerge to edge
 
 on:
   workflow_dispatch:
@@ -34,126 +15,12 @@ permissions: {}
 
 jobs:
   upmerge:
-    name: Upmerge samples to edge
-    runs-on: ubuntu-24.04
-    env:
-      NO_CHANGES: "false"
-    timeout-minutes: 5
+    uses: radius-project/.github/.github/workflows/__upmerge.yml@main
     permissions:
-      contents: read # required by actions/create-github-app-token
-    steps:
-      # Generate a short-lived installation token scoped to this repository.
-      # Requires the RADIUS_RELEASE_BOT App installed on radius-project/samples with:
-      #   Contents: Read & Write, Pull requests: Read & Write
-      - name: Get App Token
-        id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          client-id: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
-          private-key: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          permission-contents: write
-          permission-pull-requests: write
-          repositories: samples
-
-      # Resolve the bot's GitHub-formatted name and email dynamically from the app slug
-      # so commits are attributed to the bot identity rather than hardcoded values.
-      - name: Get bot details
-        id: bot-details
-        uses: raven-actions/bot-details@ee8966a9ff6e7e42cbfc4a56b4ddb60a9d1b40a6 # v1.2.0
-        with:
-          bot-slug-name: ${{ steps.app-token.outputs.app-slug }}
-
-      # Check out the edge branch
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: edge
-          token: ${{ steps.app-token.outputs.token }}
-          # https://github.com/actions/checkout/issues/125#issuecomment-570254411
-          fetch-depth: 0
-          persist-credentials: true
-
-      - name: Configure git
-        run: |
-          git config --global user.name "${GIT_USER_NAME}"
-          git config --global user.email "${GIT_USER_EMAIL}"
-        env:
-          GIT_USER_NAME: ${{ steps.bot-details.outputs.name }}
-          GIT_USER_EMAIL: ${{ steps.bot-details.outputs.email }}
-
-      # Create a new branch from edge. This branch will be used to PR back into edge.
-      - name: Create new branch from edge
-        run: |
-          export DATE=$(date +%Y-%m-%d)
-          export RAND=$(openssl rand -hex 2)
-          export BRANCH_NAME="upmerge/$DATE-$RAND"
-          echo "BRANCH_NAME=${BRANCH_NAME}" >> "${GITHUB_ENV}"
-          git checkout -b "${BRANCH_NAME}"
-
-      # Merge changes from the github.ref branch, i.e., the branch from which the workflow is triggered. That
-      # branch is assumed to be the current release branch, but could be any branch.
-      # If the merge conflicts, push the source state so a draft PR can be opened for manual resolution.
-      # If there are no changes, stop the workflow.
-      # We ignore the bicepconfig.json file because we don't want to overwrite the version in the edge branch.
-      # Manual recovery (local):
-      #   git fetch origin
-      #   git checkout -b upmerge/manual-<date> origin/edge
-      #   git merge --no-commit origin/<source-branch>
-      #   git status && git diff --name-only --diff-filter=U
-      #   # resolve conflicts, then:
-      #   git checkout origin/edge -- bicepconfig.json
-      #   git add -A && git commit --signoff -m "Upmerge to edge"
-      #   git push -u origin upmerge/manual-<date>
-      - name: Upmerge samples
-        run: |
-          SOURCE_BRANCH="${GITHUB_REF_NAME}"
-          MERGE_CONFLICT=false
-          EDGE_OWNED_FILES=(
-              bicepconfig.json
-          )
-          echo "Upmerging samples from ${SOURCE_BRANCH} to edge"
-          git fetch origin "${SOURCE_BRANCH}"
-
-          if git merge --no-ff --no-commit "origin/${SOURCE_BRANCH}"; then
-              git checkout edge -- "${EDGE_OWNED_FILES[@]}"
-          else
-              echo "::warning::Merge conflicts detected. Opening a draft PR for manual resolution."
-              git merge --abort
-              git reset --hard "origin/${SOURCE_BRANCH}"
-              git checkout edge -- "${EDGE_OWNED_FILES[@]}"
-              if ! git diff --cached --quiet; then
-                  git commit --signoff --message "Preserve edge-specific configuration"
-              fi
-              MERGE_CONFLICT=true
-              echo "MERGE_CONFLICT=true" >> "${GITHUB_ENV}"
-          fi
-
-          if git diff --quiet edge; then
-              echo "No changes to merge from ${SOURCE_BRANCH} to edge"
-              echo "NO_CHANGES=true" >> "${GITHUB_ENV}"
-          else
-              if [[ "${MERGE_CONFLICT:-false}" != "true" ]]; then
-                  git commit --signoff --message "Upmerge to edge"
-              fi
-              echo "Pushing ${BRANCH_NAME} for PR to edge"
-              git push --set-upstream origin "${BRANCH_NAME}"
-          fi
-
-      # Create a PR from the new branch to edge
-      - name: Create pull request
-        if: env.NO_CHANGES != 'true'
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          BODY="Upmerge to edge (kicked off by @${{ github.triggering_actor }})"
-          DRAFT_ARGS=()
-
-          if [[ "${MERGE_CONFLICT:-false}" == "true" ]]; then
-              BODY="${BODY}
-
-          This upmerge has merge conflicts that require manual resolution."
-              DRAFT_ARGS+=(--draft)
-          fi
-
-          gh pr create "${DRAFT_ARGS[@]}" --title "Upmerge to edge" --body "${BODY}" --base edge --head "${BRANCH_NAME}"
+      contents: read
+    with:
+      preserve-paths: |
+        bicepconfig.json
+    secrets:
+      RADIUS_RELEASE_BOT_CLIENT_ID: ${{ secrets.RADIUS_RELEASE_BOT_CLIENT_ID }}
+      RADIUS_RELEASE_BOT_PRIVATE_KEY: ${{ secrets.RADIUS_RELEASE_BOT_PRIVATE_KEY }}
