@@ -19,26 +19,16 @@ workflow in `radius-project/.github`. Merge preparation, App-backed signing, and
 verification are maintained centrally, not copied here.
 The caller follows the organization's existing `@main` reusable-workflow pattern.
 
-`bicepconfig.json` always retains its `edge` state, including absence or deletion.
-The shared workflow prepares a squash on `edge` and delegates its uncommitted
-net diff to `peter-evans/create-pull-request` for one App-signed commit without
-release-branch ancestry. The explicit App `Signed-off-by` trailer is DCO signoff,
-not a cryptographic signature. No-change runs skip PR creation; genuine conflicts
-produce a provisional draft source snapshot that may omit edge-only changes and
-requires manual reconciliation, not a safely merged snapshot. Normal review and
-branch protections still apply.
-
-The App installation must grant **Contents**, **Pull requests**, and
-**Workflows: Read & Write** in this repository; workflow-file propagation needs
-the last permission. No bot commit-signing key or branch-rule bypass is required.
+The samples caller lists `bicepconfig.json` in its `preserve-paths` input.
+See the [shared upmerge guidance](https://github.com/radius-project/.github/blob/main/eng/SYNC.md#signed-release-upmerge)
+for signing, preserved-file handling, conflict resolution, no-change behavior,
+and required App permissions.
 
 Update the shared workflow and native caller in `radius-project/.github`.
 [`workflow-templates/upmerge-samples.yml`](https://github.com/radius-project/.github/blob/main/workflow-templates/upmerge-samples.yml)
 declares the literal `preserve-paths` input for samples. `.github/sync.yml` selects
 that static file and its `samples@edge` destination; it does not supply workflow
 inputs. Do not edit the synced file or maintain local merge code.
-Follow [the central sync guide](https://github.com/radius-project/.github/blob/main/eng/SYNC.md#signed-release-upmerge)
-for maintaining the native callers.
 File sync distributes only the caller to `samples@edge`, not release/source
 content; it does not replace the three-way upmerge.
 
