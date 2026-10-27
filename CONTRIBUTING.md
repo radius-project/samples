@@ -2,6 +2,10 @@
 
 Radius is in an early phase of development right now. We welcome feedback in the form of issues that comes from usage and is aligned with the current scope and goals of the project. We also welcome contributions and PRs for bug fixes or security fixes. For new functionality or new samples please open an issue first to discuss the scope and goals of the feature. We will not accept new functionality or samples without an issue first.
 
+The **Sample CI environments** section describes the
+[`edge` branch](https://github.com/radius-project/samples/blob/edge/CONTRIBUTING.md#sample-ci-environments),
+where its linked template lives. Release branches retain their version-specific CI.
+
 ## How to contribute
 
 1. Fork the repository
