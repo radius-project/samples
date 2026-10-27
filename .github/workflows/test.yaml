@@ -16,6 +16,7 @@ on:
     paths:
       - samples/**
       - .github/workflows/**
+      - .github/test/**
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -56,8 +57,7 @@ jobs:
             path: ./samples/demo/app.bicep
             deployArgs: -p image=sampleregistry:5000/samples/demo
             exposeArgs: --application demo-default
-            # Use the preview (Radius.*) resource types for expose/delete.
-            previewFlag: true
+            resourceProvider: Radius.Core
             uiTestFile: tests/demo/demo.app.spec.ts
             port: 3000
             container: demo-default
@@ -70,6 +70,7 @@ jobs:
             runOnPullRequest: true
             app: dapr
             env: default
+            resourceProvider: Applications.Core
             path: ./samples/dapr/dapr.bicep
             deployArgs: -p frontendImage=sampleregistry:5000/samples/dapr-frontend -p backendImage=sampleregistry:5000/samples/dapr-backend
             enableDapr: true
@@ -81,6 +82,7 @@ jobs:
             runOnPullRequest: true
             app: myapp
             env: default
+            resourceProvider: Applications.Core
             path: ./samples/volumes/app.bicep
             deployArgs: -p image=sampleregistry:5000/samples/volumes
             enableDapr: false
@@ -260,24 +262,18 @@ jobs:
           # 'rad install kubernetes' installs the control plane only, so the resource group,
           # environment and workspace have to be created explicitly.
           # See https://github.com/radius-project/radius/pull/12829.
-          previewArg=""
-          if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
-            previewArg="--preview"
-          fi
-
           rad group create default
           rad workspace create kubernetes default --group default
 
-          # With --preview and no --recipe-packs, 'rad env create' also creates the default
-          # recipe pack that backs the Radius.Compute/* resource types.
-          rad env create default $previewArg
-          rad env switch default $previewArg
-
-          if [[ "${{ matrix.previewFlag }}" != "true" ]]; then
-            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rediscaches:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/redisCaches
-            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/mongodatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/mongoDatabases
-            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/sqldatabases:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Datastores/sqlDatabases
-            rad recipe register default -e default -w default --template-kind bicep --template-path ghcr.io/radius-project/recipes/local-dev/rabbitmqqueues:${{ steps.gen-radius-version.outputs.RADIUS_VERSION }} --resource-type Applications.Messaging/rabbitMQQueues
+          if [[ "${{ matrix.resourceProvider }}" == "Radius.Core" ]]; then
+            # Creates the default recipe pack used by Radius.Compute/containers.
+            rad env create "${{ matrix.env }}" --kubernetes-namespace default
+            rad env switch "${{ matrix.env }}"
+          else
+            # The legacy samples need an Applications.Core environment, not the CLI default.
+            # Neither sample uses a recipe: Dapr provisions Redis and its component manually.
+            rad deploy .github/test/legacy-environment.bicep \
+              --parameters name=${{ matrix.env }} --parameters namespace=default
           fi
 
       # Deploy application and run tests
@@ -290,21 +286,14 @@ jobs:
           timeout_minutes: 30
           max_attempts: 3
           retry_wait_seconds: 30
-          command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }}
+          command: rad deploy ${{ matrix.path }} ${{ matrix.deployArgs }} --environment /planes/radius/local/resourceGroups/default/providers/${{ matrix.resourceProvider }}/environments/${{ matrix.env }}
 
       - name: Run Playwright Test
         if: steps.gen-id.outputs.RUN_TEST == 'true' && matrix.uiTestFile != ''
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
-              containerType="Radius.Compute/containers"
-              previewArg="--preview"
-            else
-              containerType="Applications.Core/containers"
-              previewArg=""
-            fi
-            rad resource expose "$containerType" ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} $previewArg &
+            rad resource expose Radius.Compute/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
             export ENDPOINT="http://localhost:3000/"
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
@@ -382,15 +371,17 @@ jobs:
           if-no-files-found: error
 
       # Cleanup
-      - name: Delete app
+      - name: Delete sample resources
         if: steps.gen-id.outputs.RUN_TEST == 'true' && steps.deploy-app.outcome == 'success'
         run: |
           if command -v rad &> /dev/null; then
-            previewArg=""
-            if [[ "${{ matrix.previewFlag }}" == "true" ]]; then
-              previewArg="--preview"
+            if [[ "${{ matrix.resourceProvider }}" == "Radius.Core" ]]; then
+              rad app delete ${{ matrix.app }} -y
+            else
+              # Each matrix job owns its cluster and group. Current 'rad app delete'
+              # only targets Radius.Core, so delete the legacy resources through their group.
+              rad group delete default -y
             fi
-            rad app delete ${{ matrix.app }} -y $previewArg
           fi
 
   report-failures:
