@@ -10,6 +10,26 @@ Radius is in an early phase of development right now. We welcome feedback in the
 4. Open a PR
 5. Wait for a maintainer to review your PR
 
+## Sample CI environments
+
+The **Test Samples (K3D)** workflow creates a separate cluster for each sample.
+Its `resourceProvider` matrix entry must match the sample's application and
+environment resource types. Edge runs download the CLI from
+`ghcr.io/radius-project/rad/linux-amd64:edge`, matching the official installer;
+the older `:latest` artifact does not track current edge builds. The workflow
+prints `rad version` so the installed build is visible in the logs.
+
+The demo uses `Radius.Core` and the default container recipe pack, matching the
+current CLI's default resource model.
+
+Dapr and volumes still use `Applications.Core`. CI deploys
+[a legacy environment template](.github/test/legacy-environment.bicep) and passes
+its full resource ID to `rad deploy`, rather than using `rad env create` or
+`rad env switch`, which now target `Radius.Core`. These samples do not need
+recipe registration: Dapr provisions Redis and its state-store component
+manually, and volumes uses an ephemeral volume. Cleanup deletes their isolated
+test resource group because current `rad app delete` only targets `Radius.Core`.
+
 ## Release branch upmerges
 
 Run **Upmerge to edge** from the active release branch.
