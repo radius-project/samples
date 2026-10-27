@@ -16,6 +16,7 @@ on:
     paths:
       - samples/**
       - .github/workflows/**
+      - .github/scripts/install-radius.sh
       - .github/test/**
   pull_request:
     types: [opened, synchronize, reopened]
@@ -209,6 +210,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ./.github/scripts/install-radius.sh ${{ steps.gen-radius-version.outputs.RADIUS_VERSION }}
+          rad version
 
       - name: Initialize default environment
         if: steps.gen-id.outputs.RUN_TEST == 'true'

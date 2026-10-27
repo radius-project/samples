@@ -14,7 +14,10 @@ Radius is in an early phase of development right now. We welcome feedback in the
 
 The **Test Samples (K3D)** workflow creates a separate cluster for each sample.
 Its `resourceProvider` matrix entry must match the sample's application and
-environment resource types.
+environment resource types. Edge runs download the CLI from
+`ghcr.io/radius-project/rad/linux-amd64:edge`, matching the official installer;
+the older `:latest` artifact does not track current edge builds. The workflow
+prints `rad version` so the installed build is visible in the logs.
 
 The demo uses `Radius.Core` and the default container recipe pack, matching the
 current CLI's default resource model.

@@ -22,7 +22,7 @@ set -xe
 # e.g. 0.1, 0.1.0, 0.1.0-rc1, edge
 VERSION=$1
 RAD_CLI_URL=https://raw.githubusercontent.com/radius-project/radius/main/deploy/install.sh
-RAD_CLI_EDGE_URL=ghcr.io/radius-project/rad/linux-amd64:latest
+RAD_CLI_EDGE_URL=ghcr.io/radius-project/rad/linux-amd64:edge
 RADIUS_RELEASES_URL=https://api.github.com/repos/radius-project/radius/releases
 
 if [[ $VERSION == "edge" ]]; then
