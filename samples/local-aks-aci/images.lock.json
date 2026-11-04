@@ -1,0 +1,10 @@
+{
+  "platform": "linux/amd64",
+  "source": "https://github.com/radius-project/samples/blob/edge/.github/workflows/build.yaml",
+  "images": {
+    "redis": "ghcr.io/radius-project/samples/voting-app-redis@sha256:__SHA__",
+    "vote": "ghcr.io/radius-project/samples/voting-app-vote@sha256:__SHA__",
+    "worker": "ghcr.io/radius-project/samples/voting-app-worker@sha256:__SHA__",
+    "result": "ghcr.io/radius-project/samples/voting-app-result@sha256:__SHA__"
+  }
+}
