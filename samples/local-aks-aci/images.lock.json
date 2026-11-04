@@ -2,9 +2,9 @@
   "platform": "linux/amd64",
   "source": "https://github.com/radius-project/samples/blob/edge/.github/workflows/build.yaml",
   "images": {
-    "redis": "ghcr.io/radius-project/samples/voting-app-redis@sha256:__SHA__",
-    "vote": "ghcr.io/radius-project/samples/voting-app-vote@sha256:__SHA__",
-    "worker": "ghcr.io/radius-project/samples/voting-app-worker@sha256:__SHA__",
-    "result": "ghcr.io/radius-project/samples/voting-app-result@sha256:__SHA__"
+    "redis": "ghcr.io/radius-project/samples/voting-app-redis@sha256:b4a3dd93f2f7e276b98131e947d2c30e4b237d964c87a948cf808f160eef2fcc",
+    "vote": "ghcr.io/radius-project/samples/voting-app-vote@sha256:59e11dda6dcdd00e39aeeea1ca39d74df810bcf75b5eb5d1642c8f468eb450cc",
+    "worker": "ghcr.io/radius-project/samples/voting-app-worker@sha256:6eb6eba352d653df29d4d192cba056f97ec9f3e7abeadf2e292fac7caefef0",
+    "result": "ghcr.io/radius-project/samples/voting-app-result@sha256:935cae80b60360bbc7c6b9e56c844f8825155954160e3bbd90c6b5fb2c56bd3a"
   }
 }
