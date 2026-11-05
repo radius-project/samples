@@ -34,6 +34,12 @@ recipe registration: Dapr provisions Redis and its state-store component
 manually, and volumes uses an ephemeral volume. Cleanup deletes their isolated
 test resource group because current `rad app delete` only targets `Radius.Core`.
 
+The **Validate Bicep Code** workflow builds every `.bicep` file in a clean
+checkout. When a sample uses `loadTextContent`, `loadFileAsBase64`,
+`loadJsonContent`, or `loadYamlContent` on a file that its scripts generate and
+`.gitignore` excludes, the validator creates a temporary placeholder and removes
+it after the build. Missing files that are not git-ignored still fail validation.
+
 ## Release branch upmerges
 
 Run **Upmerge to edge** from the active release branch.
