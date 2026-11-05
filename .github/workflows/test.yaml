@@ -295,8 +295,30 @@ jobs:
         id: run-playwright-test
         run: |
           if [[ "${{ matrix.container }}" != "" ]]; then
-            rad resource expose Radius.Compute/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
             export ENDPOINT="http://localhost:3000/"
+            expose_pid=""
+            trap 'if [[ -n "$expose_pid" ]]; then kill "$expose_pid" 2>/dev/null || true; fi' EXIT
+            ready=false
+            # Deployment completion can precede a running replica. Retry expose until HTTP is ready.
+            for attempt in {1..60}; do
+              if [[ -z "$expose_pid" ]] || ! kill -0 "$expose_pid" 2>/dev/null; then
+                if [[ -n "$expose_pid" ]]; then
+                  wait "$expose_pid" || true
+                fi
+                rad resource expose Radius.Compute/containers ${{ matrix.container }} ${{ matrix.exposeArgs }} --port ${{ matrix.port }} &
+                expose_pid=$!
+              fi
+              if curl --fail --silent --max-time 2 "$ENDPOINT" > /dev/null; then
+                ready=true
+                break
+              fi
+              echo "Waiting for port-forward readiness (attempt $attempt/60)..."
+              sleep 2
+            done
+            if [[ "$ready" != true ]]; then
+              echo "::error::Port-forward did not become ready at $ENDPOINT"
+              exit 1
+            fi
           else
             endpoint="$(rad app status -a ${{ matrix.app }} | sed 's/ /\n/g' | grep http)"
             echo "Endpoint: $endpoint"

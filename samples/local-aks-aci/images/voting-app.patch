@@ -1,0 +1,153 @@
+Read Redis and PostgreSQL connection settings from environment variables, and update Npgsql for CVE-2024-32655.
+Applied by .github/workflows/build.yaml before it builds the vote, worker, and result images.
+
+diff --git a/result/server.js b/result/server.js
+index 1c8593e..6024d71 100644
+--- a/result/server.js
++++ b/result/server.js
+@@ -17,15 +17,34 @@ io.on('connection', function (socket) {
+   });
+ });
+
+-var pool = new Pool({
+-  connectionString: 'postgres://postgres:postgres@db/postgres'
+-});
++var sslMode = (process.env.POSTGRES_SSLMODE || 'disable').toLowerCase();
++if (['disable', 'prefer', 'require'].indexOf(sslMode) < 0) {
++  throw new Error('Unsupported POSTGRES_SSLMODE: ' + sslMode);
++}
++
++function createPool(useSsl) {
++  return new Pool({
++    host: process.env.POSTGRES_HOST || 'db',
++    port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
++    user: process.env.POSTGRES_USER || 'postgres',
++    password: process.env.POSTGRES_PASSWORD || 'postgres',
++    database: process.env.POSTGRES_DB || 'postgres',
++    // Like libpq sslmode=prefer/require: encrypt without verifying the server certificate.
++    ssl: useSsl ? { rejectUnauthorized: false } : false
++  });
++}
++
++var pool = createPool(sslMode !== 'disable');
+
+ async.retry(
+   {times: 1000, interval: 1000},
+   function(callback) {
+     pool.connect(function(err, client, done) {
+       if (err) {
++        if (sslMode === 'prefer' && /does not support SSL/i.test(err.message)) {
++          console.log("Server does not support SSL, retrying without it");
++          pool = createPool(false);
++        }
+         console.error("Waiting for db");
+       }
+       callback(err, client);
+diff --git a/vote/app.py b/vote/app.py
+index 5965466..e590119 100644
+--- a/vote/app.py
++++ b/vote/app.py
+@@ -9,6 +9,8 @@ import logging
+ option_a = os.getenv('OPTION_A', "Cats")
+ option_b = os.getenv('OPTION_B', "Dogs")
+ hostname = socket.gethostname()
++redis_host = os.getenv('REDIS_HOST', 'redis')
++redis_port = int(os.getenv('REDIS_PORT', '6379'))
+
+ app = Flask(__name__)
+
+@@ -18,7 +20,7 @@ app.logger.setLevel(logging.INFO)
+
+ def get_redis():
+     if not hasattr(g, 'redis'):
+-        g.redis = Redis(host="redis", db=0, socket_timeout=5)
++        g.redis = Redis(host=redis_host, port=redis_port, db=0, socket_timeout=5)
+     return g.redis
+
+ @app.route("/", methods=['POST','GET'])
+diff --git a/worker/Program.cs b/worker/Program.cs
+index 9b5fb74..b76e0ec 100644
+--- a/worker/Program.cs
++++ b/worker/Program.cs
+@@ -16,8 +16,8 @@ namespace Worker
+         {
+             try
+             {
+-                var pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
+-                var redisConn = OpenRedisConnection("redis");
++                var pgsql = OpenDbConnection(DbConnectionString());
++                var redisConn = OpenRedisConnection();
+                 var redis = redisConn.GetDatabase();
+
+                 // Keep alive is not implemented in Npgsql yet. This workaround was recommended:
+@@ -34,7 +34,7 @@ namespace Worker
+                     // Reconnect redis if down
+                     if (redisConn == null || !redisConn.IsConnected) {
+                         Console.WriteLine("Reconnecting Redis");
+-                        redisConn = OpenRedisConnection("redis");
++                        redisConn = OpenRedisConnection();
+                         redis = redisConn.GetDatabase();
+                     }
+                     string json = redis.ListLeftPopAsync("votes").Result;
+@@ -46,7 +46,7 @@ namespace Worker
+                         if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
+                         {
+                             Console.WriteLine("Reconnecting DB");
+-                            pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
++                            pgsql = OpenDbConnection(DbConnectionString());
+                         }
+                         else
+                         { // Normal +1 vote requested
+@@ -102,10 +102,30 @@ namespace Worker
+             return connection;
+         }
+
+-        private static ConnectionMultiplexer OpenRedisConnection(string hostname)
++        private static string Env(string name, string fallback)
++        {
++            var value = Environment.GetEnvironmentVariable(name);
++            return string.IsNullOrEmpty(value) ? fallback : value;
++        }
++
++        private static string DbConnectionString()
++            => new NpgsqlConnectionStringBuilder
++            {
++                Host = Env("POSTGRES_HOST", "db"),
++                Port = int.Parse(Env("POSTGRES_PORT", "5432")),
++                Username = Env("POSTGRES_USER", "postgres"),
++                Password = Env("POSTGRES_PASSWORD", "postgres"),
++                Database = Env("POSTGRES_DB", "postgres"),
++                SslMode = Enum.Parse<SslMode>(Env("POSTGRES_SSLMODE", "Disable"), true),
++                // Like libpq sslmode=prefer/require: encrypt without verifying the server certificate.
++                TrustServerCertificate = true
++            }.ConnectionString;
++
++        private static ConnectionMultiplexer OpenRedisConnection()
+         {
+             // Use IP address to workaround https://github.com/StackExchange/StackExchange.Redis/issues/410
+-            var ipAddress = GetIp(hostname);
++            var ipAddress = GetIp(Env("REDIS_HOST", "redis"));
++            var port = Env("REDIS_PORT", "6379");
+             Console.WriteLine($"Found redis at {ipAddress}");
+
+             while (true)
+@@ -113,7 +133,7 @@ namespace Worker
+                 try
+                 {
+                     Console.Error.WriteLine("Connecting to redis");
+-                    return ConnectionMultiplexer.Connect(ipAddress);
++                    return ConnectionMultiplexer.Connect($"{ipAddress}:{port}");
+                 }
+                 catch (RedisConnectionException)
+                 {
+diff --git a/worker/Worker.csproj b/worker/Worker.csproj
+index 0084507..8854ca5 100644
+--- a/worker/Worker.csproj
++++ b/worker/Worker.csproj
+@@ -8,5 +8,5 @@
+   <ItemGroup>
+     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+-    <PackageReference Include="Npgsql" Version="4.1.9" />
++    <PackageReference Include="Npgsql" Version="4.1.14" />
+     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+   </ItemGroup>

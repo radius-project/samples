@@ -1,0 +1,9 @@
+{
+  "TenantId": "REPLACE_WITH_ENTRA_TENANT_ID",
+  "SubscriptionId": "REPLACE_WITH_AZURE_SUBSCRIPTION_ID",
+  "Location": "eastus2",
+  "LocalContext": "kind-radius-demo",
+  "AksContext": "radius-demo-aks",
+  "Prefix": "radius-demo",
+  "RecipeRepository": "ghcr.io/REPLACE_WITH_GITHUB_OWNER/radius-demo/aci-containers"
+}

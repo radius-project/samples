@@ -1,0 +1,9 @@
+{
+  "experimentalFeaturesEnabled": {
+    "extensibility": true,
+    "ociEnabled": true
+  },
+  "extensions": {
+    "radius": "br:biceptypes.azurecr.io/radius:0.62"
+  }
+}

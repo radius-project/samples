@@ -1,0 +1,4 @@
+config.psd1
+config.json
+.state/
+platform/generated/

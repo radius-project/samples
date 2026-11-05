@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "postgresPassword": { "type": "securestring" },
+    "postgresHost": { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "vote",
+      "location": "eastus2",
+      "properties": {
+        "sku": "Confidential",
+        "osType": "Linux",
+        "restartPolicy": "Always",
+        "confidentialComputeProperties": { "ccePolicy": "" },
+        "containers": [
+          {
+            "name": "redis",
+            "properties": {
+              "image": "__REDIS_IMAGE__",
+              "ports": [],
+              "resources": { "requests": { "cpu": 1, "memoryInGB": 1 } }
+            }
+          },
+          {
+            "name": "vote",
+            "properties": {
+              "image": "__VOTE_IMAGE__",
+              "ports": [{ "protocol": "TCP", "port": 80 }],
+              "resources": { "requests": { "cpu": 1, "memoryInGB": 1 } },
+              "environmentVariables": [
+                { "name": "REDIS_HOST", "value": "localhost" },
+                { "name": "REDIS_PORT", "value": "6379" }
+              ]
+            }
+          },
+          {
+            "name": "worker",
+            "properties": {
+              "image": "__WORKER_IMAGE__",
+              "ports": [],
+              "resources": { "requests": { "cpu": 1, "memoryInGB": 1 } },
+              "environmentVariables": [
+                { "name": "POSTGRES_DB", "value": "votes" },
+                { "name": "POSTGRES_HOST", "value": "[parameters('postgresHost')]" },
+                { "name": "POSTGRES_PASSWORD", "value": "[parameters('postgresPassword')]" },
+                { "name": "POSTGRES_PORT", "value": "5432" },
+                { "name": "POSTGRES_SSLMODE", "value": "prefer" },
+                { "name": "POSTGRES_USER", "value": "myadmin" },
+                { "name": "REDIS_HOST", "value": "localhost" },
+                { "name": "REDIS_PORT", "value": "6379" }
+              ]
+            }
+          }
+        ],
+        "ipAddress": {
+          "type": "Private",
+          "ports": [{ "protocol": "TCP", "port": 80 }]
+        }
+      }
+    }
+  ]
+}
