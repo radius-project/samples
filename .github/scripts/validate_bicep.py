@@ -1,8 +1,23 @@
 import os
+import re
 import subprocess
 import concurrent.futures
 
 num_workers = 5
+
+# Bicep load*() functions read files at compile time. Samples may load files
+# that their scripts generate at run time and that are git-ignored, so those
+# files are missing from a clean checkout. Stub them while validating.
+load_function_pattern = re.compile(
+    r"\b(loadTextContent|loadFileAsBase64|loadJsonContent|loadYamlContent)\(\s*'([^']+)'"
+)
+placeholder_contents = {
+    "loadTextContent": "",
+    "loadFileAsBase64": "",
+    "loadJsonContent": "{}",
+    "loadYamlContent": "{}",
+}
+repo_root = os.path.realpath(".")
 
 # set the bicep binary name based on the OS
 if os.name == 'nt':
@@ -36,6 +51,63 @@ for root, _, filenames in os.walk("."):
         if filename.endswith(".bicep"):
             files.append(os.path.join(root, filename))
 
+def is_in_repo(path):
+    try:
+        return os.path.commonpath([repo_root, path]) == repo_root
+    except ValueError:
+        return False
+
+def is_git_ignored(path):
+    try:
+        result = subprocess.run(
+            ["git", "check-ignore", "--quiet", "--", path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0
+
+def create_placeholders(bicep_files, created_files, created_dirs):
+    for f in bicep_files:
+        with open(f, encoding="utf-8") as bicep_file:
+            content = bicep_file.read()
+
+        for function, relative_path in load_function_pattern.findall(content):
+            path = os.path.realpath(os.path.join(os.path.dirname(f), relative_path))
+
+            # Missing files that are not git-ignored are real errors, so let
+            # Bicep report them.
+            if os.path.exists(path) or not is_in_repo(path) or not is_git_ignored(path):
+                continue
+
+            missing_dirs = []
+            parent = os.path.dirname(path)
+            while not os.path.exists(parent):
+                missing_dirs.append(parent)
+                parent = os.path.dirname(parent)
+            for directory in reversed(missing_dirs):
+                os.mkdir(directory)
+                created_dirs.append(directory)
+
+            with open(path, "w", encoding="utf-8") as placeholder:
+                placeholder.write(placeholder_contents[function])
+            created_files.append(path)
+            print(f"Using placeholder for git-ignored file {os.path.relpath(path)} loaded by {f}", flush=True)
+
+def remove_placeholders(created_files, created_dirs):
+    for path in created_files:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+    for directory in reversed(created_dirs):
+        try:
+            os.rmdir(directory)
+        except OSError:
+            pass
+
 def validate_file(f):
     print(f"Validating {f}...", flush=True)
 
@@ -55,9 +127,16 @@ def validate_file(f):
         failures.append(f)
         print(stderr, flush=True)
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-    futures = [executor.submit(validate_file, f) for f in files]
-concurrent.futures.wait(futures)
+placeholder_files = []
+placeholder_dirs = []
+try:
+    create_placeholders(files, placeholder_files, placeholder_dirs)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+        futures = [executor.submit(validate_file, f) for f in files]
+    concurrent.futures.wait(futures)
+finally:
+    remove_placeholders(placeholder_files, placeholder_dirs)
 
 for f in failures:
     print(f"Failed: {f}", flush=True)
