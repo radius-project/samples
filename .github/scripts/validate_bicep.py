@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import concurrent.futures
+import threading
 
 num_workers = 5
 
@@ -44,6 +45,7 @@ print(f"Using Bicep binary: {bicep_executable}", flush=True)
 files = []
 failures = []
 warnings = []
+restore_lock = threading.Lock()
 
 # Walk the directory tree and find all .bicep files
 for root, _, filenames in os.walk("."):
@@ -118,6 +120,27 @@ def validate_file(f):
     )
     stderr = result.stderr.decode("utf-8")
     exitcode = result.returncode
+
+    if "Error BCP190" in stderr:
+        print(f"Restoring external artifact for {f}...", flush=True)
+        with restore_lock:
+            restore_result = subprocess.run(
+                [bicep_executable, "restore", f],
+                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+            )
+
+        if restore_result.returncode == 0:
+            result = subprocess.run(
+                [bicep_executable, "build", f, "--stdout"],
+                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+            )
+            stderr = result.stderr.decode("utf-8")
+            exitcode = result.returncode
+        else:
+            stderr += restore_result.stderr.decode("utf-8")
+            exitcode = restore_result.returncode
   
     if "Warning" in stderr:
         warnings.append(f)
