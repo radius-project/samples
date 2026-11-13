@@ -18,7 +18,7 @@
     "@types/node": "^25.9.9",
     "concurrently": "^9.2.5",
     "nodemon": "^3.1.11",
-    "rimraf": "^6.1.2",
+    "rimraf": "^6.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
