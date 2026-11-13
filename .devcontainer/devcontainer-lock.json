@@ -10,10 +10,10 @@
       "resolved": "ghcr.io/devcontainers/features/docker-in-docker@sha256:fae40f3c8be5a7c3b0db344c1d30341bc2c91ba38d1d5b14cd2ad72e6d65d084",
       "integrity": "sha256:fae40f3c8be5a7c3b0db344c1d30341bc2c91ba38d1d5b14cd2ad72e6d65d084"
     },
-    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1.3.1": {
-      "version": "1.3.1",
-      "resolved": "ghcr.io/devcontainers/features/kubectl-helm-minikube@sha256:bbe8adf6b37fff8c67412ab0a4579f4c2f30bbaba1d9a5cebd9e38bade54025b",
-      "integrity": "sha256:bbe8adf6b37fff8c67412ab0a4579f4c2f30bbaba1d9a5cebd9e38bade54025b"
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1.3.2": {
+      "version": "1.3.2",
+      "resolved": "ghcr.io/devcontainers/features/kubectl-helm-minikube@sha256:85bbe589703f8247b594ec821b028e7bb807d05c2bced61085403221ff71f1e5",
+      "integrity": "sha256:85bbe589703f8247b594ec821b028e7bb807d05c2bced61085403221ff71f1e5"
     },
     "ghcr.io/rio/features/k3d:1.1.0": {
       "version": "1.1.0",
