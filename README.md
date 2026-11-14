@@ -4,6 +4,14 @@ This repository contains the source code for quickstarts, reference apps, and tu
 
 To try out one of these samples, visit https://docs.radapp.io
 
+## Bicep extension compatibility
+
+The `edge` configurations use the development `edge` tags of the public Radius and AWS Bicep extension packages on GHCR. Unlike ACR's development `latest`, GHCR `latest` tracks the newest approved stable release. These configurations require a Radius release that bundles Bicep v0.45.6 or later and `experimentalFeaturesEnabled.ociEnabled: true` in every effective `bicepconfig.json`, including sample-local overrides.
+
+The release script pins the root configuration to the selected `X.Y` channel; sample-local overrides retain their development tags. Stable consumers can also use an approved full-version reference such as `br:ghcr.io/radius-project/bicep-types-radius:0.60.2`, or `br:ghcr.io/radius-project/bicep-types-radius@sha256:<manifest-digest>` with the release's 64-character lowercase hexadecimal manifest digest. The same forms apply to `bicep-types-aws`. These examples describe reference formats, not artifact availability.
+
+Do not switch to these configurations until both public packages and a compatible Radius release are available. Older Radius releases should use their matching sample release branch rather than `edge`. See the [Bicep extension migration design](https://github.com/radius-project/radius/blob/02fe18b81feeb2e966ed76aa6b5439b61dc475ec/eng/design-notes/tools/2026-09-bicep-extension-ghcr-migration.md) for the rollout gates.
+
 ## Codespace
 
 The current repository offers a codespace setup with Radius and its dependencies installed.  Try it out for free!
