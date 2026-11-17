@@ -51,8 +51,8 @@ pushd $REPOSITORY
 # The release branch starts from the checked-out commit
 BASE_SHA="$(git rev-parse HEAD)"
 
-# Pin the root config's public GHCR edge extensions to the release channel.
-awk -v CHANNEL="${CHANNEL}" -f .github/scripts/release-bicepconfig.awk bicepconfig.json > bicepconfig_updated.json
+# Pin the root config's public GHCR extensions to the stable channel or full RC.
+bash .github/scripts/release-bicepconfig.sh "${VERSION_NUMBER}" bicepconfig.json > bicepconfig_updated.json
 mv bicepconfig_updated.json bicepconfig.json
 echo "View updated bicepconfig..."
 cat bicepconfig.json

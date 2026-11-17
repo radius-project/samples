@@ -23,6 +23,7 @@ import unittest
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 FILTER = SCRIPT_DIR / "release-bicepconfig.awk"
+RELEASE_REWRITE = SCRIPT_DIR / "release-bicepconfig.sh"
 FIXTURES = SCRIPT_DIR / "testdata"
 
 
@@ -91,6 +92,52 @@ class ReleaseBicepConfigTests(unittest.TestCase):
                 f"br:ghcr.io/radius-project/bicep-types-{alias}:10.20"
             )
         self.assertEqual(json.loads(self.rewrite(self.source, "10.20")), expected)
+
+    def test_release_version_selection_and_rewrite(self):
+        for version, tag in (
+            ("0.62.0", "0.62"),
+            ("0.62.7", "0.62"),
+            ("0.62.0+build-1", "0.62"),
+            ("0.62.0-rc.6", "0.62.0-rc.6"),
+            ("0.62.0-rc6", "0.62.0-rc6"),
+            ("0.1.0-rc1", "0.1.0-rc1"),
+        ):
+            with self.subTest(version=version):
+                result = subprocess.run(
+                    ["bash", str(RELEASE_REWRITE), version, "-"],
+                    input=self.source,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                expected = self.source
+                for alias in ("radius", "aws"):
+                    expected = expected.replace(
+                        f'"br:ghcr.io/radius-project/bicep-types-{alias}:edge"',
+                        f'"br:ghcr.io/radius-project/bicep-types-{alias}:{tag}"',
+                    )
+                self.assertEqual(result.stdout, expected)
+
+    def test_invalid_release_versions_fail_without_output(self):
+        for version in (
+            "",
+            "0.62",
+            "v0.62.0",
+            "0.62.0-rc.06",
+            "0.62.0-rc.6+build.1",
+        ):
+            with self.subTest(version=version):
+                result = subprocess.run(
+                    ["bash", str(RELEASE_REWRITE), version, "-"],
+                    input=self.source,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertTrue(result.stderr.strip())
+                self.assertEqual(result.stdout, "")
 
     def test_missing_channel_fails(self):
         result = subprocess.run(
