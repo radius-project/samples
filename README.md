@@ -10,7 +10,7 @@ The development configurations use the `edge` tags of the public Radius and AWS 
 
 The release script pins the root configuration to the `X.Y` channel for a stable release and to the full version for a release candidate, preserving either `-rc.N` or `-rcN` spelling. Sample-local overrides retain their configured tags, and release branch naming is unchanged. Stable consumers can also use an approved full-version reference such as `br:ghcr.io/radius-project/bicep-types-radius:0.60.2`, or `br:ghcr.io/radius-project/bicep-types-radius@sha256:<manifest-digest>` with the release's 64-character lowercase hexadecimal manifest digest. The same forms apply to `bicep-types-aws`. These examples describe reference formats, not artifact availability.
 
-The release-pinned [local-aks-aci sample](samples/local-aks-aci/README.md) retains its ACR `radius:0.62` extension and Radius `0.62.0` CLI pin. Its extension reference must not move to GHCR until the matching release artifacts and released CLI pass compatibility validation.
+The release-pinned [local-aks-aci sample](samples/local-aks-aci/README.md) uses `br:ghcr.io/radius-project/bicep-types-radius:0.62` and retains its Radius `0.62.0` CLI pin. That released CLI downloads Bicep `0.46.1`. The matching public GHCR `0.62` artifact is required; do not substitute `edge` when it is unavailable.
 
 Do not switch to these configurations until both public packages and a compatible Radius release are available. Older Radius releases should use their matching sample release branch rather than `edge`. See the [Bicep extension migration design](https://github.com/radius-project/radius/blob/02fe18b81feeb2e966ed76aa6b5439b61dc475ec/eng/design-notes/tools/2026-09-bicep-extension-ghcr-migration.md) for the rollout gates.
 

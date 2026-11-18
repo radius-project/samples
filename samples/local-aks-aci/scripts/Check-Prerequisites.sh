@@ -309,7 +309,7 @@ fi
 
 if command -v jq >/dev/null 2>&1; then
     pins_ok=true
-    if ! jq -e --arg alias "br:biceptypes.azurecr.io/radius:$RADIUS_MINOR" '.extensions.radius == $alias' "$ROOT/bicepconfig.json" >/dev/null; then pins_ok=false; fi
+    if ! jq -e --arg alias "br:ghcr.io/radius-project/bicep-types-radius:$RADIUS_MINOR" '.extensions.radius == $alias' "$ROOT/bicepconfig.json" >/dev/null; then pins_ok=false; fi
     if ! recipe_commit="$(kubernetes_recipe_commit "$ROOT" "$RADIUS_VERSION")"; then pins_ok=false; fi
     if [[ "$pins_ok" == true ]]; then report OK 'Bicep/recipe pins' "$RADIUS_VERSION / ${recipe_commit:0:7}" 'CLI/type pin and recipe lock'
     else report FAIL 'Bicep/recipe pins' inconsistent 'CLI/type pin and recipe lock' pins
