@@ -5,13 +5,13 @@
   "dependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.8",
+    "@testing-library/user-event": "^14.6.10",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.9",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@types/react-router-dom": "^5.3.3",
-    "bootstrap": "^5.3.8",
+    "bootstrap": "^5.3.9",
     "react": "^19.2.9",
     "react-dom": "^19.2.9",
     "react-router": "^8.5.1",
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.5",
-    "vite": "^8.3.4"
+    "vite": "^8.3.8"
   },
   "scripts": {
     "start": "vite",
