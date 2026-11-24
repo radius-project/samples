@@ -16,7 +16,7 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Set provider credentials to authenticate to your cloud provider (choose which type of hosting infrastructure you wish to use):
    ```bash
    # AWS
-   rad credential register aws access-key --aws-access-key-id <your-aws-access-key-id> --aws-secret-access-key <your-aws-secret-access-key>
+   rad credential register aws access-key --access-key-id <your-aws-access-key-id> --secret-access-key <your-aws-secret-access-key>
 
    # Azure
    rad credential register azure sp --client-id <your-azure-service-principal-client-id> --client-secret <your-azure-service-principal-client-secret> --tenant-id <your-azure-service-principal-tenant-id>
@@ -24,7 +24,7 @@ This reference app is a "radified" version of the [eShop on containers](https://
 1. Clone the repository and switch to the app directory:
    ```bash
    git clone https://github.com/radius-project/samples.git
-   cd samples/reference-apps/eshop
+   cd samples/samples/eshop
    ```
 1. Deploy an environment with the proper Recipes (choose which type of hosting infrastructure you wish to use):
    ```bash

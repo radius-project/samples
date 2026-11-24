@@ -35,7 +35,7 @@ The current version of eShopOnDapr utilizes Azure Kubernetes Services to deploy 
 
    ```bash
    git clone https://github.com/radius-project/samples.git
-   cd samples/reference-apps/eshop-dapr
+   cd samples/samples/eshop-dapr
    ```
 
 1. Get the Azure AD Workload Identity OIDC Issuer URL:
