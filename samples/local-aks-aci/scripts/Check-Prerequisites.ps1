@@ -224,7 +224,7 @@ else { Write-Prerequisite 'Container engine' 'CLI not identified' 'Linux/AMD64' 
 $alias = (Get-Content -LiteralPath (Join-Path $script:DemoRoot 'bicepconfig.json') -Raw | ConvertFrom-Json).extensions.radius
 try {
     $recipeCommit = Get-DemoKubernetesRecipeCommit
-    if ($alias -cne "br:ghcr.io/radius-project/bicep-types-radius:$radiusMinor") { throw 'The Bicep extension does not match the Radius release pin.' }
+    if ($alias -cne "br:biceptypes.azurecr.io/radius:$radiusMinor") { throw 'The Bicep extension does not match the Radius release pin.' }
     Write-Prerequisite 'Bicep/recipe pins' "$requiredRadius / $($recipeCommit.Substring(0, 7))" 'CLI/type pin and recipe lock' 'OK'
 }
 catch {

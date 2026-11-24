@@ -4,6 +4,6 @@
     "ociEnabled": true
   },
   "extensions": {
-    "radius": "br:ghcr.io/radius-project/bicep-types-radius:0.62"
+    "radius": "br:biceptypes.azurecr.io/radius:0.62"
   }
 }
