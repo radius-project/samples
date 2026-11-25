@@ -17,6 +17,10 @@ var queueUrl = os.Getenv("SQS_QUEUE_URL")
 
 const visibilityTimeout = 0 * time.Second
 
+// Long poll for the longest time SQS allows. A short poll can come back empty while
+// a message is in the queue, and it can't wait out the delay that send sets.
+const receiveWaitTime = 20 * time.Second
+
 var sess *session.Session
 
 func send(w http.ResponseWriter, req *http.Request) {
@@ -42,7 +46,7 @@ func send(w http.ResponseWriter, req *http.Request) {
 	})
 
 	if err != nil {
-		fmt.Fprintln(w, "error receiving sqs message request: "+err.Error())
+		fmt.Fprintln(w, "error sending sqs message request: "+err.Error())
 		return
 	}
 	fmt.Fprintln(w, "sqs message sent to "+queueUrl)
@@ -75,6 +79,7 @@ func receive(w http.ResponseWriter, req *http.Request) {
 		QueueUrl:            aws.String(queueUrl),
 		MaxNumberOfMessages: aws.Int64(1),
 		VisibilityTimeout:   aws.Int64(int64(visibilityTimeout.Seconds())),
+		WaitTimeSeconds:     aws.Int64(int64(receiveWaitTime.Seconds())),
 	})
 	if err != nil {
 		fmt.Fprint(w, "error receiving sqs message request: "+err.Error())
@@ -82,8 +87,8 @@ func receive(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if len(resp.Messages) == 0 {
-
 		fmt.Fprintln(w, "no messages in queue")
+		return
 	}
 
 	msg := resp.Messages[0]
