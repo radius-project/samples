@@ -10,12 +10,18 @@ param aws_access_key_id string
 param aws_secret_access_key string
 param aws_region string
 
-param image string = 'ghcr.io/radius-project/samples/aws-sqs-sample:latest'
+param image string = 'ghcr.io/radius-project/samples/aws-sqs:latest'
 
 var aws_credential = {
-  AWS_ACCESS_KEY_ID: aws_access_key_id
-  AWS_SECRET_ACCESS_KEY: aws_secret_access_key
-  AWS_REGION: aws_region
+  AWS_ACCESS_KEY_ID: {
+    value: aws_access_key_id
+  }
+  AWS_SECRET_ACCESS_KEY: {
+    value: aws_secret_access_key
+  }
+  AWS_REGION: {
+    value: aws_region
+  }
 }
 
 var app_name = 'sqs-sample-app'
