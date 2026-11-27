@@ -5,7 +5,7 @@
   "dependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.10",
+    "@testing-library/user-event": "^14.6.13",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.9",
     "@types/react": "^19.2.18",
@@ -14,8 +14,8 @@
     "bootstrap": "^5.3.9",
     "react": "^19.2.9",
     "react-dom": "^19.2.9",
-    "react-router": "^8.5.1",
-    "react-router-dom": "^7.18.5",
+    "react-router": "^8.5.2",
+    "react-router-dom": "^7.18.6",
     "typescript": "^6.0.3",
     "web-vitals": "^5.2.0"
   },
